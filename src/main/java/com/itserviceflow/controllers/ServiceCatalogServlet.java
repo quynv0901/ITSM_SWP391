@@ -1,29 +1,122 @@
 package com.itserviceflow.controllers;
 
 import com.itserviceflow.daos.ServiceDAO;
+import com.itserviceflow.models.Service;
+import com.itserviceflow.models.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
 import java.io.IOException;
 import java.util.List;
-import com.itserviceflow.models.Service;
 
-@WebServlet("/service-catalog")
+@WebServlet(name = "ServiceCatalogServlet", urlPatterns = {"/service-catalog"})
 public class ServiceCatalogServlet extends HttpServlet {
-    private ServiceDAO serviceDAO = new ServiceDAO();
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+    private static final int ROLE_END_USER = 2;
+    private ServiceDAO serviceDAO;
+
+    @Override
+    public void init() throws ServletException {
+        serviceDAO = new ServiceDAO();
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-        String searchQuery = request.getParameter("search");
-        if (searchQuery == null) searchQuery = "";
 
-        List<Service> listService = serviceDAO.searchServices(searchQuery);
-        
-        request.setAttribute("listService", listService);
-        request.setAttribute("lastSearch", searchQuery);
-        request.getRequestDispatcher("/service/service-list.jsp").forward(request, response);
+        User loginUser = getLoggedInUser(request);
+        if (loginUser == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        if (loginUser.getRoleId() != ROLE_END_USER) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied.");
+            return;
+        }
+
+        String action = request.getParameter("action");
+        if (action == null || action.trim().isEmpty()) {
+            action = "list";
+        }
+
+        switch (action) {
+            case "detail":
+                showDetailPopup(request, response, loginUser);
+                break;
+            case "list":
+            default:
+                listActiveServices(request, response, loginUser);
+                break;
+        }
+    }
+
+    private void listActiveServices(HttpServletRequest request, HttpServletResponse response, User loginUser)
+            throws ServletException, IOException {
+
+        String keyword = request.getParameter("q");
+        if (keyword == null) {
+            keyword = "";
+        }
+
+        List<Service> services = serviceDAO.searchActiveServices(keyword);
+
+        request.setAttribute("services", services);
+        request.setAttribute("keyword", keyword);
+        request.setAttribute("roleId", loginUser.getRoleId());
+
+        request.getRequestDispatcher("/admin/service-management.jsp").forward(request, response);
+    }
+
+    private void showDetailPopup(HttpServletRequest request, HttpServletResponse response, User loginUser)
+            throws ServletException, IOException {
+
+        String keyword = request.getParameter("q");
+        String idRaw = request.getParameter("id");
+
+        if (keyword == null) {
+            keyword = "";
+        }
+
+        List<Service> services = serviceDAO.searchActiveServices(keyword);
+        request.setAttribute("services", services);
+        request.setAttribute("keyword", keyword);
+        request.setAttribute("roleId", loginUser.getRoleId());
+
+        if (idRaw == null || idRaw.trim().isEmpty()) {
+            request.setAttribute("errorMessage", "Invalid service id.");
+            request.getRequestDispatcher("/admin/service-management.jsp").forward(request, response);
+            return;
+        }
+
+        try {
+            int serviceId = Integer.parseInt(idRaw);
+            Service service = serviceDAO.getActiveServiceById(serviceId);
+
+            if (service == null) {
+                request.setAttribute("errorMessage", "Service not found or inactive.");
+            } else {
+                request.setAttribute("selectedService", service);
+                request.setAttribute("openModal", "detail");
+            }
+
+            request.getRequestDispatcher("/admin/service-management.jsp").forward(request, response);
+
+        } catch (NumberFormatException e) {
+            request.setAttribute("errorMessage", "Invalid service id.");
+            request.getRequestDispatcher("/admin/service-management.jsp").forward(request, response);
+        }
+    }
+
+    private User getLoggedInUser(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            return null;
+        }
+        return (User) session.getAttribute("user");
     }
 }
