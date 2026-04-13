@@ -1,21 +1,22 @@
 -- ================================================================================
 -- ITServiceFlow ITSM Platform - MySQL Database Creation
+-- Full Version with Fixes for Constraints and Seeding Order
 -- ================================================================================
 
 CREATE DATABASE IF NOT EXISTS ITSM_db;
 USE ITSM_db;
 
 -- ================================================================================
--- 1. USER MANAGEMENT
+-- 1. USER MANAGEMENT (Bản gốc đầy đủ)
 -- ================================================================================
 
 CREATE TABLE role (
     role_id INT AUTO_INCREMENT PRIMARY KEY,
     role_name VARCHAR(50) UNIQUE NOT NULL,
     description TEXT,
-    permission TEXT, -- JSON stored as string
+    permission TEXT,
     status VARCHAR(20) DEFAULT 'ACTIVE',
-    CONSTRAINT chk_role_status CHECK (status IN ('ACTIVE', 'INACTIVE'))
+    CONSTRAINT chk_role_status CHECK (status IN ('ACTIVE' , 'INACTIVE'))
 );
 
 CREATE TABLE department (
@@ -25,8 +26,8 @@ CREATE TABLE department (
     manager_id INT,
     parent_department_id INT,
     status VARCHAR(20) DEFAULT 'ACTIVE',
-    CONSTRAINT chk_dept_status CHECK (status IN ('ACTIVE', 'INACTIVE')),
-    FOREIGN KEY (parent_department_id) REFERENCES department(department_id)
+    CONSTRAINT chk_dept_status CHECK (status IN ('ACTIVE' , 'INACTIVE')),
+    FOREIGN KEY (parent_department_id) REFERENCES department (department_id)
 );
 
 CREATE TABLE `user` (
@@ -44,15 +45,15 @@ CREATE TABLE `user` (
     reset_token_used TINYINT(1) DEFAULT 0,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     last_login DATETIME NULL,
-    FOREIGN KEY (department_id) REFERENCES department(department_id),
-    FOREIGN KEY (role_id) REFERENCES role(role_id)
+    FOREIGN KEY (department_id) REFERENCES department (department_id),
+    FOREIGN KEY (role_id) REFERENCES role (role_id)
 );
 
 -- Thêm khóa ngoại manager sau khi bảng user đã được tạo
 ALTER TABLE department ADD FOREIGN KEY (manager_id) REFERENCES `user`(user_id);
 
 -- ================================================================================
--- 2. TICKET CATEGORY MANAGEMENT
+-- 2. TICKET CATEGORY & SLA
 -- ================================================================================
 
 CREATE TABLE ticket_category (
@@ -60,12 +61,26 @@ CREATE TABLE ticket_category (
     category_name VARCHAR(100) NOT NULL,
     category_code VARCHAR(50) UNIQUE,
     category_type VARCHAR(20) NOT NULL,
+    difficulty_level VARCHAR(10), -- Đã thêm cột này từ bản 1
     description TEXT,
     parent_category_id INT,
     is_active TINYINT(1) DEFAULT 1,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT chk_cat_type CHECK (category_type IN ('INCIDENT', 'SERVICE_REQUEST', 'PROBLEM', 'CHANGE', 'KNOWLEDGE')),
     FOREIGN KEY (parent_category_id) REFERENCES ticket_category(category_id)
+);
+
+CREATE TABLE sla_policy (
+    sla_id INT AUTO_INCREMENT PRIMARY KEY,
+    policy_name VARCHAR(255) NOT NULL,
+    category_id INT NOT NULL,
+    priority VARCHAR(10),
+    response_time_hour INT NOT NULL,
+    resolution_time_hour INT NOT NULL,
+    is_active TINYINT(1) DEFAULT 1,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT chk_sla_priority CHECK (priority IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')),
+    FOREIGN KEY (category_id) REFERENCES ticket_category(category_id)
 );
 
 -- ================================================================================
@@ -113,24 +128,7 @@ CREATE TABLE ci_relationship (
 );
 
 -- ================================================================================
--- 4. SLA MANAGEMENT
--- ================================================================================
-
-CREATE TABLE sla_policy (
-    sla_id INT AUTO_INCREMENT PRIMARY KEY,
-    policy_name VARCHAR(255) NOT NULL,
-    category_id INT NOT NULL,
-    priority VARCHAR(10),
-    response_time_hour INT NOT NULL,
-    resolution_time_hour INT NOT NULL,
-    is_active TINYINT(1) DEFAULT 1,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT chk_sla_priority CHECK (priority IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')),
-    FOREIGN KEY (category_id) REFERENCES ticket_category(category_id)
-);
-
--- ================================================================================
--- 5. WORKFLOW & SERVICE
+-- 4. WORKFLOW & SERVICE & TICKET
 -- ================================================================================
 
 CREATE TABLE workflow (
@@ -156,10 +154,6 @@ CREATE TABLE service (
     CONSTRAINT chk_svc_status CHECK (status IN ('ACTIVE', 'INACTIVE'))
 );
 
--- ================================================================================
--- 6. TICKET
--- ================================================================================
-
 CREATE TABLE ticket (
     ticket_id INT AUTO_INCREMENT PRIMARY KEY,
     ticket_number VARCHAR(50) UNIQUE NOT NULL,
@@ -173,12 +167,10 @@ CREATE TABLE ticket (
     reported_by INT NOT NULL,
     assigned_to INT,
     department_id INT,
-   
     approval_status VARCHAR(20) DEFAULT 'PENDING',
     approved_by INT,
     approved_at DATETIME NULL,
     rejection_reason TEXT,
-   
     response_due DATETIME NULL,
     resolution_due DATETIME NULL,
     responded_at DATETIME NULL,
@@ -186,17 +178,13 @@ CREATE TABLE ticket (
     closed_at DATETIME NULL,
     cancelled_at DATETIME NULL,
     completed_at DATETIME NULL,
-   
     impact VARCHAR(10),
     urgency VARCHAR(10),
     ci_id INT,
-   
     service_id INT,
     justification TEXT,
-   
     cause TEXT,
     solution TEXT,
-   
     change_type VARCHAR(20),
     risk_level VARCHAR(20),
     impact_assessment TEXT,
@@ -214,10 +202,8 @@ CREATE TABLE ticket (
     actual_end DATETIME NULL,
     downtime_required TINYINT(1) DEFAULT 0,
     estimated_downtime_hour DECIMAL(5,2),
-   
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-   
     CONSTRAINT chk_t_type CHECK (ticket_type IN ('INCIDENT', 'SERVICE_REQUEST', 'PROBLEM', 'CHANGE')),
     CONSTRAINT chk_t_priority CHECK (priority IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')),
     CONSTRAINT chk_t_diff CHECK (difficulty_level IN ('LEVEL_1', 'LEVEL_2', 'LEVEL_3')),
@@ -227,7 +213,6 @@ CREATE TABLE ticket (
     CONSTRAINT chk_t_ch_type CHECK (change_type IN ('STANDARD', 'NORMAL', 'EMERGENCY')),
     CONSTRAINT chk_t_risk CHECK (risk_level IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')),
     CONSTRAINT chk_t_cab CHECK (cab_decision IN ('PENDING', 'APPROVED', 'REJECTED')),
-
     FOREIGN KEY (category_id) REFERENCES ticket_category(category_id),
     FOREIGN KEY (reported_by) REFERENCES `user`(user_id),
     FOREIGN KEY (assigned_to) REFERENCES `user`(user_id),
@@ -239,7 +224,7 @@ CREATE TABLE ticket (
 );
 
 -- ================================================================================
--- 7. TICKET RELATIONSHIPS
+-- 5. PHẦN CÒN LẠI (History, Comment, Attachment, Article...)
 -- ================================================================================
 
 CREATE TABLE ticket_relation (
@@ -255,10 +240,6 @@ CREATE TABLE ticket_relation (
     FOREIGN KEY (created_by) REFERENCES `user`(user_id)
 );
 
--- ================================================================================
--- 8. CHANGE-CI RELATIONSHIP
--- ================================================================================
-
 CREATE TABLE change_ci (
     link_id INT AUTO_INCREMENT PRIMARY KEY,
     ticket_id INT NOT NULL,
@@ -268,10 +249,6 @@ CREATE TABLE change_ci (
     FOREIGN KEY (ticket_id) REFERENCES ticket(ticket_id) ON DELETE CASCADE,
     FOREIGN KEY (ci_id) REFERENCES configuration_item(ci_id)
 );
-
--- ================================================================================
--- 9. SHARED TICKET TABLES
--- ================================================================================
 
 CREATE TABLE ticket_history (
     history_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -350,10 +327,6 @@ CREATE TABLE sla_breach (
     FOREIGN KEY (sla_id) REFERENCES sla_policy(sla_id)
 );
 
--- ================================================================================
--- 10. ARTICLE
--- ================================================================================
-
 CREATE TABLE article (
     article_id INT AUTO_INCREMENT PRIMARY KEY,
     article_number VARCHAR(50) UNIQUE NOT NULL,
@@ -389,10 +362,6 @@ CREATE TABLE article_ticket (
     FOREIGN KEY (ticket_id) REFERENCES ticket(ticket_id)
 );
 
--- ================================================================================
--- 11. NOTIFICATION
--- ================================================================================
-
 CREATE TABLE notification (
     notification_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -409,9 +378,10 @@ CREATE TABLE notification (
 );
 
 -- ================================================================================
--- INITIAL DATA
+-- INITIAL DATA (Seeding)
 -- ================================================================================
 
+-- 1. Roles
 INSERT INTO role (role_name, description, permission) VALUES
 ('End-user', 'Standard end user', '{"create_incident": true, "create_service_request": true}'),
 ('Support Agent', 'Support agent', '{"manage_tickets": true, "create_knowledge_article": true}'),
@@ -424,13 +394,17 @@ INSERT INTO role (role_name, description, permission) VALUES
 ('IT Director', 'IT Director', '{"view_all_reports": true, "view_dashboards": true}'),
 ('Admin', 'Administrator', '{"full_access": true, "manage_users": true}');
 
+-- 2. Department
 INSERT INTO department (department_name, department_code) VALUES
 ('IT Support', 'IT-SUP'),
 ('Network Operations', 'IT-NET'),
 ('Infrastructure', 'IT-INF'),
 ('Security', 'IT-SEC');
 
--- Lưu ý: ticket_category ở SQL Server của bạn có thêm cột difficulty_level không có trong schema trên, tôi đã thêm vào chk để khớp logic.
+INSERT INTO `user` (username, email, password_hash, full_name, role_id, department_id) VALUES
+('quy_admin', 'quy@itsm.com', 'hash', 'Quy Admin', 3, 1),
+('nhanvien_test', 'nv@itsm.com', 'hash', 'Nguyen Van A', 1, 2);
+
 ALTER TABLE ticket_category ADD COLUMN difficulty_level VARCHAR(10);
 
 INSERT INTO ticket_category (category_name, category_code, category_type, difficulty_level) VALUES
@@ -440,6 +414,7 @@ INSERT INTO ticket_category (category_name, category_code, category_type, diffic
 ('Access Request', 'SR-ACC', 'SERVICE_REQUEST', NULL),
 ('Equipment Request', 'SR-EQP', 'SERVICE_REQUEST', NULL);
 
+-- 5. CI Type
 INSERT INTO ci_type (type_name) VALUES
 ('Desktop Computer'),
 ('Laptop'),
@@ -451,6 +426,7 @@ INSERT INTO ci_type (type_name) VALUES
 ('Application');
 
 
+-- 6. Ticket (Sử dụng ID 1 và 2 của User đã nạp ở trên)
 INSERT INTO ticket (ticket_number, ticket_type, title, description, status, priority, category_id, reported_by) VALUES
 ('INC-20261000', 'INCIDENT', 'Mất kết nối mạng nội bộ', 'Không thể kết nối vào mạng LAN ở tầng 3', 'NEW', 'HIGH', 1, 1),
 ('INC-20261001', 'INCIDENT', 'Máy in phòng họp hết mực', 'Báo lỗi Toner Empty không in được tài liệu', 'NEW', 'LOW', 2, 2),
