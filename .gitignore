@@ -1,0 +1,2 @@
+-e "target/\nnbactions.xml\nnb-configuration.xml\ncatalog.xml\n*.class\n*.log" 
+/target/

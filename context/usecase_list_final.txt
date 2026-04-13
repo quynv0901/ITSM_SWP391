@@ -1,0 +1,118 @@
+Use Case	Feature	Main Actor	Use Case Description
+User Login	Authentication & Account Management	End User	Authenticate users with username and password to access the system
+Forgot Password	Authentication & Account Management	End User	Request password reset link via email when user forgets their password
+Reset Password	Authentication & Account Management	End User	Set a new password using the reset token received via email
+View User Profile	Authentication & Account Management	End User	View and update personal information including name, email, phone, and department
+View Notification List	Authentication & Account Management	End User	Display all system notifications with filter options (Seen/Unseen) and mark all as read
+Update Notification	Authentication & Account Management	End User	Mark individual notifications as seen or delete notifications
+View User List	User & Access Management	Admin	Display list of all users with filtering and search capabilities
+View User Detail	User & Access Management	Admin	View detailed information of a specific user including roles, department, and activity history
+Create User	User & Access Management	Admin	Create new user account with basic information and assign roles
+Update User	User & Access Management	Admin	Modify user information, roles, and department assignments
+Enable/Disable User	User & Access Management	Admin	Activate or deactivate user account without deleting data (supports bulk action)
+Search & Filter Knowledge Base	Knowledge Base Management	End User	Search and filter knowledge base articles by category, tags, or keywords
+View Knowledge Base Detail	Knowledge Base Management	End User	View full content of a knowledge base article including related articles
+Create Knowledge Base Article	Knowledge Base Management	Admin	Create new knowledge base article with title, content, category, and tags (Status: DRAFT)
+Update Knowledge Base Article	Knowledge Base Management	Admin	Modify existing knowledge base article content and metadata
+Delete Knowledge Base Article	Knowledge Base Management	Admin	Permanently delete knowledge base article if it's in DRAFT status or has no views (supports bulk delete)
+Enable/Disable Knowledge Base Article	Knowledge Base Management	Admin	Toggle article visibility between PUBLISHED and INACTIVE status (supports bulk toggle)
+Search & Filter Knowledge Articles	Knowledge Article Management	All Users	Search and filter knowledge articles created by agents with approval status
+View Knowledge Article Detail	Knowledge Article Management	All Users	View full content of knowledge article including source tickets and approval status
+Create Knowledge Article from Ticket	Knowledge Article Management	Support Agent	Create knowledge article from resolved incident or problem ticket for future reference (Status: PENDING)
+Update Knowledge Article	Knowledge Article Management	Support Agent, Admin	Modify knowledge article content before or after approval
+Delete Knowledge Article	Knowledge Article Management	Support Agent, Admin	Delete knowledge article if it's pending approval or has been rejected (supports bulk delete)
+Approve/Reject Knowledge Article	Knowledge Article Management	Admin	Review and approve or reject knowledge articles submitted by agents (supports bulk action)
+Enable/Disable Knowledge Article	Knowledge Article Management	Admin	Toggle approved article visibility between ACTIVE and INACTIVE status (supports bulk toggle)
+View Incident List	Incident Management	All Users	Display list of incidents with role-based filtering (end-users see only their tickets)
+View Incident Detail	Incident Management	All Users	View complete incident information including description, status, comments, and attachments
+Create Incident Ticket	Incident Management	End-user, Support Agent	Report new incident with title, description, impact, urgency, and category (Status: NEW)
+Update Incident Ticket	Incident Management	Support Agent, Manager	Modify incident details, add resolution notes, and update progress
+Delete Incident Ticket	Incident Management	End-user, Support Agent	Delete incident only if it's in NEW status, unassigned, and has no comments from others (supports bulk delete)
+Cancel Incident Ticket	Incident Management	End-user, Support Agent, Manager	Cancel incident ticket by changing status to CANCELLED with reason
+Assign Incident Ticket	Incident Management	Support Agent, Manager	Assign incident to specific agent or department for resolution
+Categorize Incident	Incident Management	Support Agent	Classify incident into appropriate category and set difficulty level for routing
+Link Related Incidents	Incident Management	Support Agent	Link related incidents together with parent-child or related relationships
+Update Incident Status	Incident Management	Support Agent	Change incident status through workflow stages (NEW → IN_PROGRESS → ON_HOLD → RESOLVED → CLOSED)
+Approve/Reject Incident	Incident Management	General Manager	Review and approve incidents before assignment to technical team (supports bulk approval)
+Add Comment to Incident	Incident Management	All Users	Add comments to incident for communication and progress updates
+Link Incident to Configuration Item	CMDB Integration	Support Agent	Associate incident with affected configuration item from CMDB
+View Incident Ticket Feedback	Customer Feedback Management	End-user	View feedback submitted for each ticket
+Submit Feedback	Customer Feedback Management	End-user	Rate satisfaction (1-5 stars) and provide feedback after incident is closed
+Update Feedback	Customer Feedback Management	End-user	Update feedback comment and rating
+Delete Feedback	Customer Feedback Management	End-user	Delete submitted feedback
+View Problem List	Problem Management	IT Manager, Technical Expert	Display list of problem tickets with linked incidents
+View Problem Detail	Problem Management	IT Manager, Technical Expert	View problem details including cause analysis and linked incidents
+Create Problem Ticket	Problem Management	IT Manager	Create problem ticket to investigate recurring incidents and find root cause (Status: NEW, link to multiple incidents)
+Update Problem Ticket	Problem Management	IT Manager, Technical Expert	Update problem investigation progress, cause, and solution
+Delete Problem Ticket	Problem Management	IT Manager	Delete problem ticket only if it's new, has no linked incidents, and is unassigned (supports bulk delete)
+Cancel Problem Ticket	Problem Management	IT Manager	Cancel problem investigation by changing status to CANCELLED
+Assign Problem Ticket	Problem Management	IT Manager	Assign problem to technical expert for investigation
+Add Comment to Problem	Problem Management	IT Manager, Technical Expert	Add investigation notes and findings to problem ticket
+View Known Error List	Known Error Management	Technical Expert, Support Agent	Display list of known errors with symptoms and solutions
+View Known Error Detail	Known Error Management	Technical Expert, Support Agent	View known error details including symptoms, cause, and solution
+Create Known Error	Known Error Management	Technical Expert	Document known error with symptoms, cause, and solution (Status: PENDING)
+Update Known Error	Known Error Management	Technical Expert	Update known error information and solutions
+Delete Known Error	Known Error Management	Technical Expert	Delete known error if it's pending approval or has been rejected (supports bulk delete)
+Approve/Reject Known Error	Known Error Management	Admin	Review and approve known errors before publishing to support agents (supports bulk approval)
+Enable/Disable Known Error	Known Error Management	Admin	Toggle known error visibility when it's no longer applicable (supports bulk toggle)
+Search & Filter Service Catalog	Service Catalog Management	End-user	Browse available services with search and category filtering
+View Service Detail	Service Catalog Management	End-user, Admin	View service description, requirements, and estimated delivery time
+Create Service	Service Catalog Management	Admin	Define new service offering with description, category, and estimated delivery time (Status: ACTIVE)
+Update Service	Service Catalog Management	Admin	Modify service details, requirements, and delivery estimates
+Delete Service	Service Catalog Management	Admin	Delete service only if no requests have been created for it (supports bulk delete)
+Enable/Disable Service	Service Catalog Management	Admin	Toggle service availability in catalog for end-users (supports bulk toggle)
+View Service Request List	Service Request Management	End-user, Support Agent, Manager	Display list of service requests with role-based filtering
+View Service Request Detail	Service Request Management	End-user, Support Agent, Manager	View service request details including approval status and fulfillment progress
+Create Service Request	Service Request Management	End-user	Submit new service request with justification and required information (Status: NEW)
+Update Service Request	Service Request Management	Support Agent, Manager	Update service request fulfillment progress and notes
+Delete Service Request	Service Request Management	End-user	Delete service request only if it's new and unassigned (supports bulk delete)
+Cancel Service Request	Service Request Management	End-user, Manager	Cancel service request by changing status to CANCELLED
+Assign Service Request	Service Request Management	Manager	Assign service request to agent or department for fulfillment
+Approve/Reject Service Request	Service Request Management	Manager	Review and approve or reject service requests (supports bulk action)
+Add Comment to Service Request	Service Request Management	End-user, Support Agent, Manager	Add comments for communication and status updates
+View Change Request List	Change Management	System Engineer, CAB Member, Manager	Display list of change requests with calendar view for scheduled changes
+View Change Request Detail	Change Management	System Engineer, CAB Member, Manager	View change request including implementation plan, rollback plan, and risk assessment
+Create Request for Change	Change Management	System Engineer	Submit new change request with implementation plan, rollback plan, and test plan (Status: NEW)
+Update Request for Change	Change Management	System Engineer	Modify change request details (only creator can edit)
+Delete Change Request	Change Management	System Engineer	Delete change request only if it's new and has no risk assessment (supports bulk delete)
+Cancel Change Request	Change Management	System Engineer, Manager	Cancel change request by changing status to CANCELLED
+Assign Change Request	Change Management	Manager	Assign change to system engineer or team for implementation
+Assess Change Risk	Change Management	CAB Member	Evaluate change risk level and impact, recommend schedule
+Approve/Reject Change Request	Change Management	CAB Member	CAB reviews and approves or rejects change requests (supports bulk approval)
+Add Comment to Change Request	Change Management	System Engineer, CAB Member, Manager	Add comments for discussion and decision documentation
+View Configuration Item List	Configuration Management (CMDB)	Asset Manager, System Engineer, Support Agent	Display list of configuration items with search and filtering
+View Configuration Item Detail	Configuration Management (CMDB)	Asset Manager, System Engineer, Support Agent	View CI details including specifications, location, owner, and relationships
+Create Configuration Item	Configuration Management (CMDB)	Asset Manager	Register new configuration item with technical details and ownership (Status: ACTIVE)
+Update Configuration Item	Configuration Management (CMDB)	Asset Manager	Modify CI information, status, and ownership
+Delete Configuration Item	Configuration Management (CMDB)	Asset Manager	Delete CI only if it's inactive and has no linked tickets or relationships (supports bulk delete)
+Enable/Disable Configuration Item	Configuration Management (CMDB)	Asset Manager	Toggle CI status between ACTIVE and INACTIVE (supports bulk toggle)
+View CI Relationship Map	Configuration Management (CMDB)	Asset Manager, System Engineer	Visualize CI relationships and dependencies in a map view
+View CI Type List	Configuration Management (CMDB)	Asset Manager, Admin	Display list of configuration item types with search and filtering
+View CI Type Detail	Configuration Management (CMDB)	Asset Manager, Admin	View CI type details including associated configuration items count
+Create CI Type	Configuration Management (CMDB)	Admin	Create new CI type to categorize configuration items (e.g., Server, Laptop, Router) (Status: ACTIVE)
+Update CI Type	Configuration Management (CMDB)	Admin	Modify CI type name and properties
+Delete CI Type	Configuration Management (CMDB)	Admin	Delete CI type only if no configuration items are using it (supports bulk delete)
+Enable/Disable CI Type	Configuration Management (CMDB)	Admin	Toggle CI type status to show or hide from CI creation (supports bulk toggle)
+View Executive Dashboard	Reporting & Dashboard	IT Director, Manager	View KPIs, metrics, and charts for incidents, SLA compliance, and team performance
+View Time Tracking	Time Tracking Management	Support Agent, Manager	View time logs with filtering by agent, ticket, and date range
+Log Time on Ticket	Time Tracking Management	Support Agent	Record time spent on tickets with activity type and description
+Update Time Log	Time Tracking Management	Support Agent	Modify time log entry within 24 hours if ticket is not closed
+Delete Time Log	Time Tracking Management	Support Agent	Delete time log entry within 24 hours if ticket is not closed
+View SLA Policy List	SLA Management	General Manager, Admin	Display list of SLA policies with response and resolution times
+Configure SLA Policies	SLA Management	General Manager, Admin	Define SLA policies with response and resolution time targets by priority and category
+Enable/Disable SLA Policy	SLA Management	Admin	Toggle SLA policy active status (supports bulk toggle)
+Delete SLA Policy	SLA Management	Admin	Delete SLA policy only if no tickets are using it (supports bulk delete)
+View SLA Breach Alert List	SLA Management	General Manager	Display list of tickets at risk of or already breaching SLA
+View SLA Breach Alert Detail	SLA Management	General Manager	View detailed information about SLA breach or warning
+View Workflow List	Workflow Management	Admin, Manager	Display list of custom workflows with status and usage
+View Workflow Detail	Workflow Management	Admin, Manager	View workflow design and execution history
+Create Custom Workflow	Workflow Management	Admin, Manager	Design custom workflow using visual canvas with drag-and-drop (Status: DRAFT)
+Update Workflow	Workflow Management	Admin, Manager	Modify workflow design and configuration
+Delete Workflow	Workflow Management	Admin	Delete workflow only if it's in draft status with no execution history (supports bulk delete)
+Enable/Disable Workflow	Workflow Management	Admin	Toggle workflow active status to start or stop using it (supports bulk toggle)
+View Ticket Category List	Ticket Category Management	Admin	Display hierarchical list of ticket categories
+View Ticket Category Detail	Ticket Category Management	Admin	View category details including parent category and difficulty level
+Create Ticket Category	Ticket Category Management	Admin	Create new ticket category with parent category and routing rules (Status: ACTIVE)
+Update Ticket Category	Ticket Category Management	Admin	Modify category details and routing configuration
+Delete Ticket Category	Ticket Category Management	Admin	Delete category only if no tickets use it and it has no sub-categories (supports bulk delete)
+Enable/Disable Ticket Category	Ticket Category Management	Admin	Toggle category active status to show or hide from selection (supports bulk toggle)

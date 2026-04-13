@@ -1,0 +1,465 @@
+/* ================================================================
+   ITServiceFlow — Bootstrap 5 Custom Overrides  (Light Theme)
+   ================================================================ */
+
+/* ── Variables ────────────────────────────────────────────────── */
+:root {
+    --sidebar-width: 245px;
+    --bs-body-bg: #f4f6fb;
+    --accent: #7c3aed;
+    --accent-light: #8b5cf6;
+    --sidebar-bg: #ffffff;
+    --card-bg: #ffffff;
+    --border-color: rgba(0, 0, 0, .07);
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+}
+
+/* ── Base ─────────────────────────────────────────────────────── */
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--bs-body-bg);
+    color: var(--text-primary);
+    overflow-x: hidden;
+}
+
+/* ── Sidebar ──────────────────────────────────────────────────── */
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--sidebar-bg);
+    border-right: 1px solid var(--border-color);
+    box-shadow: 2px 0 12px rgba(0, 0, 0, .05);
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 1040;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, .08) transparent;
+}
+
+.sidebar .brand-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #7c3aed, #4f46e5);
+    flex-shrink: 0;
+}
+
+/* Override sidebar brand text colors */
+.sidebar .sidebar-brand .fw-bold {
+    color: var(--text-primary) !important;
+}
+
+.sidebar .sidebar-brand .text-secondary {
+    color: var(--text-muted) !important;
+}
+
+.sidebar .sidebar-section {
+    color: var(--text-muted) !important;
+}
+
+.sidebar .nav-item {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: all .18s ease;
+    text-decoration: none;
+    margin-bottom: 2px;
+}
+
+.sidebar .nav-item:hover {
+    color: var(--accent);
+    background-color: rgba(124, 58, 237, .06) !important;
+}
+
+.sidebar .nav-item.active {
+    color: var(--accent);
+    background-color: rgba(124, 58, 237, .1) !important;
+    border-left: 3px solid var(--accent);
+    font-weight: 600;
+}
+
+.sidebar .nav-item i {
+    font-size: 15px;
+    width: 18px;
+}
+
+/* Bottom user area */
+.sidebar .border-top {
+    border-color: var(--border-color) !important;
+}
+
+.sidebar .border-bottom {
+    border-color: var(--border-color) !important;
+}
+
+/* Bottom user name */
+.sidebar .text-white {
+    color: var(--text-primary) !important;
+}
+
+.avatar-sm {
+    width: 32px;
+    height: 32px;
+}
+
+/* ── Main Content ─────────────────────────────────────────────── */
+.main-content {
+    margin-left: var(--sidebar-width);
+}
+
+/* ── Topbar ───────────────────────────────────────────────────── */
+.topbar {
+    background-color: rgba(255, 255, 255, .92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 1px 8px rgba(0, 0, 0, .05);
+    height: 62px;
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+}
+
+.topbar-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.topbar-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.topbar-sub .bc-current {
+    color: var(--accent-light);
+}
+
+/* ── Stat Cards ───────────────────────────────────────────────── */
+.stat-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, .05);
+    transition: border-color .2s, transform .2s, box-shadow .2s;
+}
+
+.stat-card:hover {
+    border-color: rgba(124, 58, 237, .3);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(124, 58, 237, .1);
+}
+
+.stat-icon-wrap {
+    width: 46px;
+    height: 46px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+/* ── Workflow Table Card ──────────────────────────────────────── */
+.workflow-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, .05);
+}
+
+/* Override Bootstrap dark table to light */
+.table-dark {
+    --bs-table-bg: transparent;
+    --bs-table-hover-bg: rgba(124, 58, 237, .04);
+    --bs-table-border-color: rgba(0, 0, 0, .06);
+    --bs-table-color: var(--text-primary);
+    --bs-table-striped-bg: rgba(0, 0, 0, .015);
+}
+
+.table-dark thead th {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background-color: #f8f9fc;
+    border-bottom: 1px solid var(--border-color);
+    padding: 12px 16px;
+}
+
+.table-dark tbody td {
+    padding: 13px 16px;
+    vertical-align: middle;
+    color: var(--text-primary);
+    border-bottom-color: rgba(0, 0, 0, .05);
+}
+
+.workflow-name-link {
+    font-weight: 600;
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: color .15s;
+}
+
+.workflow-name-link:hover {
+    color: var(--accent);
+}
+
+/* ── Status Badges ────────────────────────────────────────────── */
+.badge-status {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    letter-spacing: .3px;
+}
+
+.badge-status::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.badge-active {
+    background: rgba(16, 185, 129, .1);
+    color: #059669;
+    border: 1px solid rgba(16, 185, 129, .25);
+}
+
+.badge-active::before {
+    background: #10b981;
+}
+
+.badge-inactive {
+    background: rgba(245, 158, 11, .1);
+    color: #d97706;
+    border: 1px solid rgba(245, 158, 11, .25);
+}
+
+.badge-inactive::before {
+    background: #f59e0b;
+}
+
+.badge-draft {
+    background: rgba(59, 130, 246, .1);
+    color: #2563eb;
+    border: 1px solid rgba(59, 130, 246, .25);
+}
+
+.badge-draft::before {
+    background: #3b82f6;
+}
+
+/* ── Filter Tabs ──────────────────────────────────────────────── */
+.filter-tabs {
+    display: flex;
+    gap: 4px;
+    background: rgba(0, 0, 0, .04);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 4px;
+}
+
+.filter-tab {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all .18s;
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+}
+
+.filter-tab:hover {
+    color: var(--accent);
+    background: rgba(124, 58, 237, .07);
+}
+
+.filter-tab.active {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(124, 58, 237, .3);
+}
+
+.filter-tab .fc {
+    background: rgba(0, 0, 0, .12);
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.filter-tab.active .fc {
+    background: rgba(255, 255, 255, .25);
+}
+
+/* ── Empty State ──────────────────────────────────────────────── */
+.empty-state {
+    padding: 60px 20px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.empty-icon {
+    font-size: 52px;
+    opacity: .35;
+}
+
+/* ── Forms ────────────────────────────────────────────────────── */
+.form-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: .3px;
+}
+
+.required {
+    color: #ef4444;
+}
+
+.form-control,
+.form-select {
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+    color: var(--text-primary);
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.form-control:focus,
+.form-select:focus {
+    background-color: #ffffff;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, .2);
+    color: var(--text-primary);
+}
+
+.form-control::placeholder {
+    color: #9ca3af;
+}
+
+.form-select option {
+    background: #ffffff;
+    color: var(--text-primary);
+}
+
+/* ── Detail Page ──────────────────────────────────────────────── */
+.detail-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: .7px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.detail-value {
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.config-preview {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px;
+    font-family: 'Courier New', monospace;
+    font-size: 12.5px;
+    color: #4f46e5;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* ── Action Buttons ───────────────────────────────────────────── */
+.btn-action {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    border: none;
+    font-size: 14px;
+    transition: all .18s;
+}
+
+.btn-action:hover {
+    transform: scale(1.1);
+}
+
+/* ── Bootstrap overrides for light mode ───────────────────────── */
+
+/* Cards */
+.card {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+/* Modal */
+.modal-content {
+    background-color: #ffffff;
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.modal-header {
+    border-bottom-color: var(--border-color);
+}
+
+.modal-footer {
+    border-top-color: var(--border-color);
+}
+
+/* Dropdown */
+.dropdown-menu {
+    background-color: #ffffff;
+    border-color: var(--border-color);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, .1);
+}
+
+.dropdown-item {
+    color: var(--text-primary);
+}
+
+.dropdown-item:hover {
+    background-color: rgba(124, 58, 237, .07);
+    color: var(--accent);
+}
+
+/* Alert overrides */
+.alert {
+    border-radius: 10px;
+}
+
+/* ── Responsive ───────────────────────────────────────────────── */
+@media (max-width: 992px) {
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform .3s;
+    }
+
+    .sidebar.show {
+        transform: translateX(0);
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+}

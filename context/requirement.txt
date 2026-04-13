@@ -1,0 +1,80 @@
+SOFTWARE REQUIREMENT DOCUMENT (SRD)
+Project: ITServiceFlow - ITIL-Compliant ITSM Platform
+________________________________________
+1. INTRODUCTION
+ITServiceFlow is an IT Service Management (ITSM) platform designed based on the ITIL (Information Technology Infrastructure Library) framework. The system helps organizations manage the entire lifecycle of IT services—from incident intake and request fulfillment to managing infrastructure changes—ensuring service continuity and quality.
+2. BACKGROUND
+IT departments often face chaos when receiving requests via fragmented channels like email or chat without standardized classification or prioritization. This leads to missed critical incidents, breached deadlines, and a lack of data for system improvement.
+The Solution: A centralized ticket management system that applies standardized ITIL processes. This ensures transparency in accountability, measures KPIs (SLAs), and builds a Knowledge Base to resolve issues faster.
+________________________________________
+3. USER STORIES (20 CORE FEATURES)
+A. Incident Management
+•	US01: As an End-user, I want to create an Incident Ticket with Impact and Urgency levels to report a service disruption.
+Incident Ticket  ai cx thấy đc, ai cx tạo đc
+Nhỡ người dùng nhập sai thông tin thì sao  phải có ai đấy review và sửa lại xem có đúng ko, nếu ko đúng thì yêu cầu End user nhập/sửa lại
+
+•	US02: As a Support Agent, I want to categorize incidents so the system can automatically route the ticket to the correct technical department
+.  gặp vấn đề mà ko xử lý được thì sẽ trở thành End-user
+	categorize incidents: 
+-	Chia độ khó thành level 1 2 3
+-	Chia theo lĩnh vực
+•	US03: As an Agent, I want to link similar incidents into a Parent-Child relationship to manage major incidents effectively.
+	Lỗi cài đặt phần mềm giống nhau  group vào, xử lý được 1 cha thì con đc xử lý theo
+•	US04: As a Manager, I want to set Service Level Agreements (SLAs) to track maximum response and resolution times for different incident types.
+Đặt ra giới hạn thời gian (SLA)
+•	Bao lâu phải phản hồi
+•	Bao lâu phải xử lý xong
+Cty có mấy chục nghìn người thì sao đọc hết được
+
+•	US05: As an Agent, I want to update Ticket Statuses (New, In Progress, On Hold, Resolved) so users can track real-time progress.
+B. Service Request Management
+•	US06: As an End-user, I want to access a Service Catalog to request standard services (e.g., new laptop, software installation).
+	Cho chọn từ catalog, ghi lý do tại sao cần
+•	US07: As a Manager, I want to review and approve requests (Approval Workflow) within the system before they are assigned to technical teams.
+Nhiều quá thì làm gì, dựa trên tiêu chí gì để chấp nhận/từ chối, thông số của đồ cần order
+
+C. Problem Management
+•	US08: As an IT Manager, I want to create a Problem Ticket from multiple Incidents to perform Root Cause Analysis (RCA) on recurring issues.
+	Root ticket
+•	US09: As a Technical Expert, I want to store Known Errors in the system to provide workarounds for support agents.
+ lưu lỗi, chỉ support agent được xem
+D. Change Management
+•	US10: As a System Engineer, I want to submit a Request for Change (RFC) to seek permission for adjustments to the IT infrastructure.
+•	US11: As a Change Advisory Board (CAB) member, I want to assess risks and schedules to prevent system conflicts or outages.
+E. Configuration Management Database (CMDB)
+•	US12: As an Agent, I want to link Tickets to Configuration Items (CIs/Assets) to identify exactly which device or software is experiencing an issue.
+	Máy A lỗi  máy A ở phòng nào (link đến cơ sở vật chất) -> đến phòng đấy xử lý
+•	US13: As an Asset Manager, I want to view CI Relationship Maps to assess the potential impact when a specific component fails.
+=> phòng nào bị ảnh hưởng (server sập -> phòng A B C bị ảnh hưởng)
+F. Knowledge Management & Self-Service
+•	US14: As an End-user, I want to search the Knowledge Base to troubleshoot simple issues on my own before creating a ticket.
+	Trang thông tin hướng dẫn để ng dùng tự xử lý
+	Admin tạo Knowledge base
+•	US15: As an Agent, I want to convert ticket resolutions into Knowledge Articles to enrich the documentation repository.
+=> Mọi người đều có thể tìm và xem
+G. Analytics & System Administration
+•	US16: As a Manager, I want to receive SLA Breach Alerts so I can intervene and expedite delayed tickets.
+	Sau khi tạo ticket, dựa trên impact, urgency => dễ 7 ngày, gấp 1 ngày
+	Agent giữ ticket lâu hơn thời gian quy định
+•	US17: As an IT Director, I want to view Dashboard Reports on resolution rates and individual agent performance per month.
+	resolution rates mỗi agent xử lý/tháng
+•	US18: As an Agent, I want to log time spent (Time Tracking) on each ticket to calculate the actual effort for reporting.
+•	US19: As an Admin, I want to customize Workflows (Workflow Designer) for different request types without needing to write code.
+	Mua máy tính: gửi đến Manager => kế toán => 
+•	US20: As an End-user, I want to submit Customer Satisfaction (CSAT) surveys after a ticket is closed to provide feedback on support quality.
+	End user được repopen 
+
+Đăng nhập => không cho đăng ký, được cấp tài khoản
+Reset mật khẩu 
+Forgot password => gửi mail
+________________________________________
+4. NON-FUNCTIONAL REQUIREMENTS
+•	Compliance: The system must comply with data security principles and maintain a detailed Audit Log for every change made.
+•	Integration: Capability to integrate with Active Directory/LDAP for seamless employee data synchronization.
+•	Availability: The platform must be highly available (99.9% uptime) as it is a critical business support tool.
+________________________________________
+5. GLOSSARY
+•	Incident: An unplanned interruption to an IT service or reduction in the quality of an IT service.
+•	SLA (Service Level Agreement): A documented agreement between a service provider and a customer that identifies both services required and the expected level of service.
+•	CI (Configuration Item): Any component that needs to be managed in order to deliver an IT service (Hardware, Software, Documentation).
+•	RFC (Request for Change): A formal proposal for an alteration to some product or system.

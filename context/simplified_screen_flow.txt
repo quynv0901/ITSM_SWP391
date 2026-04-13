@@ -1,0 +1,555 @@
+================================================================================
+SIMPLIFIED SCREEN FLOW DIAGRAM - ITServiceFlow ITSM Platform
+Flat Structure - No Role-Based Dashboards
+================================================================================
+
+```mermaid
+graph LR
+    %% ============================================================================
+    %% AUTHENTICATION
+    %% ============================================================================
+    
+    Start([User Access]) --> Login[Login]
+    
+    Login --> ForgotPwd[Forgot Password]
+    ForgotPwd --> ResetPwd[Reset Password]
+    
+    Login --> Profile[My Profile]
+    Profile --> ResetPwd
+    
+    Login --> NotificationList[Notification List]
+    
+    %% ============================================================================
+    %% KNOWLEDGE BASE (Admin-managed)
+    %% ============================================================================
+    
+    Login --> KnowledgeBaseList[Knowledge Base List]
+    
+    KnowledgeBaseList --> KnowledgeBaseDetail[Knowledge Base Detail]
+    KnowledgeBaseList --> CreateKnowledgeBase[Create Knowledge Base]
+    KnowledgeBaseList --> UpdateKnowledgeBase[Update Knowledge Base]
+    
+    %% ============================================================================
+    %% KNOWLEDGE ARTICLE (Agent-created, Admin-approved)
+    %% ============================================================================
+    
+    Login --> KnowledgeArticleList[Knowledge Article List]
+    
+    KnowledgeArticleList --> KnowledgeArticleDetail[Knowledge Article Detail]
+    KnowledgeArticleList --> CreateKnowledgeArticle[Create Knowledge Article]
+    KnowledgeArticleList --> UpdateKnowledgeArticle[Update Knowledge Article]
+    
+    %% ============================================================================
+    %% INCIDENT MANAGEMENT
+    %% ============================================================================
+    
+    Login --> IncidentList[Incident Ticket List]
+    
+    IncidentList --> IncidentDetail[Incident Ticket Detail]
+    IncidentList --> CreateIncident[Create Incident Ticket]
+    IncidentList --> UpdateIncident[Update Incident Ticket]
+    
+    %% ============================================================================
+    %% PROBLEM MANAGEMENT
+    %% ============================================================================
+    
+    Login --> ProblemList[Problem Ticket List]
+    Login --> KnownErrorList[Known Error List]
+    
+    ProblemList --> ProblemDetail[Problem Ticket Detail]
+    ProblemList --> CreateProblem[Create Problem Ticket]
+    ProblemList --> UpdateProblem[Update Problem Ticket]
+    
+    ProblemDetail --> IncidentDetail
+    
+    KnownErrorList --> KnownErrorDetail[Known Error Detail]
+    KnownErrorList --> CreateKnownError[Create Known Error]
+    KnownErrorList --> UpdateKnownError[Update Known Error]
+    
+    %% ============================================================================
+    %% SERVICE REQUEST MANAGEMENT
+    %% ============================================================================
+    
+    Login --> ServiceList[Service List]
+    Login --> ServiceRequestList[Service Request List]
+    
+    ServiceList --> ServiceDetail[Service Detail]
+    ServiceList --> CreateService[Create Service]
+    ServiceList --> UpdateService[Update Service]
+    
+    ServiceList --> CreateServiceRequest[Create Service Request]
+    ServiceRequestList --> ServiceRequestDetail[Service Request Detail]
+    ServiceRequestList --> UpdateServiceRequest[Update Service Request]
+    
+    %% ============================================================================
+    %% CHANGE MANAGEMENT
+    %% ============================================================================
+    
+    Login --> ChangeRequestList[Change Request List]
+    
+    ChangeRequestList --> ChangeDetail[Change Request Detail]
+    ChangeRequestList --> CreateChange[Create Request for Change]
+    ChangeRequestList --> UpdateChange[Update Request for Change]
+    
+    %% ============================================================================
+    %% ASSET & CONFIGURATION MANAGEMENT
+    %% ============================================================================
+    
+    Login --> CIList[Configuration Item List]
+    Login --> CIRelationshipList[Configuration Item Relationship List]
+    
+    CIList --> CIDetail[Configuration Item Detail]
+    CIList --> CreateCI[Create Configuration Item]
+    CIList --> UpdateCI[Update Configuration Item]
+    
+    CIDetail --> ViewRelationships[View Relationships]
+    
+    CIRelationshipList --> CIDetail
+    
+    %% ============================================================================
+    %% REPORTING & ANALYTICS
+    %% ============================================================================
+    
+    Login --> ExecutiveDashboard[Executive Dashboard]
+    
+    %% ============================================================================
+    %% TIME TRACKING
+    %% ============================================================================
+    
+    Login --> TimeTracking[Time Tracking]
+    TimeTracking --> LogTime[Log Time]
+    
+    %% ============================================================================
+    %% SYSTEM ADMINISTRATION
+    %% ============================================================================
+    
+    Login --> UserList[User List]
+    Login --> AccountList[Account List]
+    Login --> WorkflowList[Workflow List]
+    Login --> TicketCategoryList[Ticket Category List]
+    Login --> EmailTemplateList[Email Template List]
+    Login --> SLAConfig[SLA Configuration]
+    
+    %% User Management
+    UserList --> UserDetail[User Detail]
+    UserList --> CreateUser[Create User]
+    UserList --> UpdateUser[Update User]
+    
+    %% Account Management
+    AccountList --> AccountDetail[Account Detail]
+    AccountList --> CreateAccount[Create Account]
+    AccountList --> UpdateAccount[Update Account]
+    
+    %% Workflow Management
+    WorkflowList --> WorkflowDetail[Workflow Detail]
+    WorkflowList --> CreateWorkflow[Create Workflow]
+    WorkflowList --> UpdateWorkflow[Update Workflow]
+    
+    %% Ticket Category Management
+    TicketCategoryList --> TicketCategoryDetail[Ticket Category Detail]
+    TicketCategoryList --> CreateTicketCategory[Create Ticket Category]
+    TicketCategoryList --> UpdateTicketCategory[Update Ticket Category]
+    
+    %% Email Template Management
+    EmailTemplateList --> EmailTemplateDetail[Email Template Detail]
+    EmailTemplateList --> CreateEmailTemplate[Create Email Template]
+    EmailTemplateList --> UpdateEmailTemplate[Update Email Template]
+    
+    %% SLA Configuration
+    SLAConfig --> SLABreach[SLA Breach Alert List]
+    
+    %% ============================================================================
+    %% STYLING
+    %% ============================================================================
+    
+    classDef authStyle fill:#ef4444,stroke:#dc2626,stroke-width:3px,color:#fff
+    classDef commonStyle fill:#10b981,stroke:#059669,stroke-width:2px,color:#fff
+    classDef listStyle fill:#8b5cf6,stroke:#7c3aed,stroke-width:2px,color:#fff
+    classDef detailStyle fill:#06b6d4,stroke:#0891b2,stroke-width:2px,color:#fff
+    classDef actionStyle fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#fff
+    
+    class Start,Login,ForgotPwd,ResetPwd authStyle
+    class Profile,NotificationList commonStyle
+    class IncidentList,ServiceRequestList,ServiceList,KnowledgeArticleList,KnowledgeBaseList,ProblemList,ChangeRequestList,CIList,CIRelationshipList,UserList,AccountList,WorkflowList,TicketCategoryList,EmailTemplateList,KnownErrorList listStyle
+    class IncidentDetail,ServiceRequestDetail,ServiceDetail,KnowledgeArticleDetail,KnowledgeBaseDetail,ProblemDetail,ChangeDetail,CIDetail,UserDetail,AccountDetail,WorkflowDetail,TicketCategoryDetail,EmailTemplateDetail,KnownErrorDetail detailStyle
+```
+
+================================================================================
+SCREEN DESCRIPTIONS - Who Uses What and Why
+================================================================================
+
+AUTHENTICATION (4 screens)
+---------------------------
+1. Login
+   - WHO: All users
+   - PURPOSE: Authenticate and access the system
+
+2. Forgot Password
+   - WHO: All users
+   - PURPOSE: Request password reset via email
+
+3. Reset Password
+   - WHO: All users
+   - PURPOSE: Set new password (accessible from Forgot Password or My Profile)
+
+4. My Profile
+   - WHO: All users
+   - PURPOSE: View and update personal information, change password
+
+5. Notification List
+   - WHO: All users
+   - PURPOSE: View all system notifications and alerts
+
+
+KNOWLEDGE BASE MANAGEMENT (4 screens)
+--------------------------------------
+NOTE: Knowledge Base articles are created by Administrators
+
+6. Knowledge Base List
+   - WHO: All users (view), Administrators (manage)
+   - PURPOSE: Browse official knowledge base articles created by admins
+
+7. Knowledge Base Detail
+   - WHO: All users
+   - PURPOSE: Read detailed knowledge base content and solutions
+
+8. Create Knowledge Base
+   - WHO: Administrators
+   - PURPOSE: Create official knowledge base articles
+
+9. Update Knowledge Base
+   - WHO: Administrators
+   - PURPOSE: Edit official knowledge base articles
+
+
+KNOWLEDGE ARTICLE MANAGEMENT (4 screens)
+-----------------------------------------
+NOTE: Knowledge Articles are created by Support Agents and approved by Administrators
+
+10. Knowledge Article List
+    - WHO: All users (view), Support agents (create), Administrators (approve)
+    - PURPOSE: Browse knowledge articles created by support agents
+
+11. Knowledge Article Detail
+    - WHO: All users
+    - PURPOSE: Read detailed knowledge article content
+
+12. Create Knowledge Article
+    - WHO: Support agents, Technical experts
+    - PURPOSE: Document solutions for common issues (requires admin approval)
+
+13. Update Knowledge Article
+    - WHO: Support agents, Technical experts, Administrators
+    - PURPOSE: Edit and improve existing knowledge articles
+
+
+INCIDENT MANAGEMENT (4 screens)
+--------------------------------
+14. Incident Ticket List
+    - WHO: End-users, Support agents, Managers
+    - PURPOSE: View and manage incident tickets (filtered by role and permissions)
+
+15. Incident Ticket Detail
+    - WHO: End-users, Support agents, Managers
+    - PURPOSE: View ticket details, add comments, track progress, and resolve tickets
+
+16. Create Incident Ticket
+    - WHO: End-users, Support agents
+    - PURPOSE: Report IT issues and problems
+
+17. Update Incident Ticket
+    - WHO: Support agents, Managers
+    - PURPOSE: Modify ticket information, status, and assignments
+
+
+PROBLEM MANAGEMENT (6 screens)
+-------------------------------
+18. Problem Ticket List
+    - WHO: Technical experts, Managers
+    - PURPOSE: View and manage problem tickets requiring investigation
+
+19. Problem Ticket Detail
+    - WHO: Technical experts
+    - PURPOSE: Work on problem tickets, link related incidents, and navigate to incident details
+    - NOTE: Root cause analysis is done manually by users (not system-supported)
+
+20. Create Problem Ticket
+    - WHO: Technical experts
+    - PURPOSE: Create problem records for recurring incidents
+
+21. Update Problem Ticket
+    - WHO: Technical experts
+    - PURPOSE: Update problem investigation progress
+
+22. Known Error List
+    - WHO: Technical experts, Support agents
+    - PURPOSE: View and manage known errors database
+
+23. Known Error Detail
+    - WHO: Technical experts, Support agents
+    - PURPOSE: View known error symptoms and workarounds
+
+24. Create Known Error
+    - WHO: Technical experts
+    - PURPOSE: Document new known errors
+
+25. Update Known Error
+    - WHO: Technical experts
+    - PURPOSE: Update known error information and solutions
+
+
+SERVICE REQUEST MANAGEMENT (8 screens)
+---------------------------------------
+NOTE: Approval workflow handled within Service Request Detail
+
+26. Service List
+    - WHO: End-users (view), Administrators (manage)
+    - PURPOSE: Browse available IT services (formerly Service Catalog)
+
+27. Service Detail
+    - WHO: End-users (view), Administrators (manage)
+    - PURPOSE: View detailed service information and SLA
+
+28. Create Service
+    - WHO: Administrators
+    - PURPOSE: Add new IT services to the catalog
+
+29. Update Service
+    - WHO: Administrators
+    - PURPOSE: Modify service information and availability
+
+30. Service Request List
+    - WHO: End-users, Support agents, Managers
+    - PURPOSE: View and manage service requests
+
+31. Service Request Detail
+    - WHO: End-users, Support agents, Managers
+    - PURPOSE: View request details, approve/reject requests, and track fulfillment
+
+32. Create Service Request
+    - WHO: End-users
+    - PURPOSE: Request IT services (hardware, software, access, etc.)
+
+33. Update Service Request
+    - WHO: Support agents, Managers
+    - PURPOSE: Process and update service requests
+
+
+CHANGE MANAGEMENT (4 screens)
+------------------------------
+NOTE: Approval workflow handled within Change Request Detail
+
+34. Change Request List
+    - WHO: System engineers, CAB members, Managers
+    - PURPOSE: View and manage change requests (includes calendar view for scheduling)
+
+35. Change Request Detail
+    - WHO: System engineers, CAB members
+    - PURPOSE: View change details, approve/reject changes, and track implementation
+
+36. Create Request for Change
+    - WHO: System engineers
+    - PURPOSE: Submit new change requests with implementation plans
+
+37. Update Request for Change
+    - WHO: System engineers
+    - PURPOSE: Update change request details and implementation progress
+
+
+ASSET & CONFIGURATION MANAGEMENT (6 screens)
+---------------------------------------------
+38. Configuration Item List
+    - WHO: Asset managers, System engineers
+    - PURPOSE: Browse all configuration items in CMDB
+
+39. Configuration Item Detail
+    - WHO: Asset managers, System engineers
+    - PURPOSE: View detailed information about infrastructure components
+
+40. Create Configuration Item
+    - WHO: Asset managers
+    - PURPOSE: Add new infrastructure components to CMDB
+
+41. Update Configuration Item
+    - WHO: Asset managers
+    - PURPOSE: Update configuration item information
+
+42. View Relationships
+    - WHO: Asset managers, System engineers
+    - PURPOSE: See how configuration items are connected
+
+43. Configuration Item Relationship List
+    - WHO: Asset managers, System engineers
+    - PURPOSE: Browse and manage relationships between configuration items
+
+
+REPORTING & ANALYTICS (1 screen)
+---------------------------------
+44. Executive Dashboard
+    - WHO: IT directors, Managers
+    - PURPOSE: Strategic metrics, KPIs, and high-level overview for leadership
+
+
+TIME TRACKING (2 screens)
+--------------------------
+45. Time Tracking
+    - WHO: Support agents, Managers
+    - PURPOSE: View time logs with filters by person, ticket, date range, and activity type
+    - NOTE: Can filter by team member to see individual performance metrics
+
+46. Log Time
+    - WHO: Support agents
+    - PURPOSE: Log time spent on work - select ticket from dropdown and enter duration
+    - NOTE: This is a form screen where agents can select any ticket and log time spent
+
+
+SYSTEM ADMINISTRATION (18 screens)
+-----------------------------------
+
+USER MANAGEMENT (4 screens)
+47. User List
+    - WHO: System administrators
+    - PURPOSE: View and manage all system users (assign to teams inline)
+
+48. User Detail
+    - WHO: System administrators
+    - PURPOSE: View detailed user information
+
+49. Create User
+    - WHO: System administrators
+    - PURPOSE: Add new users to the system
+
+50. Update User
+    - WHO: System administrators
+    - PURPOSE: Update user information and settings
+
+ACCOUNT MANAGEMENT (4 screens)
+51. Account List
+    - WHO: System administrators
+    - PURPOSE: View all user accounts and roles
+
+52. Account Detail
+    - WHO: System administrators
+    - PURPOSE: View detailed account information and permissions
+
+53. Create Account
+    - WHO: System administrators
+    - PURPOSE: Create new user accounts with roles
+
+54. Update Account
+    - WHO: System administrators
+    - PURPOSE: Modify account settings, roles, and permissions
+
+WORKFLOW MANAGEMENT (4 screens)
+55. Workflow List
+    - WHO: System administrators, Managers
+    - PURPOSE: View and manage all automated workflows
+
+56. Workflow Detail
+    - WHO: System administrators, Managers
+    - PURPOSE: View workflow configuration and execution history
+
+57. Create Workflow
+    - WHO: System administrators, Managers
+    - PURPOSE: Design new automation workflows with visual canvas
+
+58. Update Workflow
+    - WHO: System administrators, Managers
+    - PURPOSE: Modify existing workflows with visual canvas
+
+TICKET CATEGORY MANAGEMENT (4 screens)
+59. Ticket Category List
+    - WHO: System administrators
+    - PURPOSE: View and manage all ticket categories
+
+60. Ticket Category Detail
+    - WHO: System administrators
+    - PURPOSE: View category hierarchy and details
+
+61. Create Ticket Category
+    - WHO: System administrators
+    - PURPOSE: Add new ticket categories
+
+62. Update Ticket Category
+    - WHO: System administrators
+    - PURPOSE: Modify category hierarchy
+
+EMAIL TEMPLATE MANAGEMENT (4 screens)
+63. Email Template List
+    - WHO: System administrators
+    - PURPOSE: View and manage all email templates
+
+64. Email Template Detail
+    - WHO: System administrators
+    - PURPOSE: View template content and variables
+
+65. Create Email Template
+    - WHO: System administrators
+    - PURPOSE: Design new email templates
+
+66. Update Email Template
+    - WHO: System administrators
+    - PURPOSE: Modify email template content and variables
+
+SLA CONFIGURATION (2 screens)
+67. SLA Configuration
+    - WHO: System administrators, Managers
+    - PURPOSE: Define and manage SLA policies
+
+68. SLA Breach Alert List
+    - WHO: Managers
+    - PURPOSE: Monitor tickets at risk of SLA violations
+
+
+================================================================================
+SCREEN INVENTORY SUMMARY
+================================================================================
+
+TOTAL SCREENS: 68 screens
+
+BREAKDOWN BY FUNCTIONAL AREA:
+------------------------------
+- Authentication: 5 screens
+- Knowledge Base Management: 4 screens (Admin-created)
+- Knowledge Article Management: 4 screens (Agent-created, Admin-approved)
+- Incident Management: 4 screens
+- Problem Management: 6 screens
+- Service Request Management: 8 screens
+- Change Management: 4 screens
+- Asset & Configuration Management: 6 screens
+- Reporting & Analytics: 1 screen
+- Time Tracking: 2 screens
+- System Administration: 18 screens
+  - User Management: 4 screens
+  - Account Management: 4 screens
+  - Workflow Management: 4 screens
+  - Ticket Category Management: 4 screens
+  - Email Template Management: 4 screens
+  - SLA Configuration: 2 screens
+
+CHANGES IN THIS VERSION:
+-------------------------
+✓ My Profile now links to Reset Password
+✓ Problem Management moved below Incident Management (logical grouping)
+✓ Removed "Perform Root Cause Analysis" (users do this manually)
+✓ Service Catalog renamed to "Service List"
+✓ Added "Service Detail" screen
+✓ Added "Create Service" and "Update Service" (admin functions)
+✓ Service Request List now connects to Service List
+✓ Removed "CMDB Overview" screen
+✓ Renamed "Configuration Item Relationship Map" to "Configuration Item Relationship List"
+✓ Configuration Item Relationship List now links to Configuration Item Detail
+✓ Increased from 67 screens to 68 screens (added Service Detail, Create/Update Service)
+
+KEY DESIGN DECISIONS:
+---------------------
+- Password reset accessible from both Forgot Password and My Profile
+- Problem Management positioned under Incident Management (related workflows)
+- Root cause analysis is manual (no system support)
+- Service catalog is now a manageable list (admin can create/update services)
+- CMDB simplified (removed overview, direct access to CI List)
+- CI Relationship List provides navigation to CI Detail
+
+================================================================================
+END OF SIMPLIFIED SCREEN FLOW DIAGRAM
+================================================================================
