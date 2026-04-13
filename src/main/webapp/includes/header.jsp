@@ -163,6 +163,10 @@
                            class="menu-item ${pageContext.request.requestURI.endsWith('/admin/users.jsp') ? 'active' : ''}">
                             <i class="bi bi-person-gear"></i> Quản lý người dùng
                         </a>
+                        <a href="${pageContext.request.contextPath}/admin/knowledge-base"
+                               class="menu-item ${pageContext.request.requestURI.endsWith('/admin/knowledge-base.jsp') ? 'active' : ''}">
+                                <i class="bi bi-journal-text"></i> Knowledge Base
+                            </a>
                         <c:if test="${sessionScope.user != null && sessionScope.user.roleId == 10}">
                             <li class="menu-header">Hệ thống</li>
                             <a href="${pageContext.request.contextPath}/admin/users"
