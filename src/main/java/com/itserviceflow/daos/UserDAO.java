@@ -229,50 +229,6 @@ public class UserDAO {
         }
     }
 
-    public User findByEmail(String email) {
-        String sql = "SELECT * FROM `user` WHERE email = ?";
-        try (PreparedStatement st = conn.prepareStatement(sql)) {
-            st.setString(1, email);
-            try (ResultSet rs = st.executeQuery()) {
-                if (rs.next()) {
-                    return mapUser(rs);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public User findByResetToken(String token) {
-        String sql = "SELECT * FROM `user` WHERE reset_token = ? AND reset_token_expires > ? AND reset_token_used = 0";
-        try (PreparedStatement st = conn.prepareStatement(sql)) {
-            st.setString(1, token);
-            st.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
-            try (ResultSet rs = st.executeQuery()) {
-                if (rs.next()) {
-                    return mapUser(rs);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public boolean updateResetToken(String email, String token, LocalDateTime expiry) {
-        String sql = "UPDATE `user` SET reset_token = ?, reset_token_expires = ?, reset_token_used = 0 WHERE email = ?";
-        try (PreparedStatement st = conn.prepareStatement(sql)) {
-            st.setString(1, token);
-            st.setTimestamp(2, Timestamp.valueOf(expiry));
-            st.setString(3, email);
-            return st.executeUpdate() > 0;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
     public boolean updatePassword(int userId, String newPassword) {
         String sql = "UPDATE `user` SET password_hash = ?, reset_token_used = 1 WHERE user_id = ?";
         try (PreparedStatement st = conn.prepareStatement(sql)) {
