@@ -193,16 +193,29 @@ public class KnowledgeBaseDAO {
     }
 
     public boolean deleteArticle(int id) {
-        System.out.println(">>> deleteArticle called with id = " + id); // ← thêm dòng này
-        String sql = "DELETE FROM article WHERE article_id = ?";
+    System.out.println(">>> deleteArticle called with id = " + id); // ← thêm dòng này
+    String sql = "DELETE FROM article WHERE article_id = ?";
+    try (PreparedStatement st = conn.prepareStatement(sql)) {
+        st.setInt(1, id);
+        int rows = st.executeUpdate();
+        System.out.println(">>> rows affected = " + rows); // ← thêm dòng này
+        return rows > 0;
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return false;
+}
+
+    public boolean toggleStatus(int id, String newStatus) {
+        String sql = "UPDATE article SET status=?, updated_at=NOW() WHERE article_id=?";
         try (PreparedStatement st = conn.prepareStatement(sql)) {
-            st.setInt(1, id);
-            int rows = st.executeUpdate();
-            System.out.println(">>> rows affected = " + rows); // ← thêm dòng này
-            return rows > 0;
+            st.setString(1, newStatus);
+            st.setInt(2, id);
+            return st.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
         }
         return false;
     }
+
 }

@@ -24,6 +24,21 @@ public class KnowledgeBaseController extends HttpServlet {
             case "list":
                 listArticles(req, resp);
                 break;
+            case "add":
+                addView(req, resp);
+                break;
+            case "edit":
+                editView(req, resp);
+                break;
+            case "detail":
+                detailView(req, resp);
+                break;
+            case "delete":
+                deleteArticle(req, resp);
+                break;
+            case "toggle":
+                toggleStatus(req, resp);
+                break;
             default:
                 resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base");
         }
@@ -36,6 +51,12 @@ public class KnowledgeBaseController extends HttpServlet {
         action = (action == null) ? "list" : action;
 
         switch (action) {
+            case "add":
+                addArticle(req, resp);
+                break;
+            case "edit":
+                updateArticle(req, resp);
+                break;
             default:
                 resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base");
         }
@@ -70,7 +91,7 @@ public class KnowledgeBaseController extends HttpServlet {
     private void addView(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         req.setAttribute("article", new Article());
-        req.getRequestDispatcher("/knowledge/knowledge-base."
+        req.getRequestDispatcher("/knowledge/knowledge-base"
                 + "-form.jsp").forward(req, resp);
     }
 
@@ -91,6 +112,23 @@ public class KnowledgeBaseController extends HttpServlet {
         req.getRequestDispatcher("/knowledge/knowledge-base-form.jsp").forward(req, resp);
     }
 
+    private void detailView(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        String idStr = req.getParameter("id");
+        if (idStr == null || idStr.isEmpty()) {
+            resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base");
+            return;
+        }
+        Article article = kbDAO.findById(Integer.parseInt(idStr));
+        if (article == null) {
+            resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?error=Article not found");
+            return;
+        }
+        req.setAttribute("article", article);
+        req.getRequestDispatcher("/admin/knowledge-base-detail-admin.jsp").forward(req, resp);
+    }
+
+    // ===================== ACTION HANDLERS =====================
     private void addArticle(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         try {
@@ -136,17 +174,30 @@ public class KnowledgeBaseController extends HttpServlet {
     }
 
     private void deleteArticle(HttpServletRequest req, HttpServletResponse resp)
+        throws IOException {
+    String idStr = req.getParameter("id");
+    System.out.println(">>> deleteArticle controller idStr = " + idStr); // ← thêm dòng này
+    if (idStr == null || idStr.isEmpty()) {
+        resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base");
+        return;
+    }
+    kbDAO.deleteArticle(Integer.parseInt(idStr));
+    resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message=Article deleted successfully");
+}
+
+    private void toggleStatus(HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
         String idStr = req.getParameter("id");
-        System.out.println(">>> deleteArticle controller idStr = " + idStr); // ← thêm dòng này
+        String newStatus = req.getParameter("status");
         if (idStr == null || idStr.isEmpty()) {
             resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base");
             return;
         }
-        kbDAO.deleteArticle(Integer.parseInt(idStr));
-        resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message=Article deleted successfully");
+        kbDAO.toggleStatus(Integer.parseInt(idStr), newStatus);
+        resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message=Status updated");
     }
 
+    // ===================== HELPER =====================
     private Article buildArticleFromRequest(HttpServletRequest req) {
         Article a = new Article();
         a.setTitle(req.getParameter("title"));
