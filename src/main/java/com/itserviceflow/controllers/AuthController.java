@@ -121,11 +121,7 @@ public class AuthController extends HttpServlet {
                 session.setAttribute("user", user);
                 session.setAttribute("dalogin", user);
 
-                if (user.getRoleId() != null && user.getRoleId() == 10) {
-                    response.sendRedirect(request.getContextPath() + "/dashboard");
-                } else {
-                    response.sendRedirect(request.getContextPath() + "/home");
-                }
+                response.sendRedirect(request.getContextPath() + "/home");
             } else {
                 request.setAttribute("error", "Tên đăng nhập hoặc mật khẩu không đúng!");
                 request.getRequestDispatcher("/auth/login.jsp").forward(request, response);
