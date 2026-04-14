@@ -1,158 +1,142 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
     <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
         <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
             <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
                 <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+                    body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; }
+                    h4 { font-family: 'Outfit', sans-serif; }
+
                     .detail-card {
-                        background: #fff;
-                        border: 1px solid #dde3ec;
-                        border-radius: 10px;
-                        padding: 28px 30px;
-                        box-shadow: 0 2px 10px rgba(0, 0, 0, .06);
-                        margin-bottom: 22px;
+                        background: #ffffff;
+                        border: 1px solid #e2e8f0;
+                        border-radius: 16px;
+                        padding: 32px 36px;
+                        box-shadow: 0 4px 15px rgba(0, 0, 0, .03);
+                        margin-bottom: 24px;
                     }
 
                     .detail-section-title {
-                        font-size: 13px;
+                        font-family: 'Outfit', sans-serif;
+                        font-size: 15px;
                         font-weight: 700;
                         text-transform: uppercase;
-                        letter-spacing: .5px;
-                        color: #5a6a85;
-                        margin-bottom: 18px;
-                        padding-bottom: 10px;
-                        border-bottom: 1px solid #edf2f7;
+                        letter-spacing: 0.8px;
+                        color: #2b6cb0;
+                        margin-bottom: 24px;
+                        padding-bottom: 12px;
+                        border-bottom: 2px solid #ebf8ff;
                         display: flex;
                         align-items: center;
-                        gap: 8px;
+                        gap: 10px;
                     }
 
                     .detail-grid {
                         display: grid;
                         grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-                        gap: 20px;
+                        gap: 24px;
                     }
 
                     .detail-field {
                         display: flex;
                         flex-direction: column;
-                        gap: 4px;
+                        gap: 6px;
                     }
 
                     .detail-field .field-label {
-                        font-size: 11px;
-                        font-weight: 700;
+                        font-size: 12px;
+                        font-weight: 600;
                         text-transform: uppercase;
                         letter-spacing: .5px;
-                        color: #a0aec0;
+                        color: #718096;
                     }
 
                     .detail-field .field-value {
-                        font-size: 14px;
+                        font-size: 14.5px;
                         color: #2d3748;
                         font-weight: 500;
                     }
 
                     .badge-type {
-                        display: inline-block;
-                        padding: 4px 11px;
-                        border-radius: 6px;
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 6px;
+                        padding: 4px 10px;
+                        border-radius: 8px;
                         font-size: 12px;
-                        font-weight: 700;
+                        font-weight: 600;
+                        letter-spacing: 0.3px;
                     }
 
-                    .bt-incident {
-                        background: #fef9e7;
-                        color: #b7770d;
-                        border: 1px solid #fdebd0;
-                    }
-
-                    .bt-service {
-                        background: #e8f8f5;
-                        color: #1e8449;
-                        border: 1px solid #d5f5e3;
-                    }
-
-                    .bt-change {
-                        background: #f4ecf7;
-                        color: #7d3c98;
-                        border: 1px solid #e8daef;
-                    }
-
-                    .bt-problem {
-                        background: #fdedec;
-                        color: #c0392b;
-                        border: 1px solid #fadbd8;
-                    }
+                    .bt-incident { background: #fff8eb; color: #d97706; border: 1px solid #fde68a; }
+                    .bt-service  { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+                    .bt-change   { background: #fdf4ff; color: #c026d3; border: 1px solid #f5d0fe; }
+                    .bt-problem  { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
 
                     .badge-diff {
                         display: inline-block;
-                        padding: 4px 11px;
-                        border-radius: 6px;
+                        padding: 4px 10px;
+                        border-radius: 8px;
                         font-size: 12px;
-                        font-weight: 700;
+                        font-weight: 600;
                     }
 
-                    .bd-easy {
-                        background: #f0fff4;
-                        color: #276749;
-                        border: 1px solid #9ae6b4;
-                    }
-
-                    .bd-medium {
-                        background: #fffaf0;
-                        color: #c05621;
-                        border: 1px solid #fbd38d;
-                    }
-
-                    .bd-hard {
-                        background: #fff5f5;
-                        color: #c53030;
-                        border: 1px solid #feb2b2;
-                    }
+                    .bd-easy { background: linear-gradient(135deg, #dcfce7, #bbf7d0); color: #166534; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+                    .bd-medium { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #92400e; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+                    .bd-hard { background: linear-gradient(135deg, #fee2e2, #fecaca); color: #991b1b; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
 
                     .status-on {
-                        padding: 4px 12px;
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 6px;
+                        padding: 4px 10px;
                         border-radius: 12px;
                         font-size: 12px;
-                        font-weight: 700;
-                        background: #f0fff4;
-                        color: #276749;
-                        border: 1px solid #9ae6b4;
+                        font-weight: 600;
+                        background: rgba(16, 185, 129, 0.1);
+                        color: #059669;
+                        border: 1px solid rgba(16, 185, 129, 0.2);
                     }
-
+                    
                     .status-off {
-                        padding: 4px 12px;
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 6px;
+                        padding: 4px 10px;
                         border-radius: 12px;
                         font-size: 12px;
-                        font-weight: 700;
-                        background: #fff5f5;
-                        color: #c53030;
-                        border: 1px solid #feb2b2;
+                        font-weight: 600;
+                        background: rgba(239, 68, 68, 0.1);
+                        color: #dc2626;
+                        border: 1px solid rgba(239, 68, 68, 0.2);
                     }
 
                     .sub-table {
                         width: 100%;
-                        border-collapse: collapse;
-                        font-size: 13.5px;
+                        border-collapse: separate;
+                        border-spacing: 0;
+                        font-size: 14px;
                     }
 
                     .sub-table th {
-                        background: #f7fafc;
+                        background: #f8fafc;
                         text-align: left;
-                        padding: 9px 14px;
-                        font-size: 11px;
-                        font-weight: 700;
+                        padding: 12px 16px;
+                        font-size: 12px;
+                        font-weight: 600;
                         text-transform: uppercase;
                         letter-spacing: .5px;
-                        color: #718096;
-                        border-bottom: 2px solid #edf2f7;
+                        color: #4a5568;
+                        border-bottom: 2px solid #e2e8f0;
                     }
 
                     .sub-table td {
-                        padding: 9px 14px;
-                        border-bottom: 1px solid #f0f4f8;
+                        padding: 12px 16px;
+                        border-bottom: 1px solid #edf2f7;
                         vertical-align: middle;
+                        transition: background-color 0.15s ease;
                     }
 
                     .sub-table tbody tr:last-child td {
@@ -160,42 +144,44 @@
                     }
 
                     .sub-table tbody tr:hover td {
-                        background: #f7fbff;
+                        background: #f0f7fa;
                     }
 
                     .action-strip {
                         display: flex;
-                        gap: 10px;
+                        gap: 12px;
                         flex-wrap: wrap;
-                        margin-bottom: 22px;
+                        margin-bottom: 24px;
                     }
 
                     .stat-pill {
                         display: inline-flex;
                         align-items: center;
-                        gap: 6px;
-                        padding: 6px 14px;
-                        border-radius: 8px;
-                        font-size: 13px;
-                        font-weight: 700;
+                        gap: 8px;
+                        padding: 8px 16px;
+                        border-radius: 10px;
+                        font-size: 14px;
+                        font-weight: 600;
                     }
 
                     .sp-blue {
-                        background: #e8f4fd;
-                        color: #2e86c1;
+                        background: linear-gradient(135deg, #e0effc, #f0f7fd);
+                        color: #2b6cb0;
+                        border: 1px solid #bee3f8;
                     }
 
                     .sp-orange {
-                        background: #fef9e7;
-                        color: #b7770d;
+                        background: linear-gradient(135deg, #fffaf0, #fefcbf);
+                        color: #c05621;
+                        border: 1px solid #fbd38d;
                     }
 
                     .desc-box {
-                        background: #f9fbfd;
-                        border: 1px solid #edf2f7;
-                        border-radius: 7px;
-                        padding: 14px 16px;
-                        font-size: 13.5px;
+                        background: #f8fafc;
+                        border: 1px solid #e2e8f0;
+                        border-radius: 10px;
+                        padding: 16px 20px;
+                        font-size: 14px;
                         color: #4a5568;
                         line-height: 1.6;
                     }
@@ -309,12 +295,12 @@
                                                     <div class="field-label">Difficulty Level</div>
                                                     <div class="field-value">
                                                         <c:choose>
-                                                            <c:when test="${cat.difficultyLevel == 'EASY'}"> <span
+                                                            <c:when test="${cat.difficultyLevel == 'LEVEL_1'}"> <span
                                                                     class="badge-diff bd-easy">Easy</span></c:when>
-                                                            <c:when test="${cat.difficultyLevel == 'MEDIUM'}"> <span
+                                                            <c:when test="${cat.difficultyLevel == 'LEVEL_2'}"> <span
                                                                     class="badge-diff bd-medium">Medium</span>
                                                             </c:when>
-                                                            <c:when test="${cat.difficultyLevel == 'HARD'}"> <span
+                                                            <c:when test="${cat.difficultyLevel == 'LEVEL_3'}"> <span
                                                                     class="badge-diff bd-hard">Hard</span></c:when>
                                                             <c:otherwise>—</c:otherwise>
                                                         </c:choose>
@@ -427,17 +413,17 @@
                                                                         <td>
                                                                             <c:choose>
                                                                                 <c:when
-                                                                                    test="${child.difficultyLevel == 'EASY'}">
+                                                                                    test="${child.difficultyLevel == 'LEVEL_1'}">
                                                                                     <span
                                                                                         class="badge-diff bd-easy">Easy</span>
                                                                                 </c:when>
                                                                                 <c:when
-                                                                                    test="${child.difficultyLevel == 'MEDIUM'}">
+                                                                                    test="${child.difficultyLevel == 'LEVEL_2'}">
                                                                                     <span
                                                                                         class="badge-diff bd-medium">Medium</span>
                                                                                 </c:when>
                                                                                 <c:when
-                                                                                    test="${child.difficultyLevel == 'HARD'}">
+                                                                                    test="${child.difficultyLevel == 'LEVEL_3'}">
                                                                                     <span
                                                                                         class="badge-diff bd-hard">Hard</span>
                                                                                 </c:when>
