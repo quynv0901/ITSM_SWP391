@@ -90,7 +90,7 @@ public class KnowledgeBaseController extends HttpServlet {
         req.setAttribute("article", article);
         req.getRequestDispatcher("/knowledge/knowledge-base-form.jsp").forward(req, resp);
     }
-    
+
     private void addArticle(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         try {
@@ -134,6 +134,19 @@ public class KnowledgeBaseController extends HttpServlet {
             System.out.println("updateArticle error: " + e);
         }
     }
+
+    private void deleteArticle(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException {
+        String idStr = req.getParameter("id");
+        System.out.println(">>> deleteArticle controller idStr = " + idStr); // ← thêm dòng này
+        if (idStr == null || idStr.isEmpty()) {
+            resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base");
+            return;
+        }
+        kbDAO.deleteArticle(Integer.parseInt(idStr));
+        resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message=Article deleted successfully");
+    }
+
     private Article buildArticleFromRequest(HttpServletRequest req) {
         Article a = new Article();
         a.setTitle(req.getParameter("title"));
