@@ -90,6 +90,63 @@ public class KnowledgeBaseController extends HttpServlet {
         req.setAttribute("article", article);
         req.getRequestDispatcher("/knowledge/knowledge-base-form.jsp").forward(req, resp);
     }
+    
+    private void addArticle(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        try {
+            User sessionUser = (User) req.getSession().getAttribute("user");
+            Article article = buildArticleFromRequest(req);
+            article.setAuthorId(sessionUser.getUserId());
+            article.setStatus("PUBLISHED"); // ← luôn là PUBLISHED, không cần submitAction
+
+            if (kbDAO.addArticle(article)) {
+                resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message=Article created successfully");
+            } else {
+                req.setAttribute("error", "Could not create article");
+                req.setAttribute("article", article);
+                req.getRequestDispatcher("/knowledge/knowledge-base-form.jsp").forward(req, resp);
+            }
+        } catch (Exception e) {
+            System.out.println("addArticle error: " + e);
+        }
+    }
+
+    private void updateArticle(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        try {
+            String idStr = req.getParameter("articleId");
+            if (idStr == null || idStr.isEmpty()) {
+                resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base");
+                return;
+            }
+            Article article = buildArticleFromRequest(req);
+            article.setArticleId(Integer.parseInt(idStr));
+            article.setStatus("PUBLISHED"); // ← luôn là PUBLISHED
+
+            if (kbDAO.updateArticle(article)) {
+                resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message=Article updated successfully");
+            } else {
+                req.setAttribute("error", "Could not update article");
+                req.setAttribute("article", article);
+                req.getRequestDispatcher("/knowledge/knowledge-base-form.jsp").forward(req, resp);
+            }
+        } catch (Exception e) {
+            System.out.println("updateArticle error: " + e);
+        }
+    }
+    private Article buildArticleFromRequest(HttpServletRequest req) {
+        Article a = new Article();
+        a.setTitle(req.getParameter("title"));
+        a.setSummary(req.getParameter("summary"));
+        a.setContent(req.getParameter("content"));
+        a.setArticleType(req.getParameter("articleType"));
+        a.setTag(req.getParameter("tag"));
+        a.setErrorCode(req.getParameter("errorCode"));
+        a.setSymptom(req.getParameter("symptom"));
+        a.setCause(req.getParameter("cause"));
+        a.setSolution(req.getParameter("solution"));
+        return a;
+    }
 
     @Override
     public String getServletInfo() {
