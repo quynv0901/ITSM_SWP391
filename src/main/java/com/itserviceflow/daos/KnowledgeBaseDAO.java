@@ -130,4 +130,65 @@ public class KnowledgeBaseDAO {
         return 0;
     }
 
+    public Article findById(int id) {
+        String sql = "SELECT * FROM article WHERE article_id = ?";
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setInt(1, id);
+            ResultSet rs = st.executeQuery();
+            if (rs.next()) {
+                return mapArticle(rs);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public boolean addArticle(Article a) {
+        String sql
+                = "INSERT INTO article (title, summary, content, article_type, tag, status, "
+                + "author_id, error_code, symptom, cause, solution) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setString(1, a.getTitle());
+            st.setString(2, a.getSummary());
+            st.setString(3, a.getContent());
+            st.setString(4, "KNOWLEDGE_BASE");
+            st.setString(5, "NULL");
+            st.setString(6, a.getStatus());
+            if (a.getAuthorId() != null) {
+                st.setInt(7, a.getAuthorId());
+            } else {
+                st.setNull(7, Types.INTEGER);
+            }
+            st.setString(8, "No Error");
+            st.setString(9, a.getSymptom());
+            st.setString(10, a.getCause());
+            st.setString(11, a.getSolution());
+            return st.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean updateArticle(Article a) {
+        String sql
+                = "UPDATE article SET title=?, summary=?, content=?, "
+                + "symptom=?, cause=?, solution=?, updated_at=NOW() "
+                + "WHERE article_id=?";
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setString(1, a.getTitle());
+            st.setString(2, a.getSummary());
+            st.setString(3, a.getContent());
+            st.setString(4, a.getSymptom());
+            st.setString(5, a.getCause());
+            st.setString(6, a.getSolution());
+            st.setInt(7, a.getArticleId());  // ← WHERE article_id=?
+            return st.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

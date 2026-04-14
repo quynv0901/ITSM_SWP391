@@ -67,6 +67,30 @@ public class KnowledgeBaseController extends HttpServlet {
         req.getRequestDispatcher("/admin/knowledge-base.jsp").forward(req, resp);
     }
 
+    private void addView(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        req.setAttribute("article", new Article());
+        req.getRequestDispatcher("/knowledge/knowledge-base."
+                + "-form.jsp").forward(req, resp);
+    }
+
+    private void editView(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        String idStr = req.getParameter("id");
+        if (idStr == null || idStr.isEmpty()) {
+            req.getRequestDispatcher("/knowledge/knowledge-base-form.jsp").forward(req, resp);
+
+            return;
+        }
+        Article article = kbDAO.findById(Integer.parseInt(idStr));
+        if (article == null) {
+            resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?error=Article not found");
+            return;
+        }
+        req.setAttribute("article", article);
+        req.getRequestDispatcher("/knowledge/knowledge-base-form.jsp").forward(req, resp);
+    }
+
     @Override
     public String getServletInfo() {
         return "KnowledgeBaseController - Handles knowledge base CRUD";
