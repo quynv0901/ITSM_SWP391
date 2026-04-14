@@ -1,56 +1,61 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<jsp:include page="/includes/header.jsp" />
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
-<jsp:include page="/includes/header.jsp" />
+    <div class="container-fluid bg-white p-4 rounded shadow-sm" style="max-width: 800px; margin: auto;">
+        <h2 class="h4 text-primary mb-4 border-bottom pb-2">${not empty knownError ? 'Update Known Error' : 'Create
+            Known Error'}</h2>
 
-<div class="container-fluid bg-white p-4 rounded shadow-sm" style="max-width: 800px; margin: auto;">
-    <h2 class="h4 text-primary mb-4 border-bottom pb-2">
-        ${not empty knownError ? 'Update Known Error' : 'Create Known Error'}
-    </h2>
+        <form
+            action="${pageContext.request.contextPath}/known-error?action=${not empty knownError ? 'update' : 'insert'}"
+            method="post">
+            <c:if test="${not empty knownError}">
+                <input type="hidden" name="id" value="${knownError.articleId}">
+            </c:if>
 
-    <form action="${pageContext.request.contextPath}/known-error?action=${not empty knownError ? 'update' : 'insert'}" method="post">
-        
-        <c:if test="${not empty knownError}">
-            <input type="hidden" name="id" value="${knownError.ticketId}">
-        </c:if>
+            <div class="mb-3">
+                <label for="title" class="form-label fw-bold">Article Title <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="title" name="title" value="${knownError.title}" required>
+            </div>
 
-        <div class="mb-3">
-            <label for="title" class="form-label fw-bold">Title / Summary <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="title" name="title" value="${not empty knownError ? knownError.title : ''}" required>
-        </div>
+            <div class="mb-3">
+                <label for="summary" class="form-label fw-bold">Short Summary <span class="text-danger">*</span></label>
+                <textarea class="form-control" id="summary" name="summary" rows="2"
+                    required>${knownError.summary}</textarea>
+            </div>
 
-        <div class="mb-3">
-            <label for="description" class="form-label fw-bold">Detailed Description <span class="text-danger">*</span></label>
-            <textarea class="form-control" id="description" name="description" rows="5" required>${not empty knownError ? knownError.description : ''}</textarea>
-        </div>
+            <div class="mb-3">
+                <label for="symptom" class="form-label fw-bold">Symptoms & Errors <span
+                        class="text-danger">*</span></label>
+                <textarea class="form-control" id="symptom" name="symptom" rows="4" required
+                    placeholder="What error messages appear? What does the user see?">${knownError.symptom}</textarea>
+            </div>
 
-        <div class="mb-3">
-            <label for="status" class="form-label fw-bold">Status</label>
-            <select class="form-select" id="status" name="status">
-                <option value="NEW" ${knownError.status == 'NEW' ? 'selected' : ''}>New</option>
-                <option value="IN_PROGRESS" ${knownError.status == 'IN_PROGRESS' ? 'selected' : ''}>In Progress</option>
-                <option value="RESOLVED" ${knownError.status == 'RESOLVED' ? 'selected' : ''}>Resolved</option>
-                <option value="CLOSED" ${knownError.status == 'CLOSED' ? 'selected' : ''}>Closed</option>
-            </select>
-        </div>
+            <div class="mb-3">
+                <label for="cause" class="form-label fw-bold">Root Cause</label>
+                <textarea class="form-control" id="cause" name="cause" rows="4"
+                    placeholder="Why is this happening? (Optional if not fully root caused yet)">${knownError.cause}</textarea>
+            </div>
 
-        <div class="mb-3">
-            <label for="cause" class="form-label fw-bold">Root Cause</label>
-            <textarea class="form-control" id="cause" name="cause" rows="4">${not empty knownError ? knownError.cause : ''}</textarea>
-        </div>
+            <div class="mb-3">
+                <label for="solution" class="form-label fw-bold">Workaround / Permanent Solution <span
+                        class="text-danger">*</span></label>
+                <textarea class="form-control" id="solution" name="solution" rows="5" required
+                    placeholder="Step-by-step instructions to fix it.">${knownError.solution}</textarea>
+            </div>
 
-        <div class="mb-3">
-            <label for="solution" class="form-label fw-bold">Workaround / Permanent Solution</label>
-            <textarea class="form-control" id="solution" name="solution" rows="4">${not empty knownError ? knownError.solution : ''}</textarea>
-        </div>
+            <div class="mb-3">
+                <label for="content" class="form-label fw-bold">Additional References / Content</label>
+                <textarea class="form-control" id="content" name="content" rows="4">${knownError.content}</textarea>
+            </div>
 
-        <div class="d-grid gap-2 mt-4">
-            <button type="submit" class="btn btn-primary btn-lg">
-                <i class="bi bi-save"></i> ${not empty knownError ? 'Save Update' : 'Submit Known Error'}
-            </button>
-            <a href="${pageContext.request.contextPath}/known-error?action=list" class="btn btn-outline-secondary">Cancel and Return</a>
-        </div>
-    </form>
-</div>
+            <div class="d-grid gap-2 mt-4">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="bi bi-save"></i> ${not empty knownError ? 'Save Updates' : 'Publish Article'}
+                </button>
+                <a href="${pageContext.request.contextPath}/known-error?action=list"
+                    class="btn btn-outline-secondary">Cancel and Return</a>
+            </div>
+        </form>
+    </div>
 
-<jsp:include page="/includes/footer.jsp" />
+    <jsp:include page="/includes/footer.jsp" />

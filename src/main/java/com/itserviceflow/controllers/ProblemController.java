@@ -3,7 +3,6 @@ package com.itserviceflow.controllers;
 import com.itserviceflow.daos.ProblemDAO;
 import com.itserviceflow.daos.TicketDAO;
 import com.itserviceflow.daos.UserDAO;
-
 import com.itserviceflow.models.Comment;
 import com.itserviceflow.models.Ticket;
 import com.itserviceflow.models.User;
@@ -24,12 +23,10 @@ public class ProblemController extends HttpServlet {
     private ProblemDAO problemDAO;
     private TicketDAO ticketDAO;
 
-
     @Override
     public void init() throws ServletException {
         problemDAO = new ProblemDAO();
         ticketDAO = new TicketDAO();
-
     }
 
     @Override
@@ -90,10 +87,6 @@ public class ProblemController extends HttpServlet {
         String action = request.getParameter("action");
         if (action == null) {
             response.sendRedirect(request.getContextPath() + "/problem?action=list");
-            return;
-        }
-
-        if (!AuthUtils.isLoggedIn(request, response)) {
             return;
         }
 
@@ -202,6 +195,7 @@ public class ProblemController extends HttpServlet {
             throws ServletException, IOException {
         User currentUser = AuthUtils.getCurrentUser(request);
         List<Ticket> incidents = ticketDAO.getIncidentList(currentUser.getUserId(), currentUser.getRoleName());
+        
         request.setAttribute("incidents", incidents);
         request.getRequestDispatcher("/problem/form.jsp").forward(request, response);
     }
@@ -219,6 +213,8 @@ public class ProblemController extends HttpServlet {
 
         List<Ticket> incidents = ticketDAO.getIncidentList(currentUser.getUserId(), currentUser.getRoleName());
         List<Ticket> linkedIncidents = problemDAO.getLinkedIncidents(id);
+        
+        request.setAttribute("problem", problem);
         request.setAttribute("incidents", incidents);
         request.setAttribute("linkedIncidents", linkedIncidents);
         request.getRequestDispatcher("/problem/form.jsp").forward(request, response);
@@ -235,7 +231,6 @@ public class ProblemController extends HttpServlet {
         problem.setDescription(description);
         problem.setCause(cause);
         problem.setSolution(solution);
-
 
         User user = AuthUtils.getCurrentUser(request);
         problem.setReportedBy(user.getUserId());
@@ -282,7 +277,6 @@ public class ProblemController extends HttpServlet {
         problem.setStatus(status);
         problem.setCause(cause);
         problem.setSolution(solution);
-
 
         problemDAO.updateProblemTicket(problem);
 
