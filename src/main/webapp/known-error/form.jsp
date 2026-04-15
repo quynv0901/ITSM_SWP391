@@ -57,4 +57,31 @@
         </form>
     </div>
 
+    <script>
+        document.querySelector("form").addEventListener("submit", function(event) {
+            var title = document.getElementById("title").value.trim();
+            var summary = document.getElementById("summary").value.trim();
+            var symptom = document.getElementById("symptom").value.trim();
+            var solution = document.getElementById("solution").value.trim();
+            
+            if (!title || !summary || !symptom || !solution) {
+                alert("Vui lòng nhập đầy đủ các trường bắt buộc. Không được chỉ chứa khoảng trắng.");
+                event.preventDefault();
+                return;
+            }
+            
+            if (title.length > 255) {
+                alert("Tiêu đề không được vượt quá 255 ký tự.");
+                event.preventDefault();
+                return;
+            }
+            
+            if (summary.length > 500) {
+                alert("Tóm tắt lỗi không được vượt quá 500 ký tự.");
+                event.preventDefault();
+                return;
+            }
+        });
+    </script>
+
     <jsp:include page="/includes/footer.jsp" />

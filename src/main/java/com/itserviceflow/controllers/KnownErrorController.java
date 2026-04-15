@@ -203,13 +203,26 @@ public class KnownErrorController extends HttpServlet {
         String cause = request.getParameter("cause");
         String solution = request.getParameter("solution");
 
+        if (title == null || title.trim().isEmpty() || summary == null || summary.trim().isEmpty() ||
+            symptom == null || symptom.trim().isEmpty() || solution == null || solution.trim().isEmpty()) {
+            request.getSession().setAttribute("errorMsg", "Vui lòng nhập đầy đủ các trường bắt buộc (Title, Summary, Symptom, Solution) và không chỉ nhập khoảng trắng.");
+            response.sendRedirect(request.getContextPath() + "/known-error?action=add");
+            return;
+        }
+        
+        if (title.length() > 255 || summary.length() > 500) {
+            request.getSession().setAttribute("errorMsg", "Độ dài tiêu đề tối đa 255 ký tự và tóm tắt tối đa 500 ký tự.");
+            response.sendRedirect(request.getContextPath() + "/known-error?action=add");
+            return;
+        }
+
         Article ke = new Article();
-        ke.setTitle(title);
-        ke.setSummary(summary);
-        ke.setContent(content);
-        ke.setSymptom(symptom);
-        ke.setCause(cause);
-        ke.setSolution(solution);
+        ke.setTitle(title.trim());
+        ke.setSummary(summary.trim());
+        ke.setContent(content != null ? content.trim() : "");
+        ke.setSymptom(symptom.trim());
+        ke.setCause(cause != null ? cause.trim() : "");
+        ke.setSolution(solution.trim());
 
         User user = AuthUtils.getCurrentUser(request);
         ke.setAuthorId(user.getUserId());
@@ -232,14 +245,27 @@ public class KnownErrorController extends HttpServlet {
         String cause = request.getParameter("cause");
         String solution = request.getParameter("solution");
 
+        if (title == null || title.trim().isEmpty() || summary == null || summary.trim().isEmpty() ||
+            symptom == null || symptom.trim().isEmpty() || solution == null || solution.trim().isEmpty()) {
+            request.getSession().setAttribute("errorMsg", "Vui lòng nhập đầy đủ các trường bắt buộc (Title, Summary, Symptom, Solution) và không chỉ nhập khoảng trắng.");
+            response.sendRedirect(request.getContextPath() + "/known-error?action=edit&id=" + id);
+            return;
+        }
+        
+        if (title.length() > 255 || summary.length() > 500) {
+            request.getSession().setAttribute("errorMsg", "Độ dài tiêu đề tối đa 255 ký tự và tóm tắt tối đa 500 ký tự.");
+            response.sendRedirect(request.getContextPath() + "/known-error?action=edit&id=" + id);
+            return;
+        }
+
         Article ke = new Article();
         ke.setArticleId(id);
-        ke.setTitle(title);
-        ke.setSummary(summary);
-        ke.setContent(content);
-        ke.setSymptom(symptom);
-        ke.setCause(cause);
-        ke.setSolution(solution);
+        ke.setTitle(title.trim());
+        ke.setSummary(summary.trim());
+        ke.setContent(content != null ? content.trim() : "");
+        ke.setSymptom(symptom.trim());
+        ke.setCause(cause != null ? cause.trim() : "");
+        ke.setSolution(solution.trim());
 
         User currentUser = AuthUtils.getCurrentUser(request);
         Article original = knownErrorDAO.getKnownErrorById(id);
