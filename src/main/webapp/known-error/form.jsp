@@ -14,13 +14,12 @@
 
             <div class="mb-3">
                 <label for="title" class="form-label fw-bold">Article Title <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="title" name="title" value="${knownError.title}" required>
+                <input type="text" class="form-control" id="title" name="title" value="${knownError.title}" maxlength="255" required>
             </div>
 
             <div class="mb-3">
                 <label for="summary" class="form-label fw-bold">Short Summary <span class="text-danger">*</span></label>
-                <textarea class="form-control" id="summary" name="summary" rows="2"
-                    required>${knownError.summary}</textarea>
+                <textarea class="form-control" id="summary" name="summary" rows="2" maxlength="500" required>${knownError.summary}</textarea>
             </div>
 
             <div class="mb-3">
