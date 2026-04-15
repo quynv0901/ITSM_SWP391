@@ -12,7 +12,7 @@
         <h2 class="h4 text-primary m-0">
             <i class="bi bi-journal-text me-2"></i>Knowledge Base
         </h2>
-        <a href=""
+        <a href="${pageContext.request.contextPath}/admin/knowledge-base?action=add"
            class="btn btn-primary">
             <i class="bi bi-plus-circle me-1"></i> Create Knowledge Base
         </a>
@@ -91,16 +91,34 @@
                         <td>
                             <div class="d-flex gap-1">
                                 <%-- View --%>
-                                <a href=""
+                                <a href="${pageContext.request.contextPath}/admin/knowledge-base?action=detail&id=${a.articleId}"
                                    class="btn btn-info btn-sm text-white" title="View">
                                     <i class="bi bi-eye"></i>
                                 </a>
                                 <%-- Edit --%>
-                                <a href=""
+                                <a href="${pageContext.request.contextPath}/admin/knowledge-base?action=edit&id=${a.articleId}"
                                    class="btn btn-warning btn-sm" title="Edit">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <a href=""
+                                <%-- Toggle Status --%>
+                                <c:choose>
+                                    <c:when test="${a.status == 'PUBLISHED'}">
+                                        <a href="${pageContext.request.contextPath}/admin/knowledge-base?action=toggle&id=${a.articleId}&status=ARCHIVED"
+                                           class="btn btn-secondary btn-sm" title="Archive"
+                                           onclick="return confirm('Archive this article?')">
+                                            <i class="bi bi-archive"></i>
+                                        </a>
+                                    </c:when>
+                                    <c:when test="${a.status == 'ARCHIVED'}">
+                                        <a href="${pageContext.request.contextPath}/admin/knowledge-base?action=toggle&id=${a.articleId}&status=PUBLISHED"
+                                           class="btn btn-success btn-sm" title="Restore"
+                                           onclick="return confirm('Restore this article?')">
+                                            <i class="bi bi-arrow-counterclockwise"></i>
+                                        </a>
+                                    </c:when>
+                                </c:choose>
+                                <%-- Delete --%>
+                                <a href="${pageContext.request.contextPath}/admin/knowledge-base?action=delete&amp;id=${a.articleId}"
                                    class="btn btn-danger btn-sm" title="Delete"
                                    onclick="return confirm('Delete?')">
                                     <i class="bi bi-trash"></i>
@@ -148,5 +166,5 @@
         </nav>
     </c:if>
 </div>
-
+    <%-- --%>
 <jsp:include page="/includes/footer.jsp" />

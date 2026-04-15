@@ -3,12 +3,17 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+    body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; }
+    h4 { font-family: 'Outfit', sans-serif; }
+
     .form-card {
         background: #fff;
         border: 1px solid #dde3ec;
-        border-radius: 10px;
+        border-radius: 16px;
         padding: 30px 32px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, .06);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, .03);
         max-width: 780px;
         margin: 0 auto;
     }
@@ -138,17 +143,17 @@
         border-color: #3c8dbc;
     }
 
-    .diff-btn.sel-EASY {
+    .diff-btn.sel-LEVEL_1 {
         border-color: #27ae60;
         background: #f0fff4;
     }
 
-    .diff-btn.sel-MEDIUM {
+    .diff-btn.sel-LEVEL_2 {
         border-color: #dd6b20;
         background: #fffaf0;
     }
 
-    .diff-btn.sel-HARD {
+    .diff-btn.sel-LEVEL_3 {
         border-color: #c53030;
         background: #fff5f5;
     }
@@ -247,12 +252,7 @@
                 <select class="f-input" id="parentCategoryId" name="parentCategoryId">
                     <option value="">— None (Root Category) —</option>
                     <c:forEach var="p" items="${allCats}">
-                        <option value="${p.categoryId}" ${cat.parentCategoryId==p.categoryId
-                                         ? 'selected' : '' } ${param.parentId==p.categoryId ? 'selected' : ''
-                                }>
-                            ${p.categoryName}<c:if test="${not empty p.categoryCode}">
-                                (${p.categoryCode})</c:if>
-                            </option>
+                        <option value="${p.categoryId}" ${cat.parentCategoryId==p.categoryId || param.parentId==p.categoryId ? 'selected' : ''}>${p.categoryName}<c:if test="${not empty p.categoryCode}"> (${p.categoryCode})</c:if></option>
                     </c:forEach>
                 </select>
             </div>
@@ -273,18 +273,15 @@
             <input type="hidden" id="difficultyLevel" name="difficultyLevel"
                    value="${cat.difficultyLevel}" required>
             <div class="diff-hints">
-                <div class="diff-btn ${cat.difficultyLevel == 'EASY'   ? 'sel-EASY'   : ''}"
-                     onclick="selectDiff('EASY')">
+                <div class="diff-btn ${cat.difficultyLevel == 'LEVEL_1' ? 'sel-LEVEL_1' : ''}" onclick="selectDiff('LEVEL_1')">
                     <div class="d-title" style="color:#27ae60;">Dễ</div>
                     <div class="d-sub">Nhiệm vụ tiêu chuẩn, tác động thấp.</div>
                 </div>
-                <div class="diff-btn ${cat.difficultyLevel == 'MEDIUM' ? 'sel-MEDIUM' : ''}"
-                     onclick="selectDiff('MEDIUM')">
+                <div class="diff-btn ${cat.difficultyLevel == 'LEVEL_2' ? 'sel-LEVEL_2' : ''}" onclick="selectDiff('LEVEL_2')">
                     <div class="d-title" style="color:#dd6b20;">Trung bình</div>
                     <div class="d-sub">Cần nhiều nỗ lực hơn.</div>
                 </div>
-                <div class="diff-btn ${cat.difficultyLevel == 'HARD'   ? 'sel-HARD'   : ''}"
-                     onclick="selectDiff('HARD')">
+                <div class="diff-btn ${cat.difficultyLevel == 'LEVEL_3' ? 'sel-LEVEL_3' : ''}" onclick="selectDiff('LEVEL_3')">
                     <div class="d-title" style="color:#c53030;">Khó</div>
                     <div class="d-sub">Độ phức tạp cao hoặc tác động quan trọng.</div>
                 </div>
@@ -296,9 +293,7 @@
         <div class="f-group">
             <div class="toggle-group">
                 <div class="form-check form-switch mb-0">
-                    <input class="form-check-input" type="checkbox" id="isActiveToggle"
-                           value="true" ${empty cat.categoryId || cat.active ? 'checked'
-                                          : '' }>
+                    <input class="form-check-input" type="checkbox" id="isActiveToggle" value="true" ${empty cat.categoryId || cat.active ? 'checked' : ''}>
                 </div>
                 <div>
                     <label class="mb-0 fw-semibold" for="isActiveToggle" id="activeLbl"
@@ -328,7 +323,7 @@
     // ── Difficulty picker ─────────────────────────────────────────────────
     function selectDiff(val) {
         document.querySelectorAll('.diff-btn').forEach(b => b.className = 'diff-btn');
-        document.querySelector('.diff-btn:nth-child(' + ({EASY: 1, MEDIUM: 2, HARD: 3}[val]) + ')').classList.add('sel-' + val);
+        document.querySelector('.diff-btn:nth-child(' + ({LEVEL_1: 1, LEVEL_2: 2, LEVEL_3: 3}[val]) + ')').classList.add('sel-' + val);
         document.getElementById('difficultyLevel').value = val;
     }
 
