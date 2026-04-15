@@ -214,7 +214,12 @@ public class KnownErrorController extends HttpServlet {
         User user = AuthUtils.getCurrentUser(request);
         ke.setAuthorId(user.getUserId());
 
-        knownErrorDAO.createKnownError(ke);
+        boolean success = knownErrorDAO.createKnownError(ke);
+        if (success) {
+            request.getSession().setAttribute("message", "Article successfully published.");
+        } else {
+            request.getSession().setAttribute("errorMsg", "Failed to publish article. Please make sure Title (< 255 chars) and Summary (< 500 chars) are not too long.");
+        }
         response.sendRedirect(request.getContextPath() + "/known-error?action=list");
     }
 
@@ -244,8 +249,14 @@ public class KnownErrorController extends HttpServlet {
             return;
         }
 
-        knownErrorDAO.updateKnownError(ke);
-        response.sendRedirect(request.getContextPath() + "/known-error?action=detail&id=" + id);
+        boolean success = knownErrorDAO.updateKnownError(ke);
+        if (success) {
+            request.getSession().setAttribute("message", "Article successfully updated.");
+            response.sendRedirect(request.getContextPath() + "/known-error?action=detail&id=" + id);
+        } else {
+            request.getSession().setAttribute("errorMsg", "Failed to update article. Please make sure Title (< 255 chars) and Summary (< 500 chars) are not too long.");
+            response.sendRedirect(request.getContextPath() + "/known-error?action=edit&id=" + id);
+        }
     }
 
     private void deleteKnownError(HttpServletRequest request, HttpServletResponse response) throws IOException {
