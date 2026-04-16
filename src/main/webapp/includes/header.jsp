@@ -38,6 +38,8 @@
                 color: #fff;
                 flex-shrink: 0;
                 transition: all 0.3s;
+                overflow-y: auto;
+                max-height: 100vh;
             }
 
             .sidebar-header {
@@ -198,6 +200,12 @@
                             <i class="bi bi-hdd-network"></i> Service Catalog
                         </a>
 
+                        <li class="menu-header">Infrastructure</li>
+                        <a href="${pageContext.request.contextPath}/configuration-item"
+                           class="menu-item ${pageContext.request.requestURI.contains('/configuration-item') ? 'active' : ''}">
+                            <i class="bi bi-server"></i> CMDB
+                        </a>
+
                         <li class="menu-header">Reports &amp; Analytics</li>
                         <a href="${pageContext.request.contextPath}/dashboard"
                            class="menu-item ${pageContext.request.requestURI.contains('/dashboard') ? 'active' : ''}">
@@ -227,6 +235,12 @@
                         <i class="bi bi-hdd-network"></i> Service Catalog
                     </a>
 
+                    <li class="menu-header">Infrastructure</li>
+                    <a href="${pageContext.request.contextPath}/configuration-item"
+                       class="menu-item ${pageContext.request.requestURI.contains('/configuration-item') ? 'active' : ''}">
+                        <i class="bi bi-server"></i> CMDB
+                    </a>
+
                     <li class="menu-header">Reports &amp; Analytics</li>
                     <a href="${pageContext.request.contextPath}/dashboard"
                        class="menu-item ${pageContext.request.requestURI.contains('/dashboard') ? 'active' : ''}">
@@ -247,7 +261,8 @@
                                     Management</c:when>
                                 <c:when test="${pageContext.request.requestURI.contains('/known-error/')}">Known
                                     Error Database</c:when>
-
+                                <c:when test="${pageContext.request.requestURI.contains('/configuration-item')}">CMDB
+                                    - Configuration Items</c:when>
                                 <c:when test="${pageContext.request.requestURI.contains('/ticket-category')}">Ticket
                                     Categories</c:when>
 
