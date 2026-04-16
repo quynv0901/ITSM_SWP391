@@ -163,6 +163,10 @@
                            class="menu-item ${pageContext.request.requestURI.endsWith('/admin/users.jsp') ? 'active' : ''}">
                             <i class="bi bi-person-gear"></i> Quản lý người dùng
                         </a>
+                        <a href="${pageContext.request.contextPath}/admin/knowledge-base"
+                               class="menu-item ${pageContext.request.requestURI.endsWith('/admin/knowledge-base.jsp') ? 'active' : ''}">
+                                <i class="bi bi-journal-text"></i> Knowledge Base
+                            </a>
                         <c:if test="${sessionScope.user != null && sessionScope.user.roleId == 10}">
                             <li class="menu-header">Hệ thống</li>
                             <a href="${pageContext.request.contextPath}/admin/users"
@@ -183,6 +187,10 @@
                         <a href="${pageContext.request.contextPath}/ticket-category"
                            class="menu-item ${pageContext.request.requestURI.contains('/ticket-category') ? 'active' : ''}">
                             <i class="bi bi-tags"></i> Ticket Categories
+                        </a>
+                        <a href="${pageContext.request.contextPath}/known-error?action=list"
+                           class="menu-item ${pageContext.request.requestURI.contains('/known-error/') ? 'active' : ''}">
+                            <i class="bi bi-bug"></i> Known Error Database
                         </a>
                         <li class="menu-header">Service</li>
                         <a href="${pageContext.request.contextPath}/service"
@@ -209,6 +217,10 @@
                        class="menu-item ${pageContext.request.requestURI.contains('/ticket-category') ? 'active' : ''}">
                         <i class="bi bi-tags"></i> Ticket Categories
                     </a>
+                    <a href="${pageContext.request.contextPath}/known-error?action=list"
+                       class="menu-item ${pageContext.request.requestURI.contains('/known-error/') ? 'active' : ''}">
+                        <i class="bi bi-bug"></i> Known Error Database
+                    </a>
                     <li class="menu-header">Service</li>
                     <a href="${pageContext.request.contextPath}/service"
                        class="menu-item ${pageContext.request.requestURI.contains('/service') ? 'active' : ''}">
@@ -233,6 +245,8 @@
                             <c:choose>
                                 <c:when test="${pageContext.request.requestURI.contains('/problem/')}">Problem
                                     Management</c:when>
+                                <c:when test="${pageContext.request.requestURI.contains('/known-error/')}">Known
+                                    Error Database</c:when>
 
                                 <c:when test="${pageContext.request.requestURI.contains('/ticket-category')}">Ticket
                                     Categories</c:when>

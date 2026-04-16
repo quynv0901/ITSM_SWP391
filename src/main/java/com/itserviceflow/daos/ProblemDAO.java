@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.itserviceflow.daos;
 
 import com.itserviceflow.models.TicketRelation;
@@ -155,7 +151,7 @@ public class ProblemDAO {
                 stmt.setInt(4, problem.getReportedBy());
                 stmt.setString(5, problem.getCause());
                 stmt.setString(6, problem.getSolution());
-
+                
                 stmt.executeUpdate();
 
                 try (ResultSet rs = stmt.getGeneratedKeys()) {
@@ -424,7 +420,6 @@ public class ProblemDAO {
         t.setJustification(rs.getString("justification"));
         t.setCreatedAt(rs.getTimestamp("created_at"));
         t.setUpdatedAt(rs.getTimestamp("updated_at"));
-
 
         try {
             t.setReportedByName(rs.getString("reported_by_name"));
