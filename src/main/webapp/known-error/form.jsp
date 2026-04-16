@@ -14,13 +14,12 @@
 
             <div class="mb-3">
                 <label for="title" class="form-label fw-bold">Article Title <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="title" name="title" value="${knownError.title}" required>
+                <input type="text" class="form-control" id="title" name="title" value="${knownError.title}" maxlength="255" required>
             </div>
 
             <div class="mb-3">
                 <label for="summary" class="form-label fw-bold">Short Summary <span class="text-danger">*</span></label>
-                <textarea class="form-control" id="summary" name="summary" rows="2"
-                    required>${knownError.summary}</textarea>
+                <textarea class="form-control" id="summary" name="summary" rows="2" maxlength="500" required>${knownError.summary}</textarea>
             </div>
 
             <div class="mb-3">
@@ -57,5 +56,32 @@
             </div>
         </form>
     </div>
+
+    <script>
+        document.querySelector("form").addEventListener("submit", function(event) {
+            var title = document.getElementById("title").value.trim();
+            var summary = document.getElementById("summary").value.trim();
+            var symptom = document.getElementById("symptom").value.trim();
+            var solution = document.getElementById("solution").value.trim();
+            
+            if (!title || !summary || !symptom || !solution) {
+                alert("Vui lòng nhập đầy đủ các trường bắt buộc. Không được chỉ chứa khoảng trắng.");
+                event.preventDefault();
+                return;
+            }
+            
+            if (title.length > 255) {
+                alert("Tiêu đề không được vượt quá 255 ký tự.");
+                event.preventDefault();
+                return;
+            }
+            
+            if (summary.length > 500) {
+                alert("Tóm tắt lỗi không được vượt quá 500 ký tự.");
+                event.preventDefault();
+                return;
+            }
+        });
+    </script>
 
     <jsp:include page="/includes/footer.jsp" />

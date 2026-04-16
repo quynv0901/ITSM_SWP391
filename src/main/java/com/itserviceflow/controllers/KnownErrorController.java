@@ -203,18 +203,36 @@ public class KnownErrorController extends HttpServlet {
         String cause = request.getParameter("cause");
         String solution = request.getParameter("solution");
 
+        if (title == null || title.trim().isEmpty() || summary == null || summary.trim().isEmpty() ||
+            symptom == null || symptom.trim().isEmpty() || solution == null || solution.trim().isEmpty()) {
+            request.getSession().setAttribute("errorMsg", "Vui lòng nhập đầy đủ các trường bắt buộc (Title, Summary, Symptom, Solution) và không chỉ nhập khoảng trắng.");
+            response.sendRedirect(request.getContextPath() + "/known-error?action=add");
+            return;
+        }
+        
+        if (title.length() > 255 || summary.length() > 500) {
+            request.getSession().setAttribute("errorMsg", "Độ dài tiêu đề tối đa 255 ký tự và tóm tắt tối đa 500 ký tự.");
+            response.sendRedirect(request.getContextPath() + "/known-error?action=add");
+            return;
+        }
+
         Article ke = new Article();
-        ke.setTitle(title);
-        ke.setSummary(summary);
-        ke.setContent(content);
-        ke.setSymptom(symptom);
-        ke.setCause(cause);
-        ke.setSolution(solution);
+        ke.setTitle(title.trim());
+        ke.setSummary(summary.trim());
+        ke.setContent(content != null ? content.trim() : "");
+        ke.setSymptom(symptom.trim());
+        ke.setCause(cause != null ? cause.trim() : "");
+        ke.setSolution(solution.trim());
 
         User user = AuthUtils.getCurrentUser(request);
         ke.setAuthorId(user.getUserId());
 
-        knownErrorDAO.createKnownError(ke);
+        boolean success = knownErrorDAO.createKnownError(ke);
+        if (success) {
+            request.getSession().setAttribute("message", "Article successfully published.");
+        } else {
+            request.getSession().setAttribute("errorMsg", "Failed to publish article. Please make sure Title (< 255 chars) and Summary (< 500 chars) are not too long.");
+        }
         response.sendRedirect(request.getContextPath() + "/known-error?action=list");
     }
 
@@ -227,14 +245,27 @@ public class KnownErrorController extends HttpServlet {
         String cause = request.getParameter("cause");
         String solution = request.getParameter("solution");
 
+        if (title == null || title.trim().isEmpty() || summary == null || summary.trim().isEmpty() ||
+            symptom == null || symptom.trim().isEmpty() || solution == null || solution.trim().isEmpty()) {
+            request.getSession().setAttribute("errorMsg", "Vui lòng nhập đầy đủ các trường bắt buộc (Title, Summary, Symptom, Solution) và không chỉ nhập khoảng trắng.");
+            response.sendRedirect(request.getContextPath() + "/known-error?action=edit&id=" + id);
+            return;
+        }
+        
+        if (title.length() > 255 || summary.length() > 500) {
+            request.getSession().setAttribute("errorMsg", "Độ dài tiêu đề tối đa 255 ký tự và tóm tắt tối đa 500 ký tự.");
+            response.sendRedirect(request.getContextPath() + "/known-error?action=edit&id=" + id);
+            return;
+        }
+
         Article ke = new Article();
         ke.setArticleId(id);
-        ke.setTitle(title);
-        ke.setSummary(summary);
-        ke.setContent(content);
-        ke.setSymptom(symptom);
-        ke.setCause(cause);
-        ke.setSolution(solution);
+        ke.setTitle(title.trim());
+        ke.setSummary(summary.trim());
+        ke.setContent(content != null ? content.trim() : "");
+        ke.setSymptom(symptom.trim());
+        ke.setCause(cause != null ? cause.trim() : "");
+        ke.setSolution(solution.trim());
 
         User currentUser = AuthUtils.getCurrentUser(request);
         Article original = knownErrorDAO.getKnownErrorById(id);
@@ -244,8 +275,14 @@ public class KnownErrorController extends HttpServlet {
             return;
         }
 
-        knownErrorDAO.updateKnownError(ke);
-        response.sendRedirect(request.getContextPath() + "/known-error?action=detail&id=" + id);
+        boolean success = knownErrorDAO.updateKnownError(ke);
+        if (success) {
+            request.getSession().setAttribute("message", "Article successfully updated.");
+            response.sendRedirect(request.getContextPath() + "/known-error?action=detail&id=" + id);
+        } else {
+            request.getSession().setAttribute("errorMsg", "Failed to update article. Please make sure Title (< 255 chars) and Summary (< 500 chars) are not too long.");
+            response.sendRedirect(request.getContextPath() + "/known-error?action=edit&id=" + id);
+        }
     }
 
     private void deleteKnownError(HttpServletRequest request, HttpServletResponse response) throws IOException {
