@@ -1,4 +1,7 @@
 package com.itserviceflow.models;
+
+import java.sql.Timestamp;
+
 public class Service {
     private int serviceId;
     private String serviceName;
@@ -6,6 +9,11 @@ public class Service {
     private String description;
     private int estimatedDeliveryDay;
     private String status;
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
+
+    public Service() {
+    }
 
     public int getServiceId() {
         return serviceId;
@@ -55,5 +63,19 @@ public class Service {
         this.status = status;
     }
 
-    
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Timestamp getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Timestamp updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 }
