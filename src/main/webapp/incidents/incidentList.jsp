@@ -489,16 +489,16 @@
                     gap: 15px;
                     align-items: flex-end;
                 }
-                
+
                 .pagination-info {
                     align-self: flex-start;
                 }
-                
+
                 .pagination-controls {
                     width: 100%;
                     justify-content: space-between;
                 }
-                
+
                 .page-size-selector {
                     display: none; /* Ẩn dropdown trên mobile để tiết kiệm không gian */
                 }
@@ -635,10 +635,14 @@
                                                         </a>
                                                     </c:if>
                                                     <c:if test="${incident.status == 'NEW'}">
-                                                        <a href="${pageContext.request.contextPath}/incident?action=cancel&id=${incident.ticketId}" 
-                                                           class="btn btn-danger">
-                                                            ❌ Cancel
-                                                        </a>
+                                                        <form action="${pageContext.request.contextPath}/incident" method="post" style="display:inline;">
+                                                            <input type="hidden" name="action" value="cancel">
+                                                            <input type="hidden" name="id" value="${incident.ticketId}">
+                                                            <button type="submit" class="btn btn-danger" 
+                                                                    onclick="return confirm('Are you sure you want to cancel this Incident?')">
+                                                                ❌ Cancel
+                                                            </button>
+                                                        </form>
                                                     </c:if>
                                                 </div>
                                             </td>
@@ -675,7 +679,7 @@
         </div>
 
     </body>
-    
+
     <script>
         // Pagination variables
         let currentPage = 1;
@@ -685,7 +689,7 @@
         let visibleRows = [];
 
         // Initialize pagination when page loads
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             initializePagination();
         });
 
@@ -693,10 +697,10 @@
             const table = document.getElementById('incidentTable');
             const tbody = table.getElementsByTagName('tbody')[0];
             allRows = Array.from(tbody.getElementsByTagName('tr'));
-            
+
             // Filter out empty state row
             allRows = allRows.filter(row => !row.querySelector('.empty-state'));
-            
+
             if (allRows.length === 0) {
                 document.getElementById('paginationInfo').textContent = 'Hiển thị 0-0 của 0 incident';
                 document.getElementById('paginationButtons').innerHTML = '';
@@ -717,24 +721,24 @@
             // Filter visible rows based on search
             const searchInput = document.getElementById('searchInput');
             const searchTerm = searchInput.value.toLowerCase();
-            
+
             visibleRows = allRows.filter(row => {
                 const tdTicketNumber = row.getElementsByTagName('td')[1];
                 const tdTitle = row.getElementsByTagName('td')[2];
-                
+
                 if (tdTicketNumber && tdTitle) {
                     const ticketNumber = tdTicketNumber.textContent || tdTicketNumber.innerText;
                     const title = tdTitle.textContent || tdTitle.innerText;
-                    
-                    return ticketNumber.toLowerCase().indexOf(searchTerm) > -1 || 
-                           title.toLowerCase().indexOf(searchTerm) > -1;
+
+                    return ticketNumber.toLowerCase().indexOf(searchTerm) > -1 ||
+                            title.toLowerCase().indexOf(searchTerm) > -1;
                 }
                 return false;
             });
 
             // Calculate pagination
             totalPages = Math.ceil(visibleRows.length / pageSize);
-            
+
             // Ensure current page is valid
             if (currentPage > totalPages) {
                 currentPage = totalPages;
@@ -770,11 +774,11 @@
             const totalVisible = visibleRows.length;
             const startIndex = (currentPage - 1) * pageSize + 1;
             const endIndex = Math.min(currentPage * pageSize, totalVisible);
-            
-            const infoText = totalVisible === 0 
-                ? 'Hiển thị 0-0 của 0 incident'
-                : `Hiển thị ${startIndex}-${endIndex} của ${totalVisible} incident`;
-            
+
+            const infoText = totalVisible === 0
+                    ? 'Hiển thị 0-0 của 0 incident'
+                    : `Hiển thị ${startIndex}-${endIndex} của ${totalVisible} incident`;
+
             document.getElementById('paginationInfo').textContent = infoText;
         }
 
@@ -807,7 +811,10 @@
                 const firstBtn = document.createElement('button');
                 firstBtn.className = 'page-btn';
                 firstBtn.textContent = '1';
-                firstBtn.onclick = () => { currentPage = 1; updatePagination(); };
+                firstBtn.onclick = () => {
+                    currentPage = 1;
+                    updatePagination();
+                };
                 container.appendChild(firstBtn);
 
                 if (startPage > 2) {
@@ -822,7 +829,10 @@
                 const btn = document.createElement('button');
                 btn.className = 'page-btn' + (i === currentPage ? ' active' : '');
                 btn.textContent = i;
-                btn.onclick = () => { currentPage = i; updatePagination(); };
+                btn.onclick = () => {
+                    currentPage = i;
+                    updatePagination();
+                };
                 container.appendChild(btn);
             }
 
@@ -837,7 +847,10 @@
                 const lastBtn = document.createElement('button');
                 lastBtn.className = 'page-btn';
                 lastBtn.textContent = totalPages;
-                lastBtn.onclick = () => { currentPage = totalPages; updatePagination(); };
+                lastBtn.onclick = () => {
+                    currentPage = totalPages;
+                    updatePagination();
+                };
                 container.appendChild(lastBtn);
             }
 
