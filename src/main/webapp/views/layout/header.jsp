@@ -96,8 +96,8 @@
                             style="font-size:10px;letter-spacing:1px;font-weight:600;">Infrastructure</div>
 
                         <a class="nav-item d-flex align-items-center gap-2 px-3 py-2 rounded mx-2
-                   ${param.activeNav == 'cmdb' ? 'active' : ''}"
-                            href="${pageContext.request.contextPath}/cmdb?action=list">
+                   ${param.activeNav == 'configuration-item' ? 'active' : ''}"
+                            href="${pageContext.request.contextPath}/configuration-item">
                             <i class="bi bi-hdd-network-fill"></i> CMDB
                         </a>
 

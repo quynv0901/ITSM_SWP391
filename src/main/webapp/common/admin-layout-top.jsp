@@ -162,8 +162,8 @@
             </a>
 
             <li class="menu-header">Infrastructure</li>
-            <a href="${pageContext.request.contextPath}/cmdb?action=list"
-               class="menu-item ${pageContext.request.requestURI.contains('/cmdb/') ? 'active' : ''}">
+            <a href="${pageContext.request.contextPath}/configuration-item"
+               class="menu-item ${pageContext.request.requestURI.contains('/configuration-item') ? 'active' : ''}">
                 <i class="bi bi-server"></i> CMDB
             </a>
 
