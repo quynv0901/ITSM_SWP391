@@ -12,7 +12,7 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.util.List;
-
+// validate bao loi trong man create
 @WebServlet(name = "AdminServiceServlet", urlPatterns = {"/admin-services"})
 public class AdminServiceServlet extends HttpServlet {
 

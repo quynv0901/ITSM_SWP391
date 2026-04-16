@@ -16,7 +16,7 @@ import java.util.List;
 @WebServlet(name = "ServiceCatalogServlet", urlPatterns = {"/service-catalog"})
 public class ServiceCatalogServlet extends HttpServlet {
 
-    private static final int ROLE_END_USER = 2;
+    private static final int ROLE_END_USER = 1;
     private ServiceDAO serviceDAO;
 
     @Override
