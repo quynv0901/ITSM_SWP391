@@ -12,11 +12,11 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="h4 text-primary m-0">
-            <i class="bi bi-journal-text me-2"></i>Knowledge Base
+            <i class="bi bi-journal-text me-2"></i>Thông báo
         </h2>
         <a href="${pageContext.request.contextPath}/home/dashboard.jsp"
            class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i> Back
+            <i class="bi bi-arrow-left me-1"></i> Quay lại
         </a>
     </div>
 
@@ -37,7 +37,7 @@
             <i class="bi bi-search"></i> Search
         </button>
         <a href="${pageContext.request.contextPath}/knowledge-base"
-           class="btn btn-outline-secondary">Clear</a>
+           class="btn btn-outline-secondary">Xóa</a>
     </form>
 
     <%-- List --%>
@@ -60,7 +60,7 @@
         <c:if test="${empty articles}">
             <div class="list-group-item text-center text-muted fst-italic py-5">
                 <i class="bi bi-journal-x fs-3 d-block mb-2"></i>
-                No articles found.
+                Không tìm thấy bài viết.
             </div>
         </c:if>
     </div>
@@ -72,7 +72,7 @@
             <ul class="pagination justify-content-center">
                 <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
                     <a class="page-link"
-                       href="?keyword=${keyword}&page=${currentPage - 1}">Previous</a>
+                       href="?keyword=${keyword}&page=${currentPage - 1}">Trước</a>
                 </li>
                 <c:forEach begin="1" end="${totalPages}" var="i">
                     <li class="page-item ${currentPage == i ? 'active' : ''}">
@@ -82,7 +82,7 @@
                 </c:forEach>
                 <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
                     <a class="page-link"
-                       href="?keyword=${keyword}&page=${currentPage + 1}">Next</a>
+                       href="?keyword=${keyword}&page=${currentPage + 1}">Sau</a>
                 </li>
             </ul>
         </nav>

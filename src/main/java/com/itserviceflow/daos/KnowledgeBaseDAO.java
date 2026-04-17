@@ -92,7 +92,7 @@ public class KnowledgeBaseDAO {
         }
         return list;
     }
-
+        
     public int countArticles(String keyword, String status, String type) {
         StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM article WHERE article_type = 'KNOWLEDGE_BASE'");
 

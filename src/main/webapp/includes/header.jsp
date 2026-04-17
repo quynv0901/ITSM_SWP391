@@ -167,7 +167,7 @@
                         </a>
                         <a href="${pageContext.request.contextPath}/admin/knowledge-base"
                                class="menu-item ${pageContext.request.requestURI.endsWith('/admin/knowledge-base.jsp') ? 'active' : ''}">
-                                <i class="bi bi-journal-text"></i> Knowledge Base
+                                <i class="bi bi-journal-text"></i> Quản lý bài viết
                             </a>
                         <c:if test="${sessionScope.user != null && sessionScope.user.roleId == 10}">
                             <li class="menu-header">Hệ thống</li>
