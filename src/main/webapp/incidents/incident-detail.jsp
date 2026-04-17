@@ -7,7 +7,7 @@
 
     <head>
         <meta charset="UTF-8">
-        <title>Incident Detail - ${incident.ticketNumber}</title>
+        <title>Chi tiết Sự cố - ${incident.ticketNumber}</title>
         <style>
             * {
                 box-sizing: border-box;
@@ -439,7 +439,7 @@
                 border: 1px solid #feb2b2;
             }
 
-            /* Cancel Modal Styles */
+            /* Kiểu hiển thị Modal hủy ticket */
             .modal-overlay {
                 display: none;
                 position: fixed;
@@ -607,45 +607,48 @@
     <body>
 
         <div class="page-header">
-            <a href="${pageContext.request.contextPath}/incident?action=list" class="back-btn">&#8592; Back
-                to List</a>
-            <div class="page-title">Incident: ${incident.ticketNumber}</div>
+            <a href="${pageContext.request.contextPath}/incident?action=list" class="back-btn">&#8592; Quay lại
+                danh sách</a>
+            <div class="page-title">Sự cố: ${incident.ticketNumber}</div>
         </div>
 
         <c:if test="${param.logSuccess eq '1'}">
-            <div class="alert alert-success">Time log saved successfully.</div>
+            <div class="alert alert-success">Lưu nhật ký thời gian thành công.</div>
         </c:if>
         <c:if test="${not empty param.logError}">
-            <div class="alert alert-error">Could not save time log (${param.logError}).</div>
+            <div class="alert alert-error">Không thể lưu nhật ký thời gian (${param.logError}).</div>
+        </c:if>
+        <c:if test="${param.editError eq 'locked'}">
+            <div class="alert alert-error">Bạn không thể chỉnh sửa incident này vì trạng thái đã được Agent/Expert cập nhật.</div>
         </c:if>
 
-        <!-- DETAILS CARD -->
+        <!-- Card thông tin chi tiết -->
         <div class="card">
-            <div class="card-title">Incident Details</div>
+            <div class="card-title">Chi tiết Sự cố</div>
             <div class="detail-grid">
                 <div class="detail-item">
-                    <label>Title</label>
+                    <label>Tiêu đề</label>
                     <span>${incident.title}</span>
                 </div>
                 <div class="detail-item">
-                    <label>Status</label>
+                    <label>Trạng thái</label>
                     <span class="badge badge-${fn:toLowerCase(incident.status)}">${incident.status}</span>
                 </div>
                 <div class="detail-item">
-                    <label>Priority</label>
+                    <label>Mức ưu tiên</label>
                     <span
                         class="badge badge-${fn:toLowerCase(incident.priority)}">${incident.priority}</span>
                 </div>
                 <div class="detail-item">
-                    <label>Difficulty</label>
+                    <label>Độ khó</label>
                     <span>${not empty incident.difficultyLevel ? incident.difficultyLevel : 'N/A'}</span>
                 </div>
                 <div class="detail-item">
-                    <label>Category ID</label>
+                    <label>Mã danh mục</label>
                     <span>${incident.categoryId}</span>
                 </div>
                 <div class="detail-item">
-                    <label>Reported By</label>
+                    <label>Người báo cáo</label>
                     <span>
                         <c:choose>
                             <c:when test="${not empty incident.reportedByName}">${incident.reportedByName}</c:when>
@@ -654,10 +657,10 @@
                     </span>
                 </div>
                 <div class="detail-item">
-                    <label>Assigned To</label>
+                    <label>Người xử lý</label>
                     <c:choose>
                         <c:when test="${incident.assignedTo == null}">
-                            <span style="color:#a0aec0;">Unassigned</span>
+                            <span style="color:#a0aec0;">Chưa phân công</span>
                         </c:when>
                         <c:otherwise>
                             <span>
@@ -671,30 +674,37 @@
                 </div>
             </div>
             <div class="detail-item" style="margin-top:16px;">
-                <label>Description</label>
+                    <label>Mô tả</label>
                 <span>${incident.description}</span>
             </div>
             <div class="action-bar">
-                <a href="${pageContext.request.contextPath}/incident?action=edit&id=${incident.ticketId}"
-                   class="btn btn-warning">Edit</a>
+                <c:if test="${canCurrentUserEditIncident}">
+                    <a href="${pageContext.request.contextPath}/incident?action=edit&id=${incident.ticketId}"
+                       class="btn btn-warning">Sửa</a>
+                </c:if>
+                <c:if test="${not canCurrentUserEditIncident and sessionScope.user.userId == incident.reportedBy and sessionScope.user.roleId == 1}">
+                    <span style="display:inline-flex;align-items:center;padding:9px 14px;border-radius:8px;background:#edf2f7;color:#4a5568;font-size:13px;font-weight:600;">
+                        Edit bị khóa sau khi Agent/Expert đổi trạng thái
+                    </span>
+                </c:if>
                 
-                <!-- Cancel Button for User (Reported By) -->
+                <!-- Nút hủy cho người tạo ticket (Reported By) -->
                 <c:if test="${incident.status ne 'CANCELLED' and incident.status ne 'CLOSED' 
                               and sessionScope.user.userId == incident.reportedBy}">
                     <button type="button" class="btn btn-danger" onclick="openCancelModal()">
-                        Cancel
+                        Hủy
                     </button>
                 </c:if>
                 
-                <!-- Cancel Button for Admin (System Admin) -->
+                <!-- Nút hủy cho quản trị hệ thống (System Admin) -->
                 <c:if test="${incident.status ne 'CANCELLED' and incident.status ne 'CLOSED' 
                               and sessionScope.user.roleId == 10}">
                     <button type="button" class="btn btn-danger" onclick="openCancelModal()">
-                        Cancel
+                        Hủy
                     </button>
                 </c:if>
                 
-                <!-- Assign Button (Hide for User and System Admin) -->
+                <!-- Nút nhận xử lý (ẩn với End-user và System Admin) -->
                 <c:if test="${incident.assignedTo == null and incident.status ne 'CANCELLED' 
                               and sessionScope.user.roleId != 1 and sessionScope.user.roleId != 10}">
                     <form action="${pageContext.request.contextPath}/incident" method="post"
@@ -702,33 +712,33 @@
                         <input type="hidden" name="action" value="assign">
                         <input type="hidden" name="id" value="${incident.ticketId}">
                         <input type="hidden" name="assignedTo" value="${sessionScope.user.userId}">
-                        <button type="submit" class="btn btn-primary">Assign to Me</button>
+                        <button type="submit" class="btn btn-primary">Nhận xử lý</button>
                     </form>
                 </c:if>
             </div>
         </div>
 
-        <!-- TABS CARD -->
+        <!-- Card chứa các tab -->
         <c:if test="${sessionScope.user.roleId != 1}">
             <div class="card" style="padding-bottom: 28px;">
                 <div class="tabs">
-                    <button class="tab-btn active" onclick="switchTab('timelog', this)">&#9201; Time Log</button>
-                    <button class="tab-btn" onclick="switchTab('related', this)">&#128279; Related
-                        Incidents</button>
+                    <button class="tab-btn active" onclick="switchTab('timelog', this)">&#9201; Nhật ký thời gian</button>
+                    <button class="tab-btn" onclick="switchTab('related', this)">&#128279; Sự cố
+                        liên quan</button>
                 </div>
 
-                <!-- TIME LOG TAB -->
+                <!-- Tab nhật ký thời gian -->
                 <div id="tab-timelog" class="tab-content active">
                     <div class="timelog-summary">
                         <div class="timelog-stat ts-purple">
                             <div class="stat-value">
                                 <fmt:formatNumber value="${totalTimeSpent}" maxFractionDigits="2" />h
                             </div>
-                            <div class="stat-label">Total Time Logged</div>
+                            <div class="stat-label">Tổng thời gian đã ghi</div>
                         </div>
                         <div class="timelog-stat ts-green">
                             <div class="stat-value">${fn:length(timeLogs)}</div>
-                            <div class="stat-label">Log Entries</div>
+                            <div class="stat-label">Số lượt ghi log</div>
                         </div>
                     </div>
 
@@ -738,11 +748,11 @@
                                 <thead>
                                     <tr>
                                         <th>#</th>
-                                        <th>Activity</th>
-                                        <th>Agent</th>
-                                        <th>Time Spent</th>
-                                        <th>Description</th>
-                                        <th>Logged At</th>
+                                        <th>Hoạt động</th>
+                                        <th>Nhân sự</th>
+                                        <th>Thời gian</th>
+                                        <th>Mô tả</th>
+                                        <th>Thời điểm ghi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -776,34 +786,34 @@
                         </c:when>
                         <c:otherwise>
                             <div class="empty-state">
-                                <p>No time entries yet.</p>
-                                <p style="font-size:13px; margin-top:6px;">Time will be auto-logged when the
-                                    agent assigns, resolves, or closes this ticket.</p>
+                                <p>Chưa có bản ghi thời gian.</p>
+                                <p style="font-size:13px; margin-top:6px;">Hệ thống sẽ tự ghi thời gian khi
+                                    nhân sự nhận xử lý, resolve hoặc đóng ticket.</p>
                             </div>
                         </c:otherwise>
                     </c:choose>
 
                     <c:if test="${incident.status ne 'CLOSED' and incident.status ne 'CANCELLED'}">
                         <div class="manual-log-form">
-                            <h4>Log Time Manually</h4>
+                            <h4>Ghi thời gian thủ công</h4>
                             <form action="${pageContext.request.contextPath}/incident" method="post">
                                 <input type="hidden" name="action" value="logtime">
                                 <input type="hidden" name="id" value="${incident.ticketId}">
                                 <div class="form-row">
                                     <div class="form-group fg-time">
-                                        <label for="timeSpent">Hours spent</label>
+                                        <label for="timeSpent">Số giờ thực hiện</label>
                                         <input type="number" id="timeSpent" name="timeSpent" step="any"
                                                min="0.25" max="24" placeholder="1.5" required>
                                     </div>
                                     <div class="form-group fg-desc">
-                                        <label for="logDescription">Description</label>
+                                        <label for="logDescription">Mô tả</label>
                                         <input type="text" id="logDescription" name="logDescription"
-                                               placeholder="What did you work on?" required>
+                                               placeholder="Bạn đã thực hiện công việc gì?" required>
                                     </div>
                                     <div class="form-group">
                                         <label>&nbsp;</label>
                                         <button type="submit" class="btn btn-primary">
-                                            Save Log</button>
+                                            Lưu log</button>
                                     </div>
                                 </div>
                             </form>
@@ -811,7 +821,7 @@
                     </c:if>
                 </div>
 
-                <!-- RELATED INCIDENTS TAB -->
+                <!-- Tab incident liên quan -->
                 <div id="tab-related" class="tab-content">
                     <c:choose>
                         <c:when test="${not empty relatedIncidents}">
@@ -831,7 +841,7 @@
                         <c:otherwise>
                             <div class="empty-state">
                                 <div class="empty-icon">&#128279;</div>
-                                <p>No related incidents found.</p>
+                                <p>Không có sự cố liên quan.</p>
                             </div>
                         </c:otherwise>
                     </c:choose>
@@ -839,7 +849,7 @@
             </div>
         </c:if>
 
-        <!-- Cancel Modal -->
+        <!-- Modal xác nhận hủy ticket -->
         <div class="modal-overlay" id="cancelModal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -897,7 +907,7 @@
                 document.getElementById('tab-' + tabId).classList.add('active');
             }
 
-            // Cancel Modal Functions
+            // Các hàm xử lý Modal hủy ticket
             function openCancelModal() {
                 document.getElementById('cancelModal').classList.add('active');
                 document.getElementById('reasonDetail').classList.remove('active');
@@ -910,7 +920,7 @@
             }
 
             function selectReason(reason) {
-                // Update radio selection
+                // Cập nhật lựa chọn radio
                 const options = document.querySelectorAll('.reason-option');
                 options.forEach(option => {
                     option.classList.remove('active');
@@ -918,7 +928,7 @@
                     radio.checked = false;
                 });
 
-                // Find and activate selected option
+                // Tìm và kích hoạt lựa chọn đang được chọn
                 const selectedOption = Array.from(options).find(option => 
                     option.querySelector('input[type="radio"]').value === reason
                 );
@@ -927,7 +937,7 @@
                     selectedOption.querySelector('input[type="radio"]').checked = true;
                 }
 
-                // Show/hide detail textarea
+                // Hiện/ẩn ô nhập lý do chi tiết
                 const detailDiv = document.getElementById('reasonDetail');
                 if (reason === 'Lý do khác') {
                     detailDiv.classList.add('active');
@@ -935,7 +945,7 @@
                     detailDiv.classList.remove('active');
                 }
 
-                // Update confirm button state
+                // Cập nhật trạng thái nút xác nhận
                 updateConfirmButton();
             }
 
@@ -966,13 +976,13 @@
                 const selectedReason = document.querySelector('input[name="cancelReason"]:checked').value;
                 const detailText = document.getElementById('reasonDetailText').value.trim();
                 
-                // Prepare reason text
+                // Chuẩn bị nội dung lý do gửi lên server
                 let reasonText = selectedReason;
                 if (detailText && detailText !== '') {
                     reasonText += ' - Chi tiết: ' + detailText;
                 }
 
-                // Submit form with reason
+                // Gửi form kèm lý do hủy
                 const form = document.createElement('form');
                 form.method = 'post';
                 form.action = '${pageContext.request.contextPath}/incident';
@@ -999,7 +1009,7 @@
                 form.submit();
             }
 
-            // Add event listeners for detail textarea
+            // Gắn sự kiện cho ô nhập chi tiết lý do
             document.getElementById('reasonDetailText').addEventListener('input', updateConfirmButton);
             document.querySelectorAll('.reason-option').forEach(option => {
                 option.addEventListener('click', () => {

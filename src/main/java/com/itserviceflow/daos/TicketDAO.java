@@ -694,10 +694,12 @@ public class TicketDAO {
         if (isEndUser) {
             sql = "SELECT * FROM ticket "
                     + "WHERE ticket_type = 'INCIDENT' "
-                    + "AND reported_by = ?";
+                    + "AND reported_by = ? "
+                    + "ORDER BY ticket_id DESC";
         } else {
             sql = "SELECT * FROM ticket "
-                    + "WHERE ticket_type = 'INCIDENT'";
+                    + "WHERE ticket_type = 'INCIDENT' "
+                    + "ORDER BY ticket_id DESC";
         }
 
         try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {

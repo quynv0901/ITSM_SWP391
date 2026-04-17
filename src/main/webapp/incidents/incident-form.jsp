@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${not empty incident ? 'Edit Incident' : 'Create Incident'}</title>
+    <title>${not empty incident ? 'Chỉnh sửa Sự cố' : 'Tạo Sự cố'}</title>
     <style>
         :root {
             --primary-color: #3b82f6;
@@ -234,6 +234,20 @@
         .status-resolved { background-color: #d1fae5; color: #065f46; }
         .status-cancelled { background-color: #fee2e2; color: #991b1b; }
 
+        .alert {
+            padding: 12px 14px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .alert-error {
+            background: #fff1f2;
+            border: 1px solid #fecdd3;
+            color: #be123c;
+        }
+
         .incident-info {
             background-color: #f8fafc;
             border: 1px solid var(--border-color);
@@ -312,90 +326,104 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>${not empty incident ? '✏️ Edit Incident' : '➕ Create New Incident'}</h1>
-            <p>Report and manage IT service disruptions efficiently</p>
+            <h1>${not empty incident ? '✏️ Chỉnh sửa Sự cố' : '➕ Tạo Sự cố mới'}</h1>
+            <p>Báo cáo và quản lý sự cố dịch vụ CNTT hiệu quả</p>
         </div>
 
         <div class="form-container">
+            <c:if test="${not empty param.error}">
+                <div class="alert alert-error">
+                    <c:choose>
+                        <c:when test="${param.error == 'missingTitle'}">Vui lòng nhập tiêu đề sự cố.</c:when>
+                        <c:when test="${param.error == 'missingDescription'}">Vui lòng nhập mô tả chi tiết.</c:when>
+                        <c:when test="${param.error == 'invalidCategory'}">Danh mục không hợp lệ. Vui lòng chọn lại.</c:when>
+                        <c:when test="${param.error == 'invalidPriority'}">Mức ưu tiên không hợp lệ.</c:when>
+                        <c:when test="${param.error == 'invalidTitleFormat'}">Tiêu đề chỉ được chứa chữ cái và khoảng trắng (không số, không ký tự đặc biệt).</c:when>
+                        <c:when test="${param.error == 'invalidDescriptionFormat'}">Mô tả chỉ được chứa chữ cái và khoảng trắng (không số, không ký tự đặc biệt).</c:when>
+                        <c:when test="${param.error == 'invalidTextFormat'}">Tiêu đề/Mô tả không hợp lệ: chỉ cho phép chữ cái và khoảng trắng.</c:when>
+                        <c:otherwise>Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin nhập.</c:otherwise>
+                    </c:choose>
+                </div>
+            </c:if>
             <form action="${pageContext.request.contextPath}/incident?action=${not empty incident ? 'update' : 'insert'}" method="post">
                 <c:if test="${not empty incident}">
                     <input type="hidden" name="id" value="${incident.ticketId}">
                     
-                    <!-- Incident Info Section -->
+                    <!-- Khu vực thông tin incident -->
                     <div class="incident-info">
-                        <h3>📋 Incident Information</h3>
+                        <h3>📋 Thông tin Sự cố</h3>
                         <div class="info-grid">
                             <div class="info-item">
-                                <div class="info-label">Ticket Number</div>
+                                <div class="info-label">Mã ticket</div>
                                 <div class="info-value">${incident.ticketNumber}</div>
                             </div>
                             <div class="info-item">
-                                <div class="info-label">Current Status</div>
+                                <div class="info-label">Trạng thái hiện tại</div>
                                 <div class="info-value">
                                     <span class="status-badge status-${incident.status}">${incident.status}</span>
                                 </div>
                             </div>
                             <div class="info-item">
-                                <div class="info-label">Created</div>
+                                <div class="info-label">Ngày tạo</div>
                                 <div class="info-value">
                                     ${incident.createdAt}
                                 </div>
                             </div>
                             <div class="info-item">
-                                <div class="info-label">Reported By</div>
+                                <div class="info-label">Người báo cáo</div>
                                 <div class="info-value">User #${incident.reportedBy}</div>
                             </div>
                         </div>
                     </div>
                 </c:if>
 
-                <!-- Basic Information Section -->
+                <!-- Khu vực thông tin cơ bản -->
                 <div class="form-section">
-                    <div class="section-title">📝 Basic Information</div>
+                    <div class="section-title">📝 Thông tin cơ bản</div>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="title">
-                                Incident Title <span class="required">*</span>
+                                Tiêu đề sự cố <span class="required">*</span>
                             </label>
                             <input type="text" id="title" name="title" class="form-control" 
                                    value="${incident.title}" 
-                                   placeholder="Describe the issue briefly..." 
+                                   placeholder="Mô tả ngắn gọn sự cố..." 
                                    required>
                         </div>
                         <div class="form-group">
                             <label for="priority">
-                                Priority Level
+                                Mức ưu tiên
                             </label>
                             <select id="priority" name="priority" class="form-control">
-                                <option value="LOW" ${incident.priority=='LOW' ? 'selected' : ''}>🟢 Low</option>
-                                <option value="MEDIUM" ${incident.priority=='MEDIUM' ? 'selected' : ''}>🟡 Medium</option>
-                                <option value="HIGH" ${incident.priority=='HIGH' ? 'selected' : ''}>🟠 High</option>
+                                <option value="LOW" ${incident.priority=='LOW' ? 'selected' : ''}>🟢 Thấp</option>
+                                <option value="MEDIUM" ${incident.priority=='MEDIUM' ? 'selected' : ''}>🟡 Trung bình</option>
+                                <option value="HIGH" ${incident.priority=='HIGH' ? 'selected' : ''}>🟠 Cao</option>
                             </select>
-                            <div class="help-text">Choose based on business impact</div>
+                            <div class="help-text">Chọn theo mức độ ảnh hưởng đến nghiệp vụ</div>
                         </div>
                     </div>
                     
                     <div class="form-group">
                         <label for="description">
-                            Detailed Description <span class="required">*</span>
+                            Mô tả chi tiết <span class="required">*</span>
                         </label>
                         <textarea id="description" name="description" class="form-control" 
-                                  placeholder="Please provide detailed information about the issue..." 
+                                  placeholder="Vui lòng cung cấp thông tin chi tiết về sự cố..." 
                                   required>${incident.description}</textarea>
-                        <div class="help-text">Include error messages, steps to reproduce, and affected systems</div>
+                        <div class="help-text">Nên bao gồm lỗi, các bước tái hiện và hệ thống bị ảnh hưởng</div>
                     </div>
                 </div>
 
-                <!-- Categorization Section -->
+                <!-- Khu vực phân loại -->
                 <div class="form-section">
-                    <div class="section-title">🏷️ Categorization</div>
+                    <div class="section-title">🏷️ Phân loại</div>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="categoryId">
-                                Category <span class="required">*</span>
+                                Danh mục <span class="required">*</span>
                             </label>
                             <select id="categoryId" name="categoryId" class="form-control" required>
-                                <option value="">-- Select a Category --</option>
+                                <option value="">-- Chọn danh mục --</option>
                                 <c:forEach var="category" items="${categories}">
                                     <option value="${category.categoryId}" 
                                             ${incident.categoryId == category.categoryId ? 'selected' : ''}>
@@ -403,47 +431,56 @@
                                     </option>
                                 </c:forEach>
                             </select>
-                            <div class="help-text">Choose the most appropriate category for this incident</div>
+                            <div class="help-text">Chọn danh mục phù hợp nhất với sự cố này</div>
                         </div>
                         <c:if test="${not empty incident}">
                             <div class="form-group">
                                 <label for="status">
-                                    Status
+                                    Trạng thái
                                 </label>
-                                <select id="status" name="status" class="form-control">
-                                    <option value="NEW" ${incident.status=='NEW' ? 'selected' : ''}>🆕 New</option>
-                                    <option value="IN_PROGRESS" ${incident.status=='IN_PROGRESS' ? 'selected' : ''}>🔄 In Progress</option>
-                                    <option value="RESOLVED" ${incident.status=='RESOLVED' ? 'selected' : ''}>✅ Resolved</option>
-                                    <option value="CANCELLED" ${incident.status=='CANCELLED' ? 'selected' : ''}>❌ Cancelled</option>
-                                </select>
-                                <div class="help-text">Update status as you work on the incident</div>
+                                <c:choose>
+                                    <c:when test="${isEndUserEditingOwnTicket}">
+                                        <input type="text" class="form-control" value="${incident.status}" readonly>
+                                        <input type="hidden" name="status" value="${incident.status}">
+                                        <div class="help-text">End-user không được đổi trạng thái ticket.</div>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <select id="status" name="status" class="form-control">
+                                            <option value="NEW" ${incident.status=='NEW' ? 'selected' : ''}>🆕 Mới</option>
+                                            <option value="IN_PROGRESS" ${incident.status=='IN_PROGRESS' ? 'selected' : ''}>🔄 Đang xử lý</option>
+                                            <option value="RESOLVED" ${incident.status=='RESOLVED' ? 'selected' : ''}>✅ Đã xử lý</option>
+                                            <option value="CANCELLED" ${incident.status=='CANCELLED' ? 'selected' : ''}>❌ Đã hủy</option>
+                                        </select>
+                                        <div class="help-text">Cập nhật trạng thái trong quá trình xử lý sự cố</div>
+                                    </c:otherwise>
+                                </c:choose>
                             </div>
                         </c:if>
                     </div>
                 </div>
 
-                <!-- Related Incidents Section -->
+                <!-- Khu vực incident liên quan -->
                 <c:if test="${empty incident}">
                     <div class="form-section">
-                        <div class="section-title">🔗 Related Incidents</div>
+                    <div class="section-title">🔗 Sự cố liên quan</div>
                         <div class="form-group">
                             <label for="relatedIds">
-                                Link Related Incidents
+                                Liên kết sự cố liên quan
                             </label>
                             <input type="text" id="relatedIds" name="relatedIds" class="form-control" 
-                                   placeholder="e.g. 101, 102, 103">
-                            <div class="help-text">Optional: Enter comma-separated incident IDs if this is related to existing incidents</div>
+                                   placeholder="ví dụ: 101, 102, 103">
+                            <div class="help-text">Tùy chọn: Nhập ID sự cố, cách nhau bởi dấu phẩy nếu có liên quan</div>
                         </div>
                     </div>
                 </c:if>
 
-                <!-- Action Buttons -->
+                <!-- Nhóm nút thao tác -->
                 <div class="btn-group">
                     <button type="submit" class="btn btn-primary">
-                        ${not empty incident ? '💾 Save Changes' : '➕ Create Incident'}
+                        ${not empty incident ? '💾 Lưu thay đổi' : '➕ Tạo sự cố'}
                     </button>
                     <a href="${pageContext.request.contextPath}/incident?action=list" class="btn btn-secondary">
-                        ↩️ Cancel
+                        ↩️ Hủy
                     </a>
                 </div>
             </form>
