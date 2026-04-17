@@ -46,5 +46,19 @@ public class KnowledgeBaseUserController extends HttpServlet {
         req.getRequestDispatcher("/knowledge/knowledge-base-list.jsp").forward(req, resp);
     }
 
-    
+    private void detailView(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        String idStr = req.getParameter("id");
+        if (idStr == null || idStr.isEmpty()) {
+            resp.sendRedirect(req.getContextPath() + "/knowledge-base");
+            return;
+        }
+        Article article = kbDAO.findById(Integer.parseInt(idStr));
+        if (article == null || !"PUBLISHED".equals(article.getStatus())) {
+            resp.sendRedirect(req.getContextPath() + "/knowledge-base?error=Article not found");
+            return;
+        }
+        req.setAttribute("article", article);
+        req.getRequestDispatcher("/knowledge/knowledge-base-detail.jsp").forward(req, resp);
+    }
 }
