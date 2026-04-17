@@ -281,19 +281,18 @@
                     <div class="brand-logo">
                         <i class="bi bi-cpu fs-3 text-white"></i>
                     </div>
-                    <h1>Hey you!</h1>
-                    <p>You feel lost? Join us to streamline your IT service workflow with our professional management
-                        system.</p>
+                    <h1>Xin chào</h1>
+                    <p>Bạn cảm thấy bối rối? Hãy tham gia cùng chúng tôi để tối ưu hóa quy trình dịch vụ CNTT của bạn với hệ thống quản lý chuyên nghiệp của chúng tôi.</p>
 
                     <ul class="feature-list">
-                        <li><i class="bi bi-circle-fill"></i> Incident Management</li>
-                        <li><i class="bi bi-circle-fill"></i> Asset Tracking</li>
-                        <li><i class="bi bi-circle-fill"></i> Knowledge Base</li>
+                        <li><i class="bi bi-circle-fill"></i> Quản lý sự cố</li>
+                        <li><i class="bi bi-circle-fill"></i> Theo dõi thông báo</li>
+                        <li><i class="bi bi-circle-fill"></i> Cơ sở tri thức</li>
                     </ul>
                 </div>
                 <div class="login-right">
                     <div class="auth-tab">
-                        <a href="#" class="active">LOGIN</a>
+                        <a href="#" class="active">Đăng nhập</a>
                     </div>
 
                     <form action="${pageContext.request.contextPath}/auth?action=login" method="post">

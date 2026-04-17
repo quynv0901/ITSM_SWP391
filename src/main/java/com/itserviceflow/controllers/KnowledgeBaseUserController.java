@@ -21,6 +21,8 @@ public class KnowledgeBaseUserController extends HttpServlet {
         action = (action == null) ? "list" : action;
 
         switch (action) {
+            case "detail": detailView(req, resp); break;
+            default:       listView(req, resp);   break;
         }
     }
 

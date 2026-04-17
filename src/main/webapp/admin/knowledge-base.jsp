@@ -10,11 +10,11 @@
     <%-- Header --%>
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="h4 text-primary m-0">
-            <i class="bi bi-journal-text me-2"></i>Knowledge Base
+            <i class="bi bi-journal-text me-2"></i>Quản lý bài viết
         </h2>
         <a href="${pageContext.request.contextPath}/admin/knowledge-base?action=add"
            class="btn btn-primary">
-            <i class="bi bi-plus-circle me-1"></i> Create Knowledge Base
+            <i class="bi bi-plus-circle me-1"></i> Tạo bài viết mới
         </a>
     </div>
 
@@ -38,20 +38,20 @@
         <input type="hidden" name="action" value="list">
 
         <input type="text" class="form-control" name="keyword"
-               placeholder="Search by title or number..."
+               placeholder="Tìm theo tiêu đề hoặc ID"
                value="${keyword}" style="max-width: 280px;">
 
         <select class="form-select" name="status" style="max-width: 180px;">
-            <option value="ALL" ${empty statusFilter || statusFilter=='ALL' ? 'selected' : ''}>All Statuses</option>
-            <option value="PUBLISHED" ${statusFilter=='PUBLISHED' ? 'selected' : ''}>Published</option>
-            <option value="ARCHIVED"  ${statusFilter=='ARCHIVED'  ? 'selected' : ''}>Archived</option>
+            <option value="ALL" ${empty statusFilter || statusFilter=='ALL' ? 'selected' : ''}>Tất cả trạng thái</option>
+            <option value="PUBLISHED" ${statusFilter=='PUBLISHED' ? 'selected' : ''}>Đã đăng</option>
+            <option value="ARCHIVED"  ${statusFilter=='ARCHIVED'  ? 'selected' : ''}>Lưu trữ</option>
         </select>
 
         <button type="submit" class="btn btn-primary">
-            <i class="bi bi-search"></i> Search
+            <i class="bi bi-search"></i> Tìm
         </button>
         <a href="${pageContext.request.contextPath}/admin/knowledge-base?aclisttion="
-           class="btn btn-outline-secondary">Reset</a>
+           class="btn btn-outline-secondary">Tải lại trang</a>
     </form>
 
     <%-- Table --%>
@@ -60,10 +60,10 @@
             <thead class="table-light">
                 <tr>
                     <th>ID</th>
-                    <th>Title</th>
-                    <th>Status</th>
-                    <th>Updated At</th>
-                    <th>Actions</th>
+                    <th>Tiêu đề</th>
+                    <th>Trạng thái</th>
+                    <th>Cập nhật</th>
+                    <th>Hành động</th>
                 </tr>
             </thead>
             <tbody>
@@ -130,7 +130,7 @@
                     <tr>
                         <td colspan="6" class="text-center text-muted fst-italic py-5">
                             <i class="bi bi-journal-x fs-3 d-block mb-2"></i>
-                            No articles found.
+                            Không tìm thấy bài viết.
                         </td>
                     </tr>
                 </c:if>
@@ -145,7 +145,7 @@
                 <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
                     <a class="page-link"
                        href="?action=list&keyword=${keyword}&status=${statusFilter}&type=${typeFilter}&page=${currentPage - 1}">
-                        Previous
+                        Trước
                     </a>
                 </li>
                 <c:forEach begin="1" end="${totalPages}" var="i">
@@ -159,7 +159,7 @@
                 <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
                     <a class="page-link"
                        href="?action=list&keyword=${keyword}&status=${statusFilter}&type=${typeFilter}&page=${currentPage + 1}">
-                        Next
+                        Sau
                     </a>
                 </li>
             </ul>

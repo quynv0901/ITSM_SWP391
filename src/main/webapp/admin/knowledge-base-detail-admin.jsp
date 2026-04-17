@@ -15,7 +15,7 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="h4 text-primary m-0">
-            <i class="bi bi-journal-text me-2"></i>Knowledge Base Detail
+            <i class="bi bi-journal-text me-2"></i>Thông tin bài viết
         </h2>
         <div class="d-flex gap-2">
             <c:if test="${article.status == 'PENDING'}">
@@ -25,7 +25,7 @@
                 </c:if>
                 <a href="${pageContext.request.contextPath}/admin/knowledge-base?action=list"
                    class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left me-1"></i> Back
+                    <i class="bi bi-arrow-left me-1"></i> Quay lại
                 </a>
         </div>
     </div>
@@ -46,32 +46,26 @@
                           or not empty article.solution or not empty article.errorCode}">
                   <div class="card border-0 shadow-sm">
                       <div class="card-header bg-light fw-bold">
-                          <i class="bi bi-tools me-2 text-warning"></i>Technical Details
+                          <i class="bi bi-tools me-2 text-warning"></i>Thông tin chi tiết
                       </div>
                       <div class="card-body">
                           <c:if test="${not empty article.errorCode}">
-                              <div class="mb-4">
-                                  <p class="text-uppercase text-muted mb-1" style="font-size:11px;letter-spacing:.06em;font-weight:600;">Error code</p>
-                                  <p class="text-decoration-none">
-                                      <code class="bg-light border px-2 py-1 rounded text-primary">${article.errorCode}</code>
-                                  </p>
-                              </div>
                           </c:if>
                           <c:if test="${not empty article.symptom}">
                               <div class="mb-3">
-                                  <label class="fw-bold text-muted small d-block">SYMPTOM</label>
+                                  <label class="fw-bold text-muted small d-block">Triệu chứng</label>
                                   <p class="mb-0">${article.symptom}</p>
                               </div>
                           </c:if>
                           <c:if test="${not empty article.cause}">
                               <div class="mb-3">
-                                  <label class="fw-bold text-muted small d-block">CAUSE</label>
+                                  <label class="fw-bold text-muted small d-block">Nguyên nhân</label>
                                   <p class="mb-0">${article.cause}</p>
                               </div>
                           </c:if>
                           <c:if test="${not empty article.solution}">
                               <div class="mb-0">
-                                  <label class="fw-bold text-muted small d-block">SOLUTION</label>
+                                  <label class="fw-bold text-muted small d-block">Giải pháp</label>
                                   <p class="mb-0">${article.solution}</p>
                               </div>
                           </c:if>
@@ -84,19 +78,19 @@
         <div class="col-lg-4">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-light fw-bold">
-                    <i class="bi bi-info-circle me-2"></i>Knowledge Base Info
+                    <i class="bi bi-info-circle me-2"></i>Thông tin
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label class="fw-bold text-muted small d-block">NUMBER</label>
+                        <label class="fw-bold text-muted small d-block">Số</label>
                         <span>${article.articleNumber}</span>
                     </div>
                     <div class="mb-3">
-                        <label class="fw-bold text-muted small d-block">TYPE</label>
-                        <span class="badge bg-info text-dark">KNOWLEDGE BASE</span>
+                        <label class="fw-bold text-muted small d-block">Loại</label>
+                        <span class="badge bg-info text-dark">Thông báo</span>
                     </div>
                     <div class="mb-3">
-                        <label class="fw-bold text-muted small d-block">STATUS</label>
+                        <label class="fw-bold text-muted small d-block">Trạng thái</label>
                         <c:choose>
                             <c:when test="${article.status == 'DRAFT'}">
                                 <span class="badge bg-secondary">Draft</span></c:when>
@@ -117,7 +111,7 @@
                         </div>
                     </c:if>
                     <div class="mb-0">
-                        <label class="fw-bold text-muted small d-block">LAST UPDATED</label>
+                        <label class="fw-bold text-muted small d-block">Cập nhật lần cuối</label>
                         <span class="text-muted small">${article.updatedAt}</span>
                     </div>
                 </div>

@@ -144,7 +144,7 @@
 
 <form id="filterForm" action="${pageContext.request.contextPath}/admin/users" method="get">
     <div class="search-panel shadow-sm">
-        <input type="text" name="search" class="form-control search-input" placeholder="Tên, Email, Username..." value="${search}">
+        <input type="text" name="search" class="form-control search-input" placeholder="Tên, Email,..." value="${search}">
         <select name="roleId" class="form-select" style="max-width: 150px;">
             <option value="">Tất cả Vai trò</option>
             <c:forEach var="r" items="${roles}">
@@ -158,7 +158,7 @@
             </c:forEach>
         </select>
         <button type="submit" class="btn btn-primary px-4"><i class="bi bi-search"></i></button>
-        <a href="${pageContext.request.contextPath}/admin/users" class="btn btn-outline-secondary">Reset</a>
+        <a href="${pageContext.request.contextPath}/admin/users" class="btn btn-outline-secondary">Tải lại trang</a>
 
         <input type="hidden" name="sortBy" id="sortBy" value="${sortBy}">
         <input type="hidden" name="order" id="order" value="${order}">
