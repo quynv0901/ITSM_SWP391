@@ -2,6 +2,7 @@ package com.itserviceflow.controllers;
 
 import com.itserviceflow.daos.ConfigurationItemDAO;
 import com.itserviceflow.models.ConfigurationItem;
+import com.itserviceflow.utils.AuthUtils;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -27,20 +28,71 @@ public class ConfigurationItemController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        // Must be logged in
+        if (!AuthUtils.isLoggedIn(request, response)) return;
+
         String action = request.getParameter("action");
         if (action == null) action = "list";
 
         switch (action) {
+            case "list":
+                if (!AuthUtils.hasRole(request, response,
+                        AuthUtils.ROLE_SUPPORT_AGENT,
+                        AuthUtils.ROLE_TECHNICAL_EXPERT,
+                        AuthUtils.ROLE_MANAGER,
+                        AuthUtils.ROLE_ASSET_MANAGER,
+                        AuthUtils.ROLE_IT_DIRECTOR)) {
+                    return;
+                }
+                String keyword = request.getParameter("q");
+                String status  = request.getParameter("status");
+
+                // ── Pagination ──────────────────────────────────
+                final int PAGE_SIZE = 10;
+                int currentPage = 1;
+                try {
+                    String pageParam = request.getParameter("page");
+                    if (pageParam != null && !pageParam.isEmpty()) {
+                        currentPage = Integer.parseInt(pageParam);
+                        if (currentPage < 1) currentPage = 1;
+                    }
+                } catch (NumberFormatException ignored) {}
+
+                int totalItems = ciDAO.countConfigurationItems(keyword, status);
+                int totalPages = (int) Math.ceil((double) totalItems / PAGE_SIZE);
+                if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+
+                List<ConfigurationItem> list = ciDAO.getConfigurationItemsPaged(
+                        keyword, status, currentPage, PAGE_SIZE);
+
+                request.setAttribute("ciList",      list);
+                request.setAttribute("q",            keyword);
+                request.setAttribute("status",       status);
+                request.setAttribute("currentPage",  currentPage);
+                request.setAttribute("totalPages",   totalPages);
+                request.setAttribute("totalItems",   totalItems);
+                request.getRequestDispatcher("/cmdb/list.jsp").forward(request, response);
+                break;
+
             case "add":
+                // Only Asset Manager(8) and Admin(10) can create
+                if (!AuthUtils.hasRole(request, response, AuthUtils.ROLE_ASSET_MANAGER)) {
+                    return;
+                }
                 request.getRequestDispatcher("/cmdb/form.jsp").forward(request, response);
                 break;
 
             case "edit":
+                // Only Asset Manager(8) and Admin(10) can edit
+                if (!AuthUtils.hasRole(request, response, AuthUtils.ROLE_ASSET_MANAGER)) {
+                    return;
+                }
                 try {
                     int editId = Integer.parseInt(request.getParameter("id"));
                     ConfigurationItem ciToEdit = ciDAO.getConfigurationItemById(editId);
                     if (ciToEdit == null) {
-                        request.getSession().setAttribute("errorMessage", "Configuration Item not found.");
+                        request.getSession().setAttribute("errorMessage", "Không tìm thấy mục cấu hình.");
                         response.sendRedirect(request.getContextPath() + "/configuration-item");
                         return;
                     }
@@ -51,16 +103,8 @@ public class ConfigurationItemController extends HttpServlet {
                 }
                 break;
 
-            case "list":
             default:
-                String keyword = request.getParameter("q");
-                String status  = request.getParameter("status");
-                List<ConfigurationItem> list = ciDAO.getAllConfigurationItems(keyword, status);
-                request.setAttribute("ciList", list);
-                request.setAttribute("q", keyword);
-                request.setAttribute("status", status);
-                request.getRequestDispatcher("/cmdb/list.jsp").forward(request, response);
-                break;
+                response.sendRedirect(request.getContextPath() + "/configuration-item");
         }
     }
 
@@ -69,41 +113,59 @@ public class ConfigurationItemController extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
+
+        // Must be logged in
+        if (!AuthUtils.isLoggedIn(request, response)) return;
+
         String action = request.getParameter("action");
         if (action == null) action = "add";
 
         switch (action) {
             case "add": {
-                // --- Đọc dữ liệu ---
+                // Only Asset Manager(8) and Admin(10)
+                if (!AuthUtils.hasRole(request, response, AuthUtils.ROLE_ASSET_MANAGER)) return;
+
                 String name        = trim(request.getParameter("name"));
                 String type        = trim(request.getParameter("type"));
                 String version     = trim(request.getParameter("version"));
                 String description = trim(request.getParameter("description"));
                 String status      = trim(request.getParameter("status"));
 
-                // --- Server-side validation ---
                 String error = validateCI(name, type, version, description, status);
                 if (error != null) {
-                    // Trả về form, giữ lại dữ liệu người dùng đã nhập
                     ConfigurationItem formData = buildCI(0, name, type, version, description, status);
-                    request.setAttribute("ci",       formData);
+                    request.setAttribute("ci", formData);
                     request.setAttribute("errorMsg", error);
-                    request.setAttribute("isNew",    true);
+                    request.setAttribute("isNew", true);
                     request.getRequestDispatcher("/cmdb/form.jsp").forward(request, response);
                     return;
                 }
 
-                ConfigurationItem newCi = buildCI(0, name, type, version, description, status);
-                if (ciDAO.createConfigurationItem(newCi)) {
-                    request.getSession().setAttribute("successMessage", "Configuration Item added successfully!");
+                // ── Kiểm tra trùng tên ─────────────────────────────────────
+                if (ciDAO.isDuplicateName(name, 0)) {
+                    ConfigurationItem formData = buildCI(0, name, type, version, description, status);
+                    request.setAttribute("ci", formData);
+                    request.setAttribute("isNew", true);
+                    request.setAttribute("errorMsg",
+                            "⚠️ Tên “" + name + "” đã tồn tại trong CMDB. " +
+                            "Mỗi mục cấu hình phải có tên duy nhất.");
+                    request.getRequestDispatcher("/cmdb/form.jsp").forward(request, response);
+                    return;
+                }
+
+                if (ciDAO.createConfigurationItem(buildCI(0, name, type, version, description, status))) {
+                    request.getSession().setAttribute("successMessage", "✅ Thêm mục cấu hình thành công!");
                 } else {
-                    request.getSession().setAttribute("errorMessage", "Failed to add Configuration Item. Please try again.");
+                    request.getSession().setAttribute("errorMessage", "❌ Thêm mục cấu hình thất bại. Vui lòng thử lại.");
                 }
                 response.sendRedirect(request.getContextPath() + "/configuration-item");
                 break;
             }
 
             case "edit": {
+                // Only Asset Manager(8) and Admin(10)
+                if (!AuthUtils.hasRole(request, response, AuthUtils.ROLE_ASSET_MANAGER)) return;
+
                 int idToUpdate;
                 try {
                     idToUpdate = Integer.parseInt(request.getParameter("id"));
@@ -112,43 +174,54 @@ public class ConfigurationItemController extends HttpServlet {
                     return;
                 }
 
-                // --- Đọc dữ liệu ---
                 String name        = trim(request.getParameter("name"));
                 String type        = trim(request.getParameter("type"));
                 String version     = trim(request.getParameter("version"));
                 String description = trim(request.getParameter("description"));
                 String status      = trim(request.getParameter("status"));
 
-                // --- Server-side validation ---
                 String error = validateCI(name, type, version, description, status);
                 if (error != null) {
                     ConfigurationItem formData = buildCI(idToUpdate, name, type, version, description, status);
-                    request.setAttribute("ci",       formData);
+                    request.setAttribute("ci", formData);
                     request.setAttribute("errorMsg", error);
                     request.getRequestDispatcher("/cmdb/form.jsp").forward(request, response);
                     return;
                 }
 
-                ConfigurationItem updateCi = buildCI(idToUpdate, name, type, version, description, status);
-                if (ciDAO.updateConfigurationItem(updateCi)) {
-                    request.getSession().setAttribute("successMessage", "Configuration Item updated successfully!");
+                // ── Kiểm tra trùng tên (loại trừ item đang sửa) ──────────────────────
+                if (ciDAO.isDuplicateName(name, idToUpdate)) {
+                    ConfigurationItem formData = buildCI(idToUpdate, name, type, version, description, status);
+                    request.setAttribute("ci", formData);
+                    request.setAttribute("errorMsg",
+                            "⚠️ Tên “" + name + "” đã được dùng bởi mục cấu hình khác. " +
+                            "Vui lòng đặt tên khác.");
+                    request.getRequestDispatcher("/cmdb/form.jsp").forward(request, response);
+                    return;
+                }
+
+                if (ciDAO.updateConfigurationItem(buildCI(idToUpdate, name, type, version, description, status))) {
+                    request.getSession().setAttribute("successMessage", "✅ Cập nhật mục cấu hình thành công!");
                 } else {
-                    request.getSession().setAttribute("errorMessage", "Failed to update Configuration Item. Please try again.");
+                    request.getSession().setAttribute("errorMessage", "❌ Cập nhật mục cấu hình thất bại. Vui lòng thử lại.");
                 }
                 response.sendRedirect(request.getContextPath() + "/configuration-item");
                 break;
             }
 
             case "delete": {
+                // Only Asset Manager(8) and Admin(10)
+                if (!AuthUtils.hasRole(request, response, AuthUtils.ROLE_ASSET_MANAGER)) return;
+
                 try {
                     int idToDelete = Integer.parseInt(request.getParameter("id"));
                     if (ciDAO.deleteConfigurationItem(idToDelete)) {
-                        request.getSession().setAttribute("successMessage", "Configuration Item deleted successfully!");
+                        request.getSession().setAttribute("successMessage", "Xóa mục cấu hình thành công!");
                     } else {
-                        request.getSession().setAttribute("errorMessage", "Failed to delete Configuration Item. It may have already been removed.");
+                        request.getSession().setAttribute("errorMessage", "Xóa mục cấu hình thất bại.");
                     }
                 } catch (NumberFormatException e) {
-                    request.getSession().setAttribute("errorMessage", "Invalid ID for deletion.");
+                    request.getSession().setAttribute("errorMessage", "ID không hợp lệ.");
                 }
                 response.sendRedirect(request.getContextPath() + "/configuration-item");
                 break;
@@ -161,13 +234,11 @@ public class ConfigurationItemController extends HttpServlet {
 
     // ==================== Helpers ====================
 
-    /** Trim và trả về null nếu chuỗi rỗng */
     private String trim(String value) {
         if (value == null) return "";
         return value.trim();
     }
 
-    /** Tạo một ConfigurationItem từ các tham số */
     private ConfigurationItem buildCI(int id, String name, String type,
                                       String version, String description, String status) {
         ConfigurationItem ci = new ConfigurationItem();
@@ -180,49 +251,26 @@ public class ConfigurationItemController extends HttpServlet {
         return ci;
     }
 
-    /**
-     * Kiểm tra dữ liệu server-side.
-     * @return thông báo lỗi nếu có, null nếu hợp lệ.
-     */
     private String validateCI(String name, String type, String version,
                                String description, String status) {
-        // --- Name ---
-        if (name == null || name.isEmpty()) {
-            return "Name is required and cannot be blank.";
-        }
-        if (name.length() > 100) {
-            return "Name must not exceed 100 characters (current: " + name.length() + ").";
-        }
-        if (!name.matches("^[\\p{L}0-9 .\\-_()/#]+$")) {
-            return "Name contains invalid characters. Only letters, numbers and basic symbols (. - _ ( ) / #) are allowed.";
-        }
-
-        // --- Type ---
-        if (type == null || type.isEmpty()) {
-            return "Type is required. Please select a valid type.";
-        }
-        if (!VALID_TYPES.contains(type)) {
-            return "Invalid Type value: '" + type + "'.";
-        }
-
-        // --- Version (optional) ---
-        if (version != null && version.length() > 50) {
-            return "Version must not exceed 50 characters (current: " + version.length() + ").";
-        }
-
-        // --- Description (optional) ---
-        if (description != null && description.length() > 2000) {
-            return "Description must not exceed 2000 characters (current: " + description.length() + ").";
-        }
-
-        // --- Status ---
-        if (status == null || status.isEmpty()) {
-            return "Status is required.";
-        }
-        if (!VALID_STATUSES.contains(status)) {
-            return "Invalid Status value: '" + status + "'.";
-        }
-
-        return null; // OK
+        if (name == null || name.isEmpty())
+            return "Tên là bắt buộc và không được để trống.";
+        if (name.length() > 100)
+            return "Tên không được vượt quá 100 ký tự (hiện tại: " + name.length() + ").";
+        if (!name.matches("^[\\p{L}0-9 .\\-_()/#]+$"))
+            return "Tên chứa ký tự không hợp lệ. Chỉ chấp nhận chữ cái, số và ký tự cơ bản (. - _ ( ) / #).";
+        if (type == null || type.isEmpty())
+            return "Loại là bắt buộc. Vui lòng chọn loại hợp lệ.";
+        if (!VALID_TYPES.contains(type))
+            return "Giá trị loại không hợp lệ: '" + type + "'.";
+        if (version != null && version.length() > 50)
+            return "Phiên bản không được vượt quá 50 ký tự (hiện tại: " + version.length() + ").";
+        if (description != null && description.length() > 2000)
+            return "Mô tả không được vượt quá 2000 ký tự (hiện tại: " + description.length() + ").";
+        if (status == null || status.isEmpty())
+            return "Trạng thái là bắt buộc.";
+        if (!VALID_STATUSES.contains(status))
+            return "Giá trị trạng thái không hợp lệ: '" + status + "'.";
+        return null;
     }
 }
