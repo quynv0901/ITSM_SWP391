@@ -1,23 +1,21 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
-<jsp:include page="/includes/header.jsp">
-    <jsp:param name="pageTitle" value="Problem Tickets" />
-</jsp:include>
+<jsp:include page="/includes/header.jsp" />
 
 <div class="container-fluid bg-white p-4 rounded shadow-sm">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="h4 text-primary m-0">Problem Tickets List</h2>
+        <h2 class="h4 text-primary m-0">Danh sách phiếu vấn đề</h2>
         <div class="d-flex gap-2">
             <c:if test="${sessionScope.user.roleId == 3 || sessionScope.user.roleId == 5}">
                 <button type="button" class="btn btn-danger" onclick="submitBulkAction('bulkDelete')">
-                    <i class="bi bi-trash"></i> Delete Selected
+                    <i class="bi bi-trash"></i> Xóa đã chọn
                 </button>
             </c:if>
             <c:if test="${sessionScope.user.roleId == 3 || sessionScope.user.roleId == 5}">
                 <a href="${pageContext.request.contextPath}/problem?action=add" class="btn btn-primary"
                    style="white-space:nowrap;">
-                    <i class="bi bi-plus-circle"></i> Create Problem Ticket
+                    <i class="bi bi-plus-circle"></i> Tạo phiếu vấn đề
                 </a>
             </c:if>
         </div>
@@ -41,27 +39,23 @@
     <form action="${pageContext.request.contextPath}/problem" method="get"
           class="bg-light p-3 rounded mb-4 border d-flex gap-3 align-items-center">
         <input type="hidden" name="action" value="list">
-
         <div class="flex-grow-1">
-            <input type="text" class="form-control" name="keyword" placeholder="Search by name or code..."
-                   value="${keyword}">
+            <input type="text" class="form-control" name="keyword"
+                   placeholder="Tìm theo tên hoặc mã phiếu..." value="${keyword}">
         </div>
-
         <div style="width: 250px;">
             <select class="form-select" name="status">
-                <option value="ALL" ${statusFilter=='ALL' ? 'selected' : '' }>All Statuses</option>
-                <option value="NEW" ${statusFilter=='NEW' ? 'selected' : '' }>New</option>
-                <option value="IN_PROGRESS" ${statusFilter=='IN_PROGRESS' ? 'selected' : '' }>In Progress
-                </option>
-                <option value="RESOLVED" ${statusFilter=='RESOLVED' ? 'selected' : '' }>Resolved</option>
-                <option value="CLOSED" ${statusFilter=='CLOSED' ? 'selected' : '' }>Closed</option>
-                <option value="CANCELLED" ${statusFilter=='CANCELLED' ? 'selected' : '' }>Cancelled</option>
+                <option value="ALL"         ${statusFilter=='ALL'         ? 'selected' : ''}>Tất cả trạng thái</option>
+                <option value="NEW"         ${statusFilter=='NEW'         ? 'selected' : ''}>Mới</option>
+                <option value="IN_PROGRESS" ${statusFilter=='IN_PROGRESS' ? 'selected' : ''}>Đang xử lý</option>
+                <option value="RESOLVED"    ${statusFilter=='RESOLVED'    ? 'selected' : ''}>Đã giải quyết</option>
+                <option value="CLOSED"      ${statusFilter=='CLOSED'      ? 'selected' : ''}>Đã đóng</option>
+                <option value="CANCELLED"   ${statusFilter=='CANCELLED'   ? 'selected' : ''}>Đã hủy</option>
             </select>
         </div>
-
-        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Search</button>
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Tìm kiếm</button>
         <a href="${pageContext.request.contextPath}/problem?action=list"
-           class="btn btn-outline-secondary">Clear</a>
+           class="btn btn-outline-secondary">Xóa bộ lọc</a>
     </form>
 
     <form id="bulkForm" action="${pageContext.request.contextPath}/problem" method="post" style="display:none;">
@@ -73,15 +67,14 @@
             <thead class="table-light">
                 <tr>
                     <th style="width: 40px;">
-                        <input class="form-check-input" type="checkbox" id="selectAll"
-                               onclick="toggleAll(this)">
+                        <input class="form-check-input" type="checkbox" id="selectAll" onclick="toggleAll(this)">
                     </th>
                     <th>ID</th>
-                    <th>Ticket Number</th>
-                    <th>Title</th>
-                    <th>Status</th>
-                    <th>Created At</th>
-                    <th>Actions</th>
+                    <th>Số phiếu</th>
+                    <th>Tiêu đề</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày tạo</th>
+                    <th>Thao tác</th>
                 </tr>
             </thead>
             <tbody id="problemsTableBody">
@@ -103,15 +96,20 @@
                         <td>${problem.title}</td>
                         <td>
                             <c:choose>
-                                <c:when test="${problem.status == 'NEW'}"><span
-                                        class="badge bg-info text-dark">NEW</span></c:when>
-                                <c:when test="${problem.status == 'IN_PROGRESS'}"><span
-                                        class="badge bg-primary">IN_PROGRESS</span></c:when>
-                                <c:when test="${problem.status == 'RESOLVED'}"><span
-                                        class="badge bg-success">RESOLVED</span></c:when>
-                                <c:when test="${problem.status == 'CANCELLED'}"><span
-                                        class="badge bg-danger">CANCELLED</span></c:when>
-                                <c:otherwise><span class="badge bg-dark">${problem.status}</span>
+                                <c:when test="${problem.status == 'NEW'}">
+                                    <span class="badge bg-info text-dark">MỚI</span>
+                                </c:when>
+                                <c:when test="${problem.status == 'IN_PROGRESS'}">
+                                    <span class="badge bg-primary">ĐANG XỬ LÝ</span>
+                                </c:when>
+                                <c:when test="${problem.status == 'RESOLVED'}">
+                                    <span class="badge bg-success">ĐÃ GIẢI QUYẾT</span>
+                                </c:when>
+                                <c:when test="${problem.status == 'CANCELLED'}">
+                                    <span class="badge bg-danger">ĐÃ HỦY</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="badge bg-dark">${problem.status}</span>
                                 </c:otherwise>
                             </c:choose>
                         </td>
@@ -119,21 +117,24 @@
                         <td class="d-flex gap-1">
                             <a href="${pageContext.request.contextPath}/problem?action=detail&id=${problem.ticketId}"
                                class="btn btn-info btn-sm text-white">
-                                <i class="bi bi-eye"></i> View
+                                <i class="bi bi-eye"></i> Xem
                             </a>
                             <c:if test="${sessionScope.user.roleId == 3 || sessionScope.user.roleId == 5}">
                                 <c:choose>
                                     <c:when test="${problem.status eq 'NEW' && (problem.assignedTo == null || problem.assignedTo == 0) && (problem.reportedBy == sessionScope.user.userId || sessionScope.user.roleId == 3 || sessionScope.user.roleId == 10)}">
-                                        <form action="${pageContext.request.contextPath}/problem?action=delete" method="post" class="m-0">
+                                        <form action="${pageContext.request.contextPath}/problem?action=delete"
+                                              method="post" class="m-0">
                                             <input type="hidden" name="id" value="${problem.ticketId}">
-                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this problem ticket?');">
-                                                <i class="bi bi-trash"></i> Delete
+                                            <button type="submit" class="btn btn-danger btn-sm"
+                                                onclick="return confirm('Bạn có chắc muốn xóa phiếu vấn đề này không?');">
+                                                <i class="bi bi-trash"></i> Xóa
                                             </button>
                                         </form>
                                     </c:when>
                                     <c:otherwise>
-                                        <button type="button" class="btn btn-danger btn-sm" disabled title="Only NEW, unassigned tickets created by you can be deleted.">
-                                            <i class="bi bi-trash"></i> Delete
+                                        <button type="button" class="btn btn-danger btn-sm" disabled
+                                            title="Chỉ phiếu MỚI chưa phân công và do bạn tạo mới có thể xóa.">
+                                            <i class="bi bi-trash"></i> Xóa
                                         </button>
                                     </c:otherwise>
                                 </c:choose>
@@ -144,7 +145,7 @@
                 <c:if test="${empty problems}">
                     <tr>
                         <td colspan="7" class="text-center text-muted fst-italic py-4">
-                            No Problem Tickets found.
+                            Không tìm thấy phiếu vấn đề nào.
                         </td>
                     </tr>
                 </c:if>
@@ -152,11 +153,11 @@
         </table>
 
         <c:if test="${totalPages > 1}">
-            <nav aria-label="Page navigation" class="mt-3">
+            <nav aria-label="Phân trang" class="mt-3">
                 <ul class="pagination justify-content-center">
                     <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
                         <a class="page-link"
-                           href="?action=list&keyword=${keyword}&status=${statusFilter}&page=${currentPage - 1}">Previous</a>
+                           href="?action=list&keyword=${keyword}&status=${statusFilter}&page=${currentPage - 1}">Trước</a>
                     </li>
                     <c:forEach begin="1" end="${totalPages}" var="i">
                         <li class="page-item ${currentPage == i ? 'active' : ''}">
@@ -166,7 +167,7 @@
                     </c:forEach>
                     <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
                         <a class="page-link"
-                           href="?action=list&keyword=${keyword}&status=${statusFilter}&page=${currentPage + 1}">Next</a>
+                           href="?action=list&keyword=${keyword}&status=${statusFilter}&page=${currentPage + 1}">Sau</a>
                     </li>
                 </ul>
             </nav>
@@ -185,10 +186,10 @@
     function submitBulkAction(actionType) {
         const checkboxes = document.querySelectorAll('.rowCheckbox:checked');
         if (checkboxes.length === 0) {
-            alert('Please select at least one ticket to delete.');
+            alert('Vui lòng chọn ít nhất một phiếu để xóa.');
             return;
         }
-        if (confirm('Are you sure you want to delete the selected tickets? \nWarning: Ensure the selected items are in the valid state for this action.')) {
+        if (confirm('Bạn có chắc muốn xóa các phiếu đã chọn?\nLưu ý: Đảm bảo các mục đã chọn ở trạng thái hợp lệ.')) {
             const bulkForm = document.getElementById('bulkForm');
             bulkForm.querySelectorAll('input[name="selectedIds"]').forEach(el => el.remove());
             checkboxes.forEach(cb => {
@@ -202,8 +203,6 @@
             bulkForm.submit();
         }
     }
-    document.addEventListener('DOMContentLoaded', function () {
-    });
 </script>
 
 <jsp:include page="/includes/footer.jsp" />
