@@ -82,9 +82,9 @@
                         <td>
                             <c:choose>
                                 <c:when test="${a.status == 'PUBLISHED'}">
-                                    <span class="badge bg-success">Published</span></c:when>
+                                    <span class="badge bg-success">Đã đăng</span></c:when>
                                 <c:when test="${a.status == 'ARCHIVED'}">
-                                    <span class="badge bg-dark">Archived</span></c:when>
+                                    <span class="badge bg-dark">Lưu trữ</span></c:when>
                             </c:choose>
                         </td>
                         <td class="text-muted small">${a.updatedAt}</td>

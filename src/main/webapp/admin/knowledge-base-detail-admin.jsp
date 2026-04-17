@@ -97,11 +97,11 @@
                             <c:when test="${article.status == 'PENDING'}">
                                 <span class="badge bg-warning text-dark">Pending</span></c:when>
                             <c:when test="${article.status == 'PUBLISHED'}">
-                                <span class="badge bg-success">Published</span></c:when>
+                                <span class="badge bg-success">Đã đăng</span></c:when>
                             <c:when test="${article.status == 'REJECTED'}">
                                 <span class="badge bg-danger">Rejected</span></c:when>
                             <c:when test="${article.status == 'ARCHIVED'}">
-                                <span class="badge bg-dark">Archived</span></c:when>
+                                <span class="badge bg-dark">Lưu trữ</span></c:when>
                         </c:choose>
                     </div>
                     <c:if test="${not empty article.rejectionReason}">

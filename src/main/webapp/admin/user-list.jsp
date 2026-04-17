@@ -175,7 +175,7 @@
                 <th>SĐT</th>
                 <th>Phòng ban</th>
                 <th>Vai trò</th>
-                <th>Status</th>
+                <th>Trạng thái</th>
                 <th>Thao tác</th>
             </tr>
         </thead>
@@ -190,7 +190,7 @@
                     <td><span class="badge bg-secondary">${u.roleName}</span></td>
                     <td>
                         <div class="d-flex align-items-center gap-2">
-                            <span class="badge ${u.isActive ? 'bg-info' : 'bg-danger'}">${u.isActive ? 'ACTIVE' : 'INACTIVE'}</span>
+                            <span class="badge ${u.isActive ? 'bg-info' : 'bg-danger'}">${u.isActive ? 'Hoạt động' : 'Không hoạt động'}</span>
                             <label class="switch">
                                 <input type="checkbox" ${u.isActive ? 'checked' : ''} 
                                        onclick="handleStatusToggle('${u.userId}', ${u.isActive})">

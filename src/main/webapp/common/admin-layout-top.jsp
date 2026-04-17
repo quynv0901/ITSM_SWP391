@@ -142,7 +142,7 @@
             </a>
                         <a href="${pageContext.request.contextPath}/admin/knowledge-base"
                class="menu-item ${pageContext.request.requestURI.endsWith('/admin/knowledge-base.jsp') ? 'active' : ''}">
-                <i class="bi bi-journal-text"></i> Knowledge Base
+                <i class="bi bi-journal-text"></i> Quản lý bài viết
             </a>
             <a href="#" class="menu-item"><i class="bi bi-shield-lock"></i> Danh sách Quyền</a>
             <a href="#" class="menu-item"><i class="bi bi-gear"></i> Cấu hình hệ thống</a>
