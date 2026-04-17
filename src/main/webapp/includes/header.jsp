@@ -1,18 +1,18 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>ITSM System</title>
+        <title>Hệ thống ITSM</title>
         <!-- Bootstrap 5 CSS -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <!-- Bootstrap Icons -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-        <!-- Google Fonts -->
-        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap"
+        <!-- Google Fonts: Be Vietnam Pro - hỗ trợ đầy đủ tiếng Việt -->
+        <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&subset=vietnamese&display=swap"
               rel="stylesheet">
         <style>
             :root {
@@ -22,7 +22,7 @@
             }
 
             body {
-                font-family: 'Outfit', sans-serif;
+                font-family: 'Be Vietnam Pro', sans-serif;
                 background-color: #f4f7f6;
             }
 
@@ -151,7 +151,7 @@
             <!-- Sidebar -->
             <div class="sidebar">
                 <div class="sidebar-header">
-                    ITSM
+                    Quản lý dịch vụ CNTT
                 </div>
                 <ul class="sidebar-menu">
 
@@ -177,74 +177,74 @@
                             </a>
                         </c:if>
 
-                        <li class="menu-header">Ticket Management</li>
+                        <li class="menu-header">Quản lý Phiếu</li>
                         <a href="${pageContext.request.contextPath}/incident?action=list"
                            class="menu-item ${pageContext.request.requestURI.contains('/incident/') ? 'active' : ''}">
-                            <i class="bi bi-exclamation-circle"></i> Incident Management
+                            <i class="bi bi-exclamation-circle"></i> Quản lý Sự cố
                         </a>
                         <a href="${pageContext.request.contextPath}/problem?action=list"
                            class="menu-item ${pageContext.request.requestURI.contains('/problem/') ? 'active' : ''}">
-                            <i class="bi bi-exclamation-octagon"></i> Problem Management
+                            <i class="bi bi-exclamation-octagon"></i> Quản lý Vấn đề
                         </a>
                         <a href="${pageContext.request.contextPath}/ticket-category"
                            class="menu-item ${pageContext.request.requestURI.contains('/ticket-category') ? 'active' : ''}">
-                            <i class="bi bi-tags"></i> Ticket Categories
+                            <i class="bi bi-tags"></i> Danh mục Phiếu
                         </a>
                         <a href="${pageContext.request.contextPath}/known-error?action=list"
                            class="menu-item ${pageContext.request.requestURI.contains('/known-error/') ? 'active' : ''}">
-                            <i class="bi bi-bug"></i> Known Error Database
+                            <i class="bi bi-bug"></i> Danh sách lỗi đã xác định
                         </a>
-                        <li class="menu-header">Service</li>
+                        <li class="menu-header">Dịch vụ</li>
                         <a href="${pageContext.request.contextPath}/service"
                            class="menu-item ${pageContext.request.requestURI.contains('/service') ? 'active' : ''}">
-                            <i class="bi bi-hdd-network"></i> Service Catalog
+                            <i class="bi bi-hdd-network"></i> Danh mục Dịch vụ
                         </a>
 
-                        <li class="menu-header">Infrastructure</li>
+                        <li class="menu-header">Hạ tầng</li>
                         <a href="${pageContext.request.contextPath}/configuration-item"
                            class="menu-item ${pageContext.request.requestURI.contains('/configuration-item') ? 'active' : ''}">
-                            <i class="bi bi-server"></i> CMDB
+                            <i class="bi bi-server"></i> Danh mục cấu hình
                         </a>
 
-                        <li class="menu-header">Reports &amp; Analytics</li>
+                        <li class="menu-header">Báo cáo &amp; Phân tích</li>
                         <a href="${pageContext.request.contextPath}/dashboard"
                            class="menu-item ${pageContext.request.requestURI.contains('/dashboard') ? 'active' : ''}">
-                            <i class="bi bi-speedometer2"></i> Executive Dashboard
+                            <i class="bi bi-speedometer2"></i> Bảng điều khiển
                         </a>
                     </c:if>
-                    <li class="menu-header">Ticket Management</li>
+                    <li class="menu-header">Quản lý Phiếu</li>
                     <a href="${pageContext.request.contextPath}/incident?action=list"
                        class="menu-item ${pageContext.request.requestURI.contains('/incident/') ? 'active' : ''}">
-                        <i class="bi bi-exclamation-circle"></i> Incident Management
+                        <i class="bi bi-exclamation-circle"></i> Quản lý Sự cố
                     </a>
                     <a href="${pageContext.request.contextPath}/problem?action=list"
                        class="menu-item ${pageContext.request.requestURI.contains('/problem/') ? 'active' : ''}">
-                        <i class="bi bi-exclamation-octagon"></i> Problem Management
+                        <i class="bi bi-exclamation-octagon"></i> Quản lý Vấn đề
                     </a>
                     <a href="${pageContext.request.contextPath}/ticket-category"
                        class="menu-item ${pageContext.request.requestURI.contains('/ticket-category') ? 'active' : ''}">
-                        <i class="bi bi-tags"></i> Ticket Categories
+                        <i class="bi bi-tags"></i> Danh mục Phiếu
                     </a>
                     <a href="${pageContext.request.contextPath}/known-error?action=list"
                        class="menu-item ${pageContext.request.requestURI.contains('/known-error/') ? 'active' : ''}">
-                        <i class="bi bi-bug"></i> Known Error Database
+                        <i class="bi bi-bug"></i> Danh sách lỗi đã xác định
                     </a>
-                    <li class="menu-header">Service</li>
+                    <li class="menu-header">Dịch vụ</li>
                     <a href="${pageContext.request.contextPath}/service"
                        class="menu-item ${pageContext.request.requestURI.contains('/service') ? 'active' : ''}">
-                        <i class="bi bi-hdd-network"></i> Service Catalog
+                        <i class="bi bi-hdd-network"></i> Danh mục Dịch vụ
                     </a>
 
-                    <li class="menu-header">Infrastructure</li>
+                    <li class="menu-header">Hạ tầng</li>
                     <a href="${pageContext.request.contextPath}/configuration-item"
                        class="menu-item ${pageContext.request.requestURI.contains('/configuration-item') ? 'active' : ''}">
-                        <i class="bi bi-server"></i> CMDB
+                        <i class="bi bi-server"></i> Danh mục cấu hình
                     </a>
 
-                    <li class="menu-header">Reports &amp; Analytics</li>
+                    <li class="menu-header">Báo cáo &amp; Phân tích</li>
                     <a href="${pageContext.request.contextPath}/dashboard"
                        class="menu-item ${pageContext.request.requestURI.contains('/dashboard') ? 'active' : ''}">
-                        <i class="bi bi-speedometer2"></i> Executive Dashboard
+                        <i class="bi bi-speedometer2"></i> Bảng điều khiển
                     </a>
                 </ul>
             </div>
@@ -257,19 +257,14 @@
                         <i class="bi bi-list fs-4 cursor-pointer"></i>
                         <span class="fw-bold">
                             <c:choose>
-                                <c:when test="${pageContext.request.requestURI.contains('/problem/')}">Problem
-                                    Management</c:when>
-                                <c:when test="${pageContext.request.requestURI.contains('/known-error/')}">Known
-                                    Error Database</c:when>
-                                <c:when test="${pageContext.request.requestURI.contains('/configuration-item')}">CMDB
-                                    - Configuration Items</c:when>
-                                <c:when test="${pageContext.request.requestURI.contains('/ticket-category')}">Ticket
-                                    Categories</c:when>
-
-                                <c:when test="${pageContext.request.requestURI.contains('/dashboard')}">Executive
-                                    Dashboard</c:when>
+                                <c:when test="${pageContext.request.requestURI.contains('/problem/')}">Quản lý Vấn đề</c:when>
+                                <c:when test="${pageContext.request.requestURI.contains('/known-error/')}">Danh sách lỗi đã xác định</c:when>
+                                <c:when test="${pageContext.request.requestURI.contains('/configuration-item')}">Danh mục cấu hình</c:when>
+                                <c:when test="${pageContext.request.requestURI.contains('/ticket-category')}">Danh mục Phiếu</c:when>
+                                <c:when test="${pageContext.request.requestURI.contains('/incident/')}">Quản lý Sự cố</c:when>
+                                <c:when test="${pageContext.request.requestURI.contains('/dashboard')}">Bảng điều khiển</c:when>
                                 <c:when test="${pageContext.request.requestURI.contains('/home/')}">Trang chủ</c:when>
-                                <c:otherwise>IT Service Management</c:otherwise>
+                                <c:otherwise>Hệ thống Quản lý Dịch vụ IT</c:otherwise>
                             </c:choose>
                         </span>
                     </div>
