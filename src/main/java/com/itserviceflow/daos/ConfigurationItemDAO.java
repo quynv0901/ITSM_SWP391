@@ -4,6 +4,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import com.itserviceflow.models.ConfigurationItem;
+import com.itserviceflow.models.CiRelationship;
 import static com.itserviceflow.utils.DBConnection.getConnection;
 
 public class ConfigurationItemDAO {
@@ -109,8 +110,11 @@ public class ConfigurationItemDAO {
         }
     }
 
+    /**
+     * Soft Delete (Thu hồi): Không xóa vật lý, giữ lại record lịch sử và đổi trạng thái thành RETIRED.
+     */
     public boolean deleteConfigurationItem(int id) {
-        String sql = "DELETE FROM configuration_item WHERE ci_id = ?";
+        String sql = "UPDATE configuration_item SET status = 'RETIRED' WHERE ci_id = ?";
         try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             return ps.executeUpdate() > 0;
@@ -194,6 +198,140 @@ public class ConfigurationItemDAO {
                 ci.setCreatedAt(rs.getTimestamp("created_at"));
                 ci.setUpdatedAt(rs.getTimestamp("updated_at"));
                 list.add(ci);
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return list;
+    }
+    // ─────────────────────────────────────────────────────────────────
+    //  CI RELATIONSHIP methods
+    // ─────────────────────────────────────────────────────────────────
+
+    /** Lấy toàn bộ quan hệ mà CI này tham gia (là cha hoặc con). */
+    public List<CiRelationship> getCiRelationships(int ciId) {
+        List<CiRelationship> list = new ArrayList<>();
+        String sql = "SELECT r.*, "
+                + "p.name AS parent_name, p.status AS parent_status, "
+                + "c.name AS child_name,  c.status AS child_status "
+                + "FROM ci_relationship r "
+                + "JOIN configuration_item p ON r.parent_ci_id = p.ci_id "
+                + "JOIN configuration_item c ON r.child_ci_id  = c.ci_id "
+                + "WHERE r.parent_ci_id = ? OR r.child_ci_id = ? "
+                + "ORDER BY r.created_at DESC";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, ciId);
+            ps.setInt(2, ciId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    CiRelationship rel = new CiRelationship();
+                    rel.setRelationshipId(rs.getInt("relationship_id"));
+                    rel.setParentCiId(rs.getInt("parent_ci_id"));
+                    rel.setChildCiId(rs.getInt("child_ci_id"));
+                    rel.setRelationshipType(rs.getString("relationship_type"));
+                    rel.setDescription(rs.getString("description"));
+                    rel.setCreatedAt(rs.getTimestamp("created_at"));
+                    rel.setParentCiName(rs.getString("parent_name"));
+                    rel.setParentCiStatus(rs.getString("parent_status"));
+                    rel.setChildCiName(rs.getString("child_name"));
+                    rel.setChildCiStatus(rs.getString("child_status"));
+                    list.add(rel);
+                }
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return list;
+    }
+
+    /** Thêm một quan hệ mới giữa 2 CI. */
+    public boolean addCiRelationship(int parentId, int childId, String relType, String desc) {
+        String sql = "INSERT INTO ci_relationship (parent_ci_id, child_ci_id, relationship_type, description) "
+                + "VALUES (?, ?, ?, ?)";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, parentId);
+            ps.setInt(2, childId);
+            ps.setString(3, relType);
+            ps.setString(4, desc != null ? desc : "");
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /** Xóa một quan hệ theo ID. */
+    public boolean deleteCiRelationship(int relationshipId) {
+        String sql = "DELETE FROM ci_relationship WHERE relationship_id = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, relationshipId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /** Kiểm tra quan hệ trùng (cùng parent, child, type). */
+    public boolean isDuplicateRelationship(int parentId, int childId, String relType) {
+        String sql = "SELECT COUNT(*) FROM ci_relationship "
+                + "WHERE parent_ci_id = ? AND child_ci_id = ? AND relationship_type = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, parentId);
+            ps.setInt(2, childId);
+            ps.setString(3, relType);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return false;
+    }
+
+    /**
+     * Phân tích tác động: trả về các CI bị ảnh hưởng nếu CI này gặp sự cố.
+     * Áp dụng cho: DEPENDS_ON, HOSTED_BY, RUNS_ON, PART_OF
+     * (CONNECTED_TO không xét vì chỉ là kết nối nền, không phụ thuộc chức năng)
+     */
+    public List<ConfigurationItem> getImpactedCIs(int ciId) {
+        List<ConfigurationItem> list = new ArrayList<>();
+        String sql = "SELECT c.* FROM configuration_item c "
+                + "JOIN ci_relationship r ON c.ci_id = r.child_ci_id "
+                + "WHERE r.parent_ci_id = ? "
+                + "AND r.relationship_type IN ('DEPENDS_ON', 'HOSTED_BY', 'RUNS_ON', 'PART_OF')";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, ciId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ConfigurationItem ci = new ConfigurationItem();
+                    ci.setCiId(rs.getInt("ci_id"));
+                    ci.setName(rs.getString("name"));
+                    ci.setType(rs.getString("type"));
+                    ci.setVersion(rs.getString("version"));
+                    ci.setStatus(rs.getString("status"));
+                    list.add(ci);
+                }
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return list;
+    }
+
+    /** Lấy danh sách tất cả CI trừ CI hiện tại, dùng cho dropdown kết nối. */
+    public List<ConfigurationItem> getAllForDropdown(int excludeId) {
+        List<ConfigurationItem> list = new ArrayList<>();
+        String sql = "SELECT ci_id, name, type FROM configuration_item "
+                + "WHERE ci_id != ? ORDER BY name";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, excludeId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ConfigurationItem ci = new ConfigurationItem();
+                    ci.setCiId(rs.getInt("ci_id"));
+                    ci.setName(rs.getString("name"));
+                    ci.setType(rs.getString("type"));
+                    list.add(ci);
+                }
             }
         } catch (SQLException e) { e.printStackTrace(); }
         return list;
