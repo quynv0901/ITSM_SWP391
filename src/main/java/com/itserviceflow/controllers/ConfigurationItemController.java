@@ -2,6 +2,7 @@ package com.itserviceflow.controllers;
 
 import com.itserviceflow.daos.ConfigurationItemDAO;
 import com.itserviceflow.models.ConfigurationItem;
+import com.itserviceflow.models.CiRelationship;
 import com.itserviceflow.utils.AuthUtils;
 import java.io.IOException;
 import java.util.Arrays;
@@ -24,12 +25,10 @@ public class ConfigurationItemController extends HttpServlet {
     private static final Set<String> VALID_STATUSES = new HashSet<>(
             Arrays.asList("ACTIVE", "INACTIVE", "RETIRED"));
 
-    // ==================== GET ====================
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Must be logged in
         if (!AuthUtils.isLoggedIn(request, response)) return;
 
         String action = request.getParameter("action");
@@ -76,7 +75,6 @@ public class ConfigurationItemController extends HttpServlet {
                 break;
 
             case "add":
-                // Only Asset Manager(8) and Admin(10) can create
                 if (!AuthUtils.hasRole(request, response, AuthUtils.ROLE_ASSET_MANAGER)) {
                     return;
                 }
@@ -84,7 +82,6 @@ public class ConfigurationItemController extends HttpServlet {
                 break;
 
             case "edit":
-                // Only Asset Manager(8) and Admin(10) can edit
                 if (!AuthUtils.hasRole(request, response, AuthUtils.ROLE_ASSET_MANAGER)) {
                     return;
                 }
@@ -103,18 +100,47 @@ public class ConfigurationItemController extends HttpServlet {
                 }
                 break;
 
+            case "detail":
+                // Xem chi tiết: tất cả role có quyền xem lấy được chi tiết
+                if (!AuthUtils.hasRole(request, response,
+                        AuthUtils.ROLE_SUPPORT_AGENT,
+                        AuthUtils.ROLE_TECHNICAL_EXPERT,
+                        AuthUtils.ROLE_MANAGER,
+                        AuthUtils.ROLE_ASSET_MANAGER,
+                        AuthUtils.ROLE_IT_DIRECTOR)) {
+                    return;
+                }
+                try {
+                    int detailId = Integer.parseInt(request.getParameter("id"));
+                    ConfigurationItem ciDetail = ciDAO.getConfigurationItemById(detailId);
+                    if (ciDetail == null) {
+                        request.getSession().setAttribute("errorMessage", "Không tìm thấy mục cấu hình.");
+                        response.sendRedirect(request.getContextPath() + "/configuration-item");
+                        return;
+                    }
+                    List<CiRelationship> relationships = ciDAO.getCiRelationships(detailId);
+                    List<ConfigurationItem> impactedCIs = ciDAO.getImpactedCIs(detailId);
+                    List<ConfigurationItem> allCIs     = ciDAO.getAllForDropdown(detailId);
+                    request.setAttribute("ci",            ciDetail);
+                    request.setAttribute("relationships", relationships);
+                    request.setAttribute("impactedCIs",   impactedCIs);
+                    request.setAttribute("allCIs",        allCIs);
+                    request.getRequestDispatcher("/cmdb/detail.jsp").forward(request, response);
+                } catch (NumberFormatException e) {
+                    response.sendRedirect(request.getContextPath() + "/configuration-item");
+                }
+                break;
+
             default:
                 response.sendRedirect(request.getContextPath() + "/configuration-item");
         }
     }
 
-    // ==================== POST ====================
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
 
-        // Must be logged in
         if (!AuthUtils.isLoggedIn(request, response)) return;
 
         String action = request.getParameter("action");
@@ -122,7 +148,6 @@ public class ConfigurationItemController extends HttpServlet {
 
         switch (action) {
             case "add": {
-                // Only Asset Manager(8) and Admin(10)
                 if (!AuthUtils.hasRole(request, response, AuthUtils.ROLE_ASSET_MANAGER)) return;
 
                 String name        = trim(request.getParameter("name"));
@@ -141,7 +166,6 @@ public class ConfigurationItemController extends HttpServlet {
                     return;
                 }
 
-                // ── Kiểm tra trùng tên ─────────────────────────────────────
                 if (ciDAO.isDuplicateName(name, 0)) {
                     ConfigurationItem formData = buildCI(0, name, type, version, description, status);
                     request.setAttribute("ci", formData);
@@ -210,20 +234,109 @@ public class ConfigurationItemController extends HttpServlet {
             }
 
             case "delete": {
-                // Only Asset Manager(8) and Admin(10)
                 if (!AuthUtils.hasRole(request, response, AuthUtils.ROLE_ASSET_MANAGER)) return;
 
                 try {
                     int idToDelete = Integer.parseInt(request.getParameter("id"));
-                    if (ciDAO.deleteConfigurationItem(idToDelete)) {
-                        request.getSession().setAttribute("successMessage", "Xóa mục cấu hình thành công!");
+                    
+                    // 1. Kiểm tra có hệ thống nào phụ thuộc trực tiếp vào CI này không? (Validation)
+                    List<ConfigurationItem> impactedCIs = ciDAO.getImpactedCIs(idToDelete);
+                    if (impactedCIs != null && !impactedCIs.isEmpty()) {
+                        // Chặn, báo lỗi nhắc người dùng gỡ quan hệ trước
+                        request.getSession().setAttribute("errorMessage", 
+                                "❌ Không thể cho mục này nghỉ hưu! Có " + impactedCIs.size() + 
+                                " mục cấu hình khác đang phụ thuộc trực tiếp vào nó. Vui lòng chuyển hướng quan hệ của chúng trước khi thu hồi.");
                     } else {
-                        request.getSession().setAttribute("errorMessage", "Xóa mục cấu hình thất bại.");
+                        // 2. Chuyển trạng thái sang RETIRED (Soft Delete)
+                        if (ciDAO.deleteConfigurationItem(idToDelete)) {
+                            request.getSession().setAttribute("successMessage", "✅ Đã thu hồi (về hưu) mục cấu hình thành công. Record vẫn được lưu lưu trữ để truy vết.");
+                        } else {
+                            request.getSession().setAttribute("errorMessage", "❌ Việc thu hồi thất bại. Vui lòng thử lại.");
+                        }
                     }
                 } catch (NumberFormatException e) {
                     request.getSession().setAttribute("errorMessage", "ID không hợp lệ.");
                 }
                 response.sendRedirect(request.getContextPath() + "/configuration-item");
+                break;
+            }
+
+            case "addRelationship": {
+                if (!AuthUtils.hasRole(request, response, AuthUtils.ROLE_ASSET_MANAGER)) return;
+                try {
+                    int parentId    = Integer.parseInt(request.getParameter("parentCiId"));
+                    int childId     = Integer.parseInt(request.getParameter("childCiId"));
+                    String relType  = trim(request.getParameter("relationshipType"));
+                    String relDesc  = trim(request.getParameter("relDescription"));
+
+                    // ── Validate cơ bản ──────────────────────────────────────
+                    if (parentId == childId) {
+                        request.getSession().setAttribute("errorMessage",
+                                "⚠️ Không thể tạo quan hệ với chính mục cấu hình này.");
+
+                    } else if (relType == null || relType.isEmpty()) {
+                        request.getSession().setAttribute("errorMessage",
+                                "⚠️ Vui lòng chọn kiểu quan hệ.");
+
+                    } else if (ciDAO.isDuplicateRelationship(parentId, childId, relType)) {
+                        request.getSession().setAttribute("errorMessage",
+                                "⚠️ Quan hệ này đã tồn tại (cùng loại giữa 2 mục cấu hình).");
+
+                    } else {
+                        // ── Validate trạng thái CI cha ──────────────────────
+                        ConfigurationItem parentCI = ciDAO.getConfigurationItemById(parentId);
+                        ConfigurationItem childCI  = ciDAO.getConfigurationItemById(childId);
+                        boolean isDependency = "DEPENDS_ON".equals(relType)
+                                || "RUNS_ON".equals(relType)
+                                || "HOSTED_BY".equals(relType)
+                                || "PART_OF".equals(relType);
+
+                        if (parentCI != null && "RETIRED".equals(parentCI.getStatus()) && isDependency) {
+                            // Chặn hoàn toàn: không cho tạo phụ thuộc vào CI đã loại bỏ
+                            request.getSession().setAttribute("errorMessage",
+                                    "❌ Không thể tạo quan hệ phụ thuộc: \"" + parentCI.getName()
+                                    + "\" đã bị loại bỏ (RETIRED) khỏi hệ thống.");
+
+                        } else if (childCI != null && "RETIRED".equals(childCI.getStatus())) {
+                            // Chặn: CI con đã retired không còn hoạt động
+                            request.getSession().setAttribute("errorMessage",
+                                    "❌ Không thể tạo quan hệ: \"" + childCI.getName()
+                                    + "\" (CI con) đã bị loại bỏ (RETIRED) khỏi hệ thống.");
+
+                        } else {
+                            boolean ok = ciDAO.addCiRelationship(parentId, childId, relType, relDesc);
+                            if (ok) {
+                                // Cảnh báo nhẹ nếu CI cha đang INACTIVE nhưng vẫn cho tạo
+                                if (parentCI != null && "INACTIVE".equals(parentCI.getStatus()) && isDependency) {
+                                    request.getSession().setAttribute("successMessage",
+                                            "✅ Đã tạo quan hệ — nhưng lưu ý: \"" + parentCI.getName()
+                                            + "\" (CI cung cấp) đang ở trạng thái KHÔNG HOẠT ĐỘNG. "
+                                            + "Các CI phụ thuộc vào nó có thể bị ảnh hưởng.");
+                                } else {
+                                    request.getSession().setAttribute("successMessage", "✅ Đã tạo quan hệ thành công.");
+                                }
+                            } else {
+                                request.getSession().setAttribute("errorMessage", "❌ Tạo quan hệ thất bại. Vui lòng thử lại.");
+                            }
+                        }
+                    }
+                    response.sendRedirect(request.getContextPath() + "/configuration-item?action=detail&id=" + parentId);
+                } catch (NumberFormatException e) {
+                    response.sendRedirect(request.getContextPath() + "/configuration-item");
+                }
+                break;
+            }
+
+            case "deleteRelationship": {
+                if (!AuthUtils.hasRole(request, response, AuthUtils.ROLE_ASSET_MANAGER)) return;
+                try {
+                    int relId = Integer.parseInt(request.getParameter("relationshipId"));
+                    int ciId  = Integer.parseInt(request.getParameter("ciId"));
+                    ciDAO.deleteCiRelationship(relId);
+                    response.sendRedirect(request.getContextPath() + "/configuration-item?action=detail&id=" + ciId);
+                } catch (NumberFormatException e) {
+                    response.sendRedirect(request.getContextPath() + "/configuration-item");
+                }
                 break;
             }
 
