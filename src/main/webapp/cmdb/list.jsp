@@ -78,9 +78,7 @@
                     <th>Phiên bản</th>
                     <th>Trạng thái</th>
                     <th>Ngày tạo</th>
-                    <c:if test="${canManage}">
-                        <th class="text-center" style="width:120px;">Thao tác</th>
-                    </c:if>
+                    <th class="text-center" style="width:150px;">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
@@ -112,8 +110,12 @@
                             </c:choose>
                         </td>
                         <td>${ci.createdAt}</td>
-                        <c:if test="${canManage}">
-                            <td class="text-center">
+                        <td class="text-center">
+                            <a href="${pageContext.request.contextPath}/configuration-item?action=detail&id=${ci.ciId}"
+                               class="btn btn-sm btn-outline-info" title="Xem chi tiết">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <c:if test="${canManage}">
                                 <a href="${pageContext.request.contextPath}/configuration-item?action=edit&id=${ci.ciId}"
                                    class="btn btn-sm btn-outline-primary" title="Chỉnh sửa">
                                     <i class="bi bi-pencil-square"></i>
@@ -127,13 +129,13 @@
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
-                            </td>
-                        </c:if>
+                            </c:if>
+                        </td>
                     </tr>
                 </c:forEach>
                 <c:if test="${empty ciList}">
                     <tr>
-                        <td colspan="${canManage ? 7 : 6}"
+                        <td colspan="7"
                             class="text-center text-muted fst-italic py-4">
                             <i class="bi bi-inbox me-2"></i>Không tìm thấy mục cấu hình nào.
                         </td>
