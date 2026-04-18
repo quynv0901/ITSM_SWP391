@@ -9,6 +9,14 @@
         <servlet-name>AdminServiceServlet</servlet-name>
         <servlet-class>com.itserviceflow.controllers.AdminServiceServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>ServiceRequestServlet</servlet-name>
+        <servlet-class>com.itserviceflow.controllers.ServiceRequestServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ServiceRequestManageServlet</servlet-name>
+        <servlet-class>com.itserviceflow.controllers.ServiceRequestManageServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>ServiceCatalogServlet</servlet-name>
         <url-pattern>/service-catalog</url-pattern>
@@ -16,6 +24,14 @@
     <servlet-mapping>
         <servlet-name>AdminServiceServlet</servlet-name>
         <url-pattern>/admin-services</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ServiceRequestServlet</servlet-name>
+        <url-pattern>/service-request</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ServiceRequestManageServlet</servlet-name>
+        <url-pattern>/service-request-manage</url-pattern>
     </servlet-mapping>
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
