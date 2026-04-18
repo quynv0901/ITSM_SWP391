@@ -248,6 +248,113 @@
             color: #be123c;
         }
 
+        .suggest-box {
+            border: 1px solid var(--border-color);
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .suggest-title {
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .suggest-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .suggest-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            padding: 12px 12px;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+        }
+
+        .suggest-main {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .suggest-code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 12px;
+            font-weight: 800;
+            color: #64748b;
+        }
+
+        .suggest-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 520px;
+        }
+
+        .suggest-meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 1px solid var(--border-color);
+            background: #fff;
+            color: #334155;
+            white-space: nowrap;
+        }
+
+        .chip-selected {
+            background: #eff6ff;
+            border-color: #93c5fd;
+            color: #1d4ed8;
+        }
+
+        .btn-mini {
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 800;
+            border: none;
+            cursor: pointer;
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .btn-mini:hover {
+            background: #cbd5e1;
+        }
+
+        .btn-mini-primary {
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        .btn-mini-primary:hover {
+            background: #2563eb;
+        }
+
         .incident-info {
             background-color: #f8fafc;
             border: 1px solid var(--border-color);
@@ -462,15 +569,35 @@
                 <!-- Khu vực incident liên quan -->
                 <c:if test="${empty incident}">
                     <div class="form-section">
-                    <div class="section-title">🔗 Sự cố liên quan</div>
-                        <div class="form-group">
-                            <label for="relatedIds">
-                                Liên kết sự cố liên quan
-                            </label>
-                            <input type="text" id="relatedIds" name="relatedIds" class="form-control" 
-                                   placeholder="ví dụ: 101, 102, 103">
-                            <div class="help-text">Tùy chọn: Nhập ID sự cố, cách nhau bởi dấu phẩy nếu có liên quan</div>
-                        </div>
+                        <div class="section-title">🔗 Sự cố liên quan</div>
+
+                        <!-- End-user: suggest similar incidents instead of manual IDs -->
+                        <c:choose>
+                            <c:when test="${sessionScope.user.roleId == 1}">
+                                <div class="suggest-box">
+                                    <div class="suggest-title">✨ Gợi ý sự cố tương tự</div>
+                                    <div class="help-text">
+                                        Dựa trên tiêu đề/mô tả bạn nhập, hệ thống sẽ gợi ý các sự cố có thể trùng.
+                                        Nếu đúng, bạn có thể chọn để liên kết (giúp xử lý nhanh hơn).
+                                    </div>
+                                    <input type="hidden" id="relatedIds" name="relatedIds" value="">
+                                    <div class="suggest-list" id="suggestList">
+                                        <div class="help-text" id="suggestHint">Nhập tiêu đề/mô tả để xem gợi ý.</div>
+                                    </div>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <!-- Agent/Expert: keep manual IDs (optional) -->
+                                <div class="form-group">
+                                    <label for="relatedIds">
+                                        Liên kết sự cố liên quan
+                                    </label>
+                                    <input type="text" id="relatedIds" name="relatedIds" class="form-control"
+                                           placeholder="ví dụ: 101, 102, 103">
+                                    <div class="help-text">Tùy chọn: Nhập ID sự cố, cách nhau bởi dấu phẩy nếu có liên quan</div>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                 </c:if>
 
@@ -486,6 +613,149 @@
             </form>
         </div>
     </div>
+
+    <c:if test="${empty incident and sessionScope.user.roleId == 1}">
+        <script>
+            (function () {
+                const titleEl = document.getElementById('title');
+                const descEl = document.getElementById('description');
+                const categoryEl = document.getElementById('categoryId');
+                const suggestList = document.getElementById('suggestList');
+                const hiddenRelated = document.getElementById('relatedIds');
+
+                let debounceTimer = null;
+                let selectedIds = new Set();
+
+                function normalize(value) {
+                    if (value == null) return '';
+                    return String(value).trim().replace(/\s+/g, ' ');
+                }
+
+                function renderHint(text) {
+                    suggestList.innerHTML = '';
+                    const div = document.createElement('div');
+                    div.className = 'help-text';
+                    div.textContent = text;
+                    suggestList.appendChild(div);
+                }
+
+                function updateHidden() {
+                    hiddenRelated.value = Array.from(selectedIds).join(',');
+                }
+
+                function toggleSelect(id, btn, chip) {
+                    if (selectedIds.has(id)) {
+                        selectedIds.delete(id);
+                        btn.textContent = 'Chọn';
+                        btn.classList.remove('btn-mini-primary');
+                        chip.classList.remove('chip-selected');
+                    } else {
+                        // keep it simple: max 3 selections
+                        if (selectedIds.size >= 3) return;
+                        selectedIds.add(id);
+                        btn.textContent = 'Đã chọn';
+                        btn.classList.add('btn-mini-primary');
+                        chip.classList.add('chip-selected');
+                    }
+                    updateHidden();
+                }
+
+                async function fetchSuggestions() {
+                    const q = normalize(titleEl.value) || normalize(descEl.value);
+                    const categoryId = categoryEl.value;
+
+                    if (!q || q.length < 3) {
+                        renderHint('Nhập ít nhất 3 ký tự trong tiêu đề hoặc mô tả để xem gợi ý.');
+                        return;
+                    }
+
+                    const params = new URLSearchParams();
+                    params.set('action', 'suggest');
+                    params.set('q', q);
+                    if (categoryId) params.set('categoryId', categoryId);
+
+                    renderHint('Đang tìm gợi ý...');
+
+                    try {
+                        const res = await fetch('${pageContext.request.contextPath}/incident?' + params.toString(), {
+                            headers: { 'Accept': 'application/json' }
+                        });
+                        if (!res.ok) throw new Error('HTTP ' + res.status);
+                        const data = await res.json();
+
+                        suggestList.innerHTML = '';
+                        if (!Array.isArray(data) || data.length === 0) {
+                            renderHint('Không tìm thấy sự cố tương tự.');
+                            return;
+                        }
+
+                        data.forEach(item => {
+                            const id = String(item.ticketId);
+                            const wrap = document.createElement('div');
+                            wrap.className = 'suggest-item';
+
+                            const main = document.createElement('div');
+                            main.className = 'suggest-main';
+
+                            const code = document.createElement('div');
+                            code.className = 'suggest-code';
+                            code.textContent = item.ticketNumber || ('#' + id);
+
+                            const text = document.createElement('div');
+                            text.className = 'suggest-text';
+                            text.textContent = item.title || '';
+
+                            const meta = document.createElement('div');
+                            meta.className = 'suggest-meta';
+                            meta.textContent = 'Trạng thái: ' + (item.status || 'N/A');
+
+                            main.appendChild(code);
+                            main.appendChild(text);
+                            main.appendChild(meta);
+
+                            const right = document.createElement('div');
+                            right.style.display = 'flex';
+                            right.style.alignItems = 'center';
+                            right.style.gap = '10px';
+
+                            const chip = document.createElement('span');
+                            chip.className = 'chip' + (selectedIds.has(id) ? ' chip-selected' : '');
+                            chip.textContent = selectedIds.has(id) ? 'Đã chọn' : 'Gợi ý';
+
+                            const btn = document.createElement('button');
+                            btn.type = 'button';
+                            btn.className = 'btn-mini' + (selectedIds.has(id) ? ' btn-mini-primary' : '');
+                            btn.textContent = selectedIds.has(id) ? 'Đã chọn' : 'Chọn';
+                            btn.addEventListener('click', function () {
+                                toggleSelect(id, btn, chip);
+                            });
+
+                            right.appendChild(chip);
+                            right.appendChild(btn);
+
+                            wrap.appendChild(main);
+                            wrap.appendChild(right);
+
+                            suggestList.appendChild(wrap);
+                        });
+                    } catch (e) {
+                        renderHint('Không thể tải gợi ý. Vui lòng thử lại.');
+                    }
+                }
+
+                function scheduleFetch() {
+                    if (debounceTimer) clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(fetchSuggestions, 350);
+                }
+
+                titleEl.addEventListener('input', scheduleFetch);
+                descEl.addEventListener('input', scheduleFetch);
+                categoryEl.addEventListener('change', scheduleFetch);
+
+                renderHint('Nhập tiêu đề/mô tả để xem gợi ý.');
+            })();
+        </script>
+    </c:if>
 
 </body>
 </html>

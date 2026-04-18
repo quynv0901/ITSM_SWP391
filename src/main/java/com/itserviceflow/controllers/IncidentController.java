@@ -12,6 +12,7 @@ import com.itserviceflow.utils.TimeLogService;
 import com.itserviceflow.utils.AuthUtils;
 import com.itserviceflow.daos.UserDAO;
 import com.itserviceflow.utils.WorkflowService;
+import com.itserviceflow.utils.GsonConfig;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -20,11 +21,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @WebServlet("/incident")
 public class IncidentController extends HttpServlet {
@@ -33,7 +37,7 @@ public class IncidentController extends HttpServlet {
             Arrays.asList("LOW", "MEDIUM", "HIGH", "CRITICAL")
     );
     private static final Set<String> ALLOWED_STATUSES = new HashSet<>(
-            Arrays.asList("NEW", "OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED", "CANCELLED")
+            Arrays.asList("NEW", "OPEN", "IN_PROGRESS", "PENDING", "RESOLVED", "CLOSED", "CANCELLED")
     );
 
     private TicketDAO ticketDAO;
@@ -66,6 +70,9 @@ public class IncidentController extends HttpServlet {
                 break;
             case "edit":
                 showEditForm(request, response);
+                break;
+            case "suggest":
+                suggestSimilarIncidents(request, response);
                 break;
             default:
                 listIncidents(request, response);
@@ -141,6 +148,7 @@ public class IncidentController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/incident?action=list");
             return;
         }
+        User currentUser = (User) request.getSession().getAttribute("user");
         Ticket incident = ticketDAO.getTicketWithDetails(id);
         if (incident == null) {
             response.sendRedirect(request.getContextPath() + "/incident?action=list");
@@ -162,13 +170,22 @@ public class IncidentController extends HttpServlet {
 
         // Load lý do hủy từ activity log
         String cancelReason = null;
+        String cancelRejectedReason = null;
         if ("CANCELLED".equals(incident.getStatus())) {
             ActivityLogDAO activityLogDAO = new ActivityLogDAO();
             cancelReason = activityLogDAO.getCancelReason(id);
         }
+        // If a user requested cancellation but it was rejected, show them the latest reject reason.
+        if (currentUser != null && currentUser.getRoleId() != null
+                && currentUser.getRoleId() == AuthUtils.ROLE_END_USER
+                && currentUser.getUserId() == incident.getReportedBy()
+                && !"PENDING".equalsIgnoreCase(incident.getStatus())
+                && !"CANCELLED".equalsIgnoreCase(incident.getStatus())) {
+            ActivityLogDAO activityLogDAO = new ActivityLogDAO();
+            cancelRejectedReason = activityLogDAO.getLatestReasonByActivityType(id, "CANCEL_REJECTED");
+        }
 
         // Đẩy dữ liệu sang JSP
-        User currentUser = (User) request.getSession().getAttribute("user");
         request.setAttribute("canCurrentUserEditIncident", canCurrentUserEditIncident(currentUser, incident));
         request.setAttribute("incident", incident);
         request.setAttribute("relatedIncidents", related);
@@ -176,6 +193,7 @@ public class IncidentController extends HttpServlet {
         request.setAttribute("totalTimeSpent", totalTimeSpent);
         request.setAttribute("category", category);
         request.setAttribute("cancelReason", cancelReason);
+        request.setAttribute("cancelRejectedReason", cancelRejectedReason);
 
         request.getRequestDispatcher("/incidents/incident-detail.jsp").forward(request, response);
     }
@@ -193,6 +211,37 @@ public class IncidentController extends HttpServlet {
         request.setAttribute("activeCis", activeCis);
 
         request.getRequestDispatcher("/incidents/incident-form.jsp").forward(request, response);
+    }
+
+    private void suggestSimilarIncidents(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        if (!AuthUtils.isLoggedIn(request, response)) {
+            return;
+        }
+
+        String q = request.getParameter("q");
+        Integer categoryId = parsePositiveInt(request.getParameter("categoryId"));
+        int limit = 5;
+        Integer ticketId = parsePositiveInt(request.getParameter("excludeId"));
+
+        List<Ticket> suggestions = ticketDAO.suggestSimilarIncidents(q, categoryId, limit, ticketId);
+
+        // Return only minimal fields to avoid leaking description
+        List<java.util.Map<String, Object>> payload = suggestions.stream().map(t -> {
+            java.util.Map<String, Object> m = new java.util.HashMap<>();
+            m.put("ticketId", t.getTicketId());
+            m.put("ticketNumber", t.getTicketNumber());
+            m.put("title", t.getTitle());
+            m.put("status", t.getStatus());
+            m.put("createdAt", t.getCreatedAt());
+            return m;
+        }).collect(Collectors.toList());
+
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        response.setContentType("application/json");
+        try (PrintWriter out = response.getWriter()) {
+            out.print(GsonConfig.getGson().toJson(payload));
+        }
     }
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
@@ -386,21 +435,69 @@ public class IncidentController extends HttpServlet {
         HttpSession session = request.getSession();
         User currentUser = (User) session.getAttribute("user");
         int userId = (currentUser != null) ? currentUser.getUserId() : 1;
+        Integer roleId = (currentUser != null) ? currentUser.getRoleId() : null;
 
-        ticketDAO.cancelIncidentTicket(id);
+        // End-user: only REQUEST cancellation, not cancel immediately
+        boolean isEndUser = roleId != null && roleId == AuthUtils.ROLE_END_USER;
+        if (isEndUser) {
+            boolean requested = ticketDAO.requestCancelIncidentTicket(id, userId);
+            if (requested) {
+                String reason = (cancelReason != null && !cancelReason.trim().isEmpty())
+                        ? cancelReason
+                        : "User requested cancellation";
+                ActivityLogDAO activityLogDAO = new ActivityLogDAO();
+                activityLogDAO.logActivity(id, userId, "CANCEL_REQUESTED", reason);
+                response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + id);
+            } else {
+                // Most common cause: DB status constraint doesn't allow CANCEL_REQUESTED
+                response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + id + "&error=cancelRequestFailed");
+            }
+            return;
+        }
 
-        if (cancelReason != null && !cancelReason.trim().isEmpty()) {
-            ActivityLogDAO activityLogDAO = new ActivityLogDAO();
-            activityLogDAO.logActivity(id, userId, "CANCELLED", cancelReason);
+        // Agent/Expert/Admin: approve or reject cancellation request
+        String decision = request.getParameter("cancelDecision");
+        ActivityLogDAO activityLogDAO = new ActivityLogDAO();
+        String reason = (cancelReason != null && !cancelReason.trim().isEmpty()) ? cancelReason : null;
 
-            Ticket ticket = ticketDAO.getTicketWithDetails(id);
-            if (ticket != null) {
-                HttpSession session2 = request.getSession();
-                User currentUser2 = (User) session2.getAttribute("user");
-                if (currentUser2 == null || currentUser2.getRoleId() == null || currentUser2.getRoleId() != AuthUtils.ROLE_END_USER) {
-                    timeLogService.autoLogWithReason(ticket, userId, "CANCELLED", cancelReason);
+        // Require reason for any non-end-user cancellation action
+        if (reason == null) {
+            response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + id + "&error=missingCancelReason");
+            return;
+        }
+
+        // If no decision is provided, treat it as a direct cancel by agent/expert/admin
+        if (decision == null || decision.trim().isEmpty() || "REQUEST".equalsIgnoreCase(decision)) {
+            boolean cancelled = ticketDAO.cancelIncidentTicket(id);
+            if (cancelled) {
+                activityLogDAO.logActivity(id, userId, "CANCELLED", reason);
+                Ticket ticket = ticketDAO.getTicketWithDetails(id);
+                if (ticket != null) {
+                    timeLogService.autoLogWithReason(ticket, userId, "CANCELLED", reason);
                 }
             }
+            response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + id);
+            return;
+        }
+
+        boolean ok;
+        if ("APPROVE".equalsIgnoreCase(decision)) {
+            ok = ticketDAO.approveCancelIncidentTicket(id);
+            if (ok) {
+                activityLogDAO.logActivity(id, userId, "CANCEL_APPROVED", reason);
+                Ticket ticket = ticketDAO.getTicketWithDetails(id);
+                if (ticket != null) {
+                    timeLogService.autoLogWithReason(ticket, userId, "CANCELLED", reason);
+                }
+            }
+        } else if ("REJECT".equalsIgnoreCase(decision)) {
+            ok = ticketDAO.rejectCancelIncidentTicket(id);
+            if (ok) {
+                activityLogDAO.logActivity(id, userId, "CANCEL_REJECTED", reason);
+            }
+        } else {
+            response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + id + "&error=invalidDecision");
+            return;
         }
 
         response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + id);

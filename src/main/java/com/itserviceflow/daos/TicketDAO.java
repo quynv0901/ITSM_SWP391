@@ -841,6 +841,49 @@ public class TicketDAO {
         }
     }
 
+    public boolean requestCancelIncidentTicket(int ticketId, int requesterUserId) {
+        // Use existing DB-allowed status 'PENDING' to represent "cancel requested"
+        String sql = "UPDATE ticket SET status = 'PENDING', updated_at = CURRENT_TIMESTAMP "
+                + "WHERE ticket_id = ? AND ticket_type = 'INCIDENT' "
+                + "AND reported_by = ? "
+                + "AND status NOT IN ('CANCELLED', 'CLOSED')";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, ticketId);
+            stmt.setInt(2, requesterUserId);
+            return stmt.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean approveCancelIncidentTicket(int ticketId) {
+        // Only approve when it is explicitly requested
+        String sql = "UPDATE ticket SET status = 'CANCELLED', cancelled_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP "
+                + "WHERE ticket_id = ? AND ticket_type = 'INCIDENT' AND status = 'PENDING'";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, ticketId);
+            return stmt.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean rejectCancelIncidentTicket(int ticketId) {
+        // Restore a sensible status based on whether it is assigned
+        String sql = "UPDATE ticket SET status = (CASE WHEN assigned_to IS NULL THEN 'NEW' ELSE 'IN_PROGRESS' END), "
+                + "updated_at = CURRENT_TIMESTAMP "
+                + "WHERE ticket_id = ? AND ticket_type = 'INCIDENT' AND status = 'PENDING'";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, ticketId);
+            return stmt.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public boolean assignIncidentTicket(int ticketId, int assignedToUserId) {
         String sql = "UPDATE ticket SET assigned_to = ?, status = 'IN_PROGRESS' "
                 + "WHERE ticket_id = ? AND ticket_type = 'INCIDENT'";
@@ -906,6 +949,63 @@ public class TicketDAO {
         t.setCreatedAt(rs.getTimestamp("created_at"));
         t.setUpdatedAt(rs.getTimestamp("updated_at"));
         return t;
+    }
+
+    public List<Ticket> suggestSimilarIncidents(String query, Integer categoryId, int limit, Integer excludeTicketId) {
+        List<Ticket> list = new ArrayList<>();
+        if (query == null) {
+            return list;
+        }
+        String normalized = query.trim().replaceAll("\\s+", " ");
+        if (normalized.isEmpty()) {
+            return list;
+        }
+
+        // Flexible LIKE pattern: "wifi mất kết nối" -> "%wifi%mất%kết%nối%"
+        String like = "%" + normalized.replace(" ", "%") + "%";
+
+        StringBuilder sql = new StringBuilder(
+                "SELECT ticket_id, ticket_number, title, status, created_at "
+                + "FROM ticket "
+                + "WHERE ticket_type = 'INCIDENT' "
+                + "AND status NOT IN ('CANCELLED', 'CLOSED') "
+                + "AND (title LIKE ? OR description LIKE ?) "
+        );
+        if (categoryId != null && categoryId > 0) {
+            sql.append(" AND category_id = ? ");
+        }
+        if (excludeTicketId != null && excludeTicketId > 0) {
+            sql.append(" AND ticket_id <> ? ");
+        }
+        sql.append(" ORDER BY created_at DESC LIMIT ?");
+
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            int idx = 1;
+            ps.setString(idx++, like);
+            ps.setString(idx++, like);
+            if (categoryId != null && categoryId > 0) {
+                ps.setInt(idx++, categoryId);
+            }
+            if (excludeTicketId != null && excludeTicketId > 0) {
+                ps.setInt(idx++, excludeTicketId);
+            }
+            ps.setInt(idx, Math.max(1, Math.min(limit, 20)));
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Ticket t = new Ticket();
+                    t.setTicketId(rs.getInt("ticket_id"));
+                    t.setTicketNumber(rs.getString("ticket_number"));
+                    t.setTitle(rs.getString("title"));
+                    t.setStatus(rs.getString("status"));
+                    t.setCreatedAt(rs.getTimestamp("created_at"));
+                    list.add(t);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 
     /**

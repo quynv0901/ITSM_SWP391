@@ -684,6 +684,9 @@
                                                     <c:when test="${incident.status == 'CLOSED'}">
                                                         <span class="badge status-cancelled">ĐÃ ĐÓNG</span>
                                                     </c:when>
+                                                    <c:when test="${incident.status == 'PENDING'}">
+                                                        <span class="badge status-in-progress">CHỜ DUYỆT HỦY</span>
+                                                    </c:when>
                                                     <c:when test="${incident.status == 'CANCELLED'}">
                                                         <span class="badge status-cancelled">ĐÃ HỦY</span>
                                                     </c:when>
@@ -779,6 +782,11 @@
                     Bạn có chắc muốn hủy sự cố
                     <span id="cancelTicketLabel" class="modal-ticket-id">#</span>?
                     Hành động này sẽ cập nhật trạng thái sự cố.
+                    <div style="margin-top:12px;">
+                        <label for="cancelReasonText" style="display:block;font-weight:700;margin-bottom:6px;">Lý do hủy (bắt buộc)</label>
+                        <textarea id="cancelReasonText" class="search-input" style="width:100%;min-height:90px;padding:10px;border-radius:10px;border:1px solid #e5e7eb;"
+                                  placeholder="Nhập lý do để người dùng hiểu vì sao ticket bị hủy..."></textarea>
+                    </div>
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeCancelModal()">Quay lại</button>
@@ -790,6 +798,7 @@
         <form id="cancelIncidentForm" action="${pageContext.request.contextPath}/incident" method="post" style="display:none;">
             <input type="hidden" name="action" value="cancel">
             <input type="hidden" name="id" id="cancelIncidentId">
+            <input type="hidden" name="cancelReason" id="cancelReasonHidden">
         </form>
 
     </body>
@@ -834,18 +843,22 @@
         function updatePagination() {
             // Lọc các dòng hiển thị theo từ khóa tìm kiếm
             const searchInput = document.getElementById('searchInput');
-            const searchTerm = searchInput.value.toLowerCase();
+            const searchTerm = normalizeForSearch(searchInput.value);
 
             visibleRows = allRows.filter(row => {
                 const tdTicketNumber = row.getElementsByTagName('td')[1];
                 const tdTitle = row.getElementsByTagName('td')[2];
 
                 if (tdTicketNumber && tdTitle) {
-                    const ticketNumber = tdTicketNumber.textContent || tdTicketNumber.innerText;
-                    const title = tdTitle.textContent || tdTitle.innerText;
+                    const ticketNumber = normalizeForSearch(tdTicketNumber.textContent || tdTicketNumber.innerText);
+                    const title = normalizeForSearch(tdTitle.textContent || tdTitle.innerText);
 
-                    return ticketNumber.toLowerCase().indexOf(searchTerm) > -1 ||
-                            title.toLowerCase().indexOf(searchTerm) > -1;
+                    if (!searchTerm) {
+                        return true;
+                    }
+
+                    return ticketNumber.indexOf(searchTerm) > -1 ||
+                            title.indexOf(searchTerm) > -1;
                 }
                 return false;
             });
@@ -994,9 +1007,21 @@
             updatePagination();
         }
 
+        function normalizeForSearch(value) {
+            if (value == null) {
+                return '';
+            }
+            return String(value)
+                    .trim()
+                    .replace(/\s+/g, ' ')
+                    .toLowerCase();
+        }
+
         function openCancelModal(ticketId) {
             document.getElementById('cancelIncidentId').value = ticketId;
             document.getElementById('cancelTicketLabel').textContent = '#' + ticketId;
+            document.getElementById('cancelReasonText').value = '';
+            document.getElementById('cancelReasonHidden').value = '';
             document.getElementById('cancelIncidentModal').classList.add('active');
         }
 
@@ -1005,6 +1030,11 @@
         }
 
         function submitCancel() {
+            const reason = (document.getElementById('cancelReasonText').value || '').trim();
+            if (!reason) {
+                return;
+            }
+            document.getElementById('cancelReasonHidden').value = reason;
             document.getElementById('cancelIncidentForm').submit();
         }
 

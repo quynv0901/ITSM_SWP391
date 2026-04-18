@@ -145,6 +145,11 @@
                 color: #c53030;
             }
 
+            .badge-pending {
+                background: #fffaf0;
+                color: #c05621;
+            }
+
             .action-bar {
                 display: flex;
                 gap: 10px;
@@ -621,6 +626,15 @@
         <c:if test="${param.editError eq 'locked'}">
             <div class="alert alert-error">Bạn không thể chỉnh sửa incident này vì trạng thái đã được Agent/Expert cập nhật.</div>
         </c:if>
+        <c:if test="${not empty param.error and param.error eq 'missingCancelReason'}">
+            <div class="alert alert-error">Vui lòng nhập lý do (bắt buộc) trước khi hủy/duyệt hủy.</div>
+        </c:if>
+        <c:if test="${incident.status eq 'CANCELLED' and not empty cancelReason}">
+            <div class="alert alert-error">Lý do hủy: ${cancelReason}</div>
+        </c:if>
+        <c:if test="${not empty cancelRejectedReason}">
+            <div class="alert alert-error">Yêu cầu hủy đã bị từ chối. Lý do: ${cancelRejectedReason}</div>
+        </c:if>
 
         <!-- Card thông tin chi tiết -->
         <div class="card">
@@ -689,19 +703,30 @@
                 </c:if>
                 
                 <!-- Nút hủy cho người tạo ticket (Reported By) -->
-                <c:if test="${incident.status ne 'CANCELLED' and incident.status ne 'CLOSED' 
+                <c:if test="${incident.status ne 'CANCELLED' and incident.status ne 'CLOSED' and incident.status ne 'PENDING'
                               and sessionScope.user.userId == incident.reportedBy}">
                     <button type="button" class="btn btn-danger" onclick="openCancelModal()">
                         Hủy
                     </button>
                 </c:if>
+                <c:if test="${incident.status eq 'PENDING' and sessionScope.user.userId == incident.reportedBy}">
+                    <span style="display:inline-flex;align-items:center;padding:9px 14px;border-radius:8px;background:#fffaf0;color:#c05621;font-size:13px;font-weight:700;">
+                        Đã gửi yêu cầu hủy (chờ Agent/Expert duyệt)
+                    </span>
+                </c:if>
                 
                 <!-- Nút hủy cho quản trị hệ thống (System Admin) -->
-                <c:if test="${incident.status ne 'CANCELLED' and incident.status ne 'CLOSED' 
+                <c:if test="${incident.status ne 'CANCELLED' and incident.status ne 'CLOSED' and incident.status ne 'PENDING'
                               and sessionScope.user.roleId == 10}">
                     <button type="button" class="btn btn-danger" onclick="openCancelModal()">
                         Hủy
                     </button>
+                </c:if>
+
+                <!-- Approve/Reject yêu cầu hủy (Support Agent / Technical Expert / Admin) -->
+                <c:if test="${incident.status eq 'PENDING' and (sessionScope.user.roleId == 2 or sessionScope.user.roleId == 5 or sessionScope.user.roleId == 10)}">
+                    <button type="button" class="btn btn-danger" onclick="openAgentDecisionModal('APPROVE')">Approve hủy</button>
+                    <button type="button" class="btn btn-warning" onclick="openAgentDecisionModal('REJECT')">Reject hủy</button>
                 </c:if>
                 
                 <!-- Nút nhận xử lý (ẩn với End-user và System Admin) -->
@@ -895,6 +920,27 @@
             </div>
         </div>
 
+        <!-- Modal quyết định của Agent/Expert (Approve/Reject) - bắt buộc nhập lý do -->
+        <div class="modal-overlay" id="agentDecisionModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span style="font-size: 24px;">🛡️</span>
+                    <div class="modal-title" id="agentDecisionTitle">Quyết định yêu cầu hủy</div>
+                </div>
+                <div class="modal-body">
+                    <div class="reason-group">
+                        <label>Lý do (bắt buộc):</label>
+                        <textarea id="agentDecisionReason" class="form-control" style="min-height:90px;" placeholder="Nhập lý do để người dùng hiểu vì sao ticket bị hủy / bị từ chối..."></textarea>
+                        <div class="help-text">Lý do này sẽ được ghi lại để hiển thị cho End-user.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel" onclick="closeAgentDecisionModal()">Hủy bỏ</button>
+                    <button type="button" class="btn btn-confirm active" id="agentDecisionSubmit" onclick="submitAgentDecision()">Xác nhận</button>
+                </div>
+            </div>
+        </div>
+
         <script>
             function switchTab(tabId, btnEl) {
                 document.querySelectorAll('.tab-btn').forEach(function (b) {
@@ -997,6 +1043,11 @@
                 idInput.name = 'id';
                 idInput.value = '${incident.ticketId}';
 
+                const decisionInput = document.createElement('input');
+                decisionInput.type = 'hidden';
+                decisionInput.name = 'cancelDecision';
+                decisionInput.value = 'REQUEST';
+
                 const reasonInput = document.createElement('input');
                 reasonInput.type = 'hidden';
                 reasonInput.name = 'cancelReason';
@@ -1004,6 +1055,60 @@
 
                 form.appendChild(actionInput);
                 form.appendChild(idInput);
+                form.appendChild(decisionInput);
+                form.appendChild(reasonInput);
+                document.body.appendChild(form);
+                form.submit();
+            }
+
+            // Agent/Expert decision modal (Approve/Reject) - require reason
+            let agentDecisionValue = null;
+
+            function openAgentDecisionModal(decision) {
+                agentDecisionValue = decision;
+                const title = document.getElementById('agentDecisionTitle');
+                title.textContent = (decision === 'APPROVE') ? 'Approve yêu cầu hủy' : 'Reject yêu cầu hủy';
+                document.getElementById('agentDecisionReason').value = '';
+                document.getElementById('agentDecisionModal').classList.add('active');
+            }
+
+            function closeAgentDecisionModal() {
+                document.getElementById('agentDecisionModal').classList.remove('active');
+            }
+
+            function submitAgentDecision() {
+                const reason = (document.getElementById('agentDecisionReason').value || '').trim();
+                if (!reason) {
+                    return;
+                }
+
+                const form = document.createElement('form');
+                form.method = 'post';
+                form.action = '${pageContext.request.contextPath}/incident';
+
+                const actionInput = document.createElement('input');
+                actionInput.type = 'hidden';
+                actionInput.name = 'action';
+                actionInput.value = 'cancel';
+
+                const idInput = document.createElement('input');
+                idInput.type = 'hidden';
+                idInput.name = 'id';
+                idInput.value = '${incident.ticketId}';
+
+                const decisionInput = document.createElement('input');
+                decisionInput.type = 'hidden';
+                decisionInput.name = 'cancelDecision';
+                decisionInput.value = agentDecisionValue;
+
+                const reasonInput = document.createElement('input');
+                reasonInput.type = 'hidden';
+                reasonInput.name = 'cancelReason';
+                reasonInput.value = reason;
+
+                form.appendChild(actionInput);
+                form.appendChild(idInput);
+                form.appendChild(decisionInput);
                 form.appendChild(reasonInput);
                 document.body.appendChild(form);
                 form.submit();
@@ -1016,6 +1121,12 @@
                     const reason = option.querySelector('input[type="radio"]').value;
                     selectReason(reason);
                 });
+            });
+
+            document.getElementById('agentDecisionModal').addEventListener('click', function (event) {
+                if (event.target === this) {
+                    closeAgentDecisionModal();
+                }
             });
 
         </script>

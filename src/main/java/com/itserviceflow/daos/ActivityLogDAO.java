@@ -48,13 +48,21 @@ public class ActivityLogDAO {
      * Gets the latest cancellation reason for a ticket from activity logs.
      */
     public String getCancelReason(int ticketId) {
+        return getLatestReasonByActivityType(ticketId, "CANCELLED");
+    }
+
+    public String getLatestReasonByActivityType(int ticketId, String activityType) {
+        if (activityType == null || activityType.trim().isEmpty()) {
+            return null;
+        }
         String sql = "SELECT description FROM time_log "
-                + "WHERE ticket_id = ? AND activity_type = 'CANCELLED' "
+                + "WHERE ticket_id = ? AND activity_type = ? "
                 + "ORDER BY logged_at DESC LIMIT 1";
         try (Connection conn = DBConnection.getConnection(); 
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, ticketId);
+            stmt.setString(2, activityType);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     String description = rs.getString("description");
