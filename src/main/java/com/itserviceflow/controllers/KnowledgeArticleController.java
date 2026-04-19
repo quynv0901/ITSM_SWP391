@@ -153,7 +153,7 @@ private void addArticle(HttpServletRequest req, HttpServletResponse resp)
         article.setStatus("PUBLISHED");
 
         if (kbDAO.addArticle(article)) {
-            resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article?message=Article created successfully");
+            resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article?message=Tạo bài viết thành công");
         } else {
             req.setAttribute("error", "Could not create article");
             req.setAttribute("article", article);
@@ -178,7 +178,7 @@ private void updateArticle(HttpServletRequest req, HttpServletResponse resp)
         article.setStatus("PUBLISHED");
 
         if (kbDAO.updateArticle(article)) {
-            resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article?message=Article updated successfully");
+            resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article?message=Cập nhật bài viết thành công");
         } else {
             req.setAttribute("error", "Could not update article");
             req.setAttribute("article", article);
@@ -199,7 +199,7 @@ private void updateArticle(HttpServletRequest req, HttpServletResponse resp)
         return;
     }
     kbDAO.deleteArticle(Integer.parseInt(idStr));
-    resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article?message=Article deleted successfully");
+    resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article?message=Xóa bài viết thành công");
 }
 
     private void toggleStatus(HttpServletRequest req, HttpServletResponse resp)
@@ -211,7 +211,7 @@ private void updateArticle(HttpServletRequest req, HttpServletResponse resp)
             return;
         }
         kbDAO.toggleStatus(Integer.parseInt(idStr), newStatus);
-        resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article?message=Status updated");
+        resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article?message=Đã cập nhật trạng thái");
     }
 
     // ===================== HELPER =====================

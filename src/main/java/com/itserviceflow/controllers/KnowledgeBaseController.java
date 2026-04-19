@@ -138,7 +138,7 @@ public class KnowledgeBaseController extends HttpServlet {
             article.setStatus("PUBLISHED"); // ← luôn là PUBLISHED, không cần submitAction
 
             if (kbDAO.addArticle(article)) {
-                resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message=Article created successfully");
+                resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message=Tạo bài viết thành công");
             } else {
                 req.setAttribute("error", "Could not create article");
                 req.setAttribute("article", article);
@@ -162,7 +162,7 @@ public class KnowledgeBaseController extends HttpServlet {
             article.setStatus("PUBLISHED"); // ← luôn là PUBLISHED
 
             if (kbDAO.updateArticle(article)) {
-                resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message=Article updated successfully");
+                resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message=Cập nhật bài viết thành công");
             } else {
                 req.setAttribute("error", "Could not update article");
                 req.setAttribute("article", article);
@@ -182,7 +182,7 @@ public class KnowledgeBaseController extends HttpServlet {
         return;
     }
     kbDAO.deleteArticle(Integer.parseInt(idStr));
-    resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message=Article deleted successfully");
+    resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message=Xóa bài viết thành công");
 }
 
     private void toggleStatus(HttpServletRequest req, HttpServletResponse resp)
@@ -194,7 +194,7 @@ public class KnowledgeBaseController extends HttpServlet {
             return;
         }
         kbDAO.toggleStatus(Integer.parseInt(idStr), newStatus);
-        resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message=Status updated");
+        resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message=Đã cập nhật trạng thái");
     }
 
     // ===================== HELPER =====================
