@@ -222,6 +222,29 @@ public class KnownErrorDAO {
         }
     }
 
+    /**
+     * Kiểm tra tiêu đề đã tồn tại chưa (case-insensitive).
+     * @param title     Tiêu đề cần kiểm tra
+     * @param excludeId article_id cần bỏ qua (0 khi tạo mới, id thực khi cập nhật)
+     */
+    public boolean isDuplicateTitle(String title, int excludeId) {
+        String sql = "SELECT COUNT(*) FROM article "
+                + "WHERE article_type = 'KNOWN_ERROR' "
+                + "AND LOWER(TRIM(title)) = LOWER(TRIM(?)) "
+                + "AND article_id != ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, title);
+            ps.setInt(2, excludeId);  // 0 sẽ không khớp bất kỳ article_id hợp lệ nào
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     private Article mapRowToArticle(ResultSet rs) throws SQLException {
         Article a = new Article();
         a.setArticleId(rs.getInt("article_id"));

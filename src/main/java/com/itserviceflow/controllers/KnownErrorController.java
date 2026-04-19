@@ -211,7 +211,16 @@ public class KnownErrorController extends HttpServlet {
         }
         
         if (title.length() > 255 || summary.length() > 500) {
-            request.getSession().setAttribute("errorMsg", "Độ dài tiêu đề tối đa 255 ký tự và tóm tắt tối đa 500 ký tự.");
+            request.getSession().setAttribute("errorMsg", "Tiêu đề tối đa 255 ký tự và tóm tắt tối đa 500 ký tự.");
+            response.sendRedirect(request.getContextPath() + "/known-error?action=add");
+            return;
+        }
+
+        // ── Kiểm tra trùng tiêu đề ────────────────────────────────────────
+        if (knownErrorDAO.isDuplicateTitle(title.trim(), 0)) {
+            request.getSession().setAttribute("errorMsg",
+                    "⚠️ Tiêu đề “" + title.trim() + "” đã tồn tại trong hệ thống. " +
+                    "Vui lòng đặt tiêu đề khác hoặc kiểm tra lại bài viết đã có.");
             response.sendRedirect(request.getContextPath() + "/known-error?action=add");
             return;
         }
@@ -229,9 +238,9 @@ public class KnownErrorController extends HttpServlet {
 
         boolean success = knownErrorDAO.createKnownError(ke);
         if (success) {
-            request.getSession().setAttribute("message", "Article successfully published.");
+            request.getSession().setAttribute("message", "✅ Bài viết đã được đăng thành công và đang chờ duyệt.");
         } else {
-            request.getSession().setAttribute("errorMsg", "Failed to publish article. Please make sure Title (< 255 chars) and Summary (< 500 chars) are not too long.");
+            request.getSession().setAttribute("errorMsg", "❌ Đăng bài thất bại. Vui lòng thử lại.");
         }
         response.sendRedirect(request.getContextPath() + "/known-error?action=list");
     }
@@ -253,7 +262,16 @@ public class KnownErrorController extends HttpServlet {
         }
         
         if (title.length() > 255 || summary.length() > 500) {
-            request.getSession().setAttribute("errorMsg", "Độ dài tiêu đề tối đa 255 ký tự và tóm tắt tối đa 500 ký tự.");
+            request.getSession().setAttribute("errorMsg", "Tiêu đề tối đa 255 ký tự và tóm tắt tối đa 500 ký tự.");
+            response.sendRedirect(request.getContextPath() + "/known-error?action=edit&id=" + id);
+            return;
+        }
+
+        // ── Kiểm tra trùng tiêu đề (loại trừ bài viết đang sửa) ───────────────────
+        if (knownErrorDAO.isDuplicateTitle(title.trim(), id)) {
+            request.getSession().setAttribute("errorMsg",
+                    "⚠️ Tiêu đề “" + title.trim() + "” đã được dùng bởi bài viết khác. " +
+                    "Vui lòng đặt tiêu đề khác.");
             response.sendRedirect(request.getContextPath() + "/known-error?action=edit&id=" + id);
             return;
         }
@@ -277,10 +295,10 @@ public class KnownErrorController extends HttpServlet {
 
         boolean success = knownErrorDAO.updateKnownError(ke);
         if (success) {
-            request.getSession().setAttribute("message", "Article successfully updated.");
+            request.getSession().setAttribute("message", "✅ Cập nhật bài viết thành công. Trạng thái đã chuyển về Chờ duyệt.");
             response.sendRedirect(request.getContextPath() + "/known-error?action=detail&id=" + id);
         } else {
-            request.getSession().setAttribute("errorMsg", "Failed to update article. Please make sure Title (< 255 chars) and Summary (< 500 chars) are not too long.");
+            request.getSession().setAttribute("errorMsg", "❌ Cập nhật thất bại. Vui lòng thử lại.");
             response.sendRedirect(request.getContextPath() + "/known-error?action=edit&id=" + id);
         }
     }

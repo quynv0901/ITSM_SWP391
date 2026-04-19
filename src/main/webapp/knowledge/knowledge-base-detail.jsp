@@ -1,8 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-<jsp:include page="/includes/header.jsp">
-    <jsp:param name="pageTitle" value="Knowledge Base" />
-</jsp:include>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <!-- Bootstrap Icons -->
@@ -23,7 +20,7 @@
                       method="post" class="d-inline">
                     <input type="hidden" name="articleId" value="${article.articleId}">
                 </c:if>
-                <a href="${pageContext.request.contextPath}/admin/knowledge-base?action=list"
+                <a href="${pageContext.request.contextPath}/knowledge-base?action=list"
                    class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left me-1"></i> Quay lại
                 </a>
@@ -46,10 +43,16 @@
                           or not empty article.solution or not empty article.errorCode}">
                   <div class="card border-0 shadow-sm">
                       <div class="card-header bg-light fw-bold">
-                          <i class="bi bi-tools me-2 text-warning"></i>Thông tin chi tiết
+                          <i class="bi bi-tools me-2 text-warning"></i>Technical Details
                       </div>
                       <div class="card-body">
                           <c:if test="${not empty article.errorCode}">
+                              <div class="mb-4">
+                                  <p class="text-uppercase text-muted mb-1" style="font-size:11px;letter-spacing:.06em;font-weight:600;">Error code</p>
+                                  <p class="text-decoration-none">
+                                      <code class="bg-light border px-2 py-1 rounded text-primary">${article.errorCode}</code>
+                                  </p>
+                              </div>
                           </c:if>
                           <c:if test="${not empty article.symptom}">
                               <div class="mb-3">
@@ -78,7 +81,7 @@
         <div class="col-lg-4">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-light fw-bold">
-                    <i class="bi bi-info-circle me-2"></i>Thông tin
+                    <i class="bi bi-info-circle me-2"></i>Thông báo
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
@@ -87,7 +90,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="fw-bold text-muted small d-block">Loại</label>
-                        <span class="badge bg-info text-dark">Thông báo</span>
+                        <span class="badge bg-info text-dark">Thông báo của công ty</span>
                     </div>
                     <div class="mb-3">
                         <label class="fw-bold text-muted small d-block">Trạng thái</label>
@@ -104,12 +107,6 @@
                                 <span class="badge bg-dark">Lưu trữ</span></c:when>
                         </c:choose>
                     </div>
-                    <c:if test="${not empty article.rejectionReason}">
-                        <div class="mb-3">
-                            <label class="fw-bold text-muted small d-block">REJECTION REASON</label>
-                            <span class="text-danger">${article.rejectionReason}</span>
-                        </div>
-                    </c:if>
                     <div class="mb-0">
                         <label class="fw-bold text-muted small d-block">Cập nhật lần cuối</label>
                         <span class="text-muted small">${article.updatedAt}</span>

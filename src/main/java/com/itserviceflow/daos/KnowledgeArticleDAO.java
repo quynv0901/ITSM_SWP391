@@ -6,15 +6,15 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class KnowledgeBaseDAO {
+public class KnowledgeArticleDAO {
 
     private Connection conn;
 
-    public KnowledgeBaseDAO() {
+    public KnowledgeArticleDAO() {
         try {
             conn = DBConnection.getConnection();
         } catch (Exception e) {
-            System.err.println("KnowledgeBaseDAO error: " + e.getMessage());
+            System.err.println("KnowledgeArticleDAO error: " + e.getMessage());
         }
     }
 
@@ -53,7 +53,7 @@ public class KnowledgeBaseDAO {
 
     public List<Article> listArticles(String keyword, String status, String type, int offset, int limit) {
         List<Article> list = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("SELECT * FROM article WHERE article_type = 'KNOWLEDGE_BASE'");
+        StringBuilder sql = new StringBuilder("SELECT * FROM article WHERE article_type = 'KNOWLEDGE_ARTICLE'");
 
         if (keyword != null && !keyword.isEmpty()) {
             sql.append(" AND (title LIKE ? OR article_number LIKE ?)");
@@ -92,9 +92,9 @@ public class KnowledgeBaseDAO {
         }
         return list;
     }
-        
+
     public int countArticles(String keyword, String status, String type) {
-        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM article WHERE article_type = 'KNOWLEDGE_BASE'");
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM article WHERE article_type = 'KNOWLEDGE_ARTICLE'");
 
         if (keyword != null && !keyword.isEmpty()) {
             sql.append(" AND (title LIKE ? OR article_number LIKE ?)");
@@ -143,48 +143,55 @@ public class KnowledgeBaseDAO {
         }
         return null;
     }
-
-    public boolean addArticle(Article a) {
-        String sql
-                = "INSERT INTO article (title, summary, content, article_type, tag, status, "
-                + "author_id, error_code, symptom, cause, solution) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement st = conn.prepareStatement(sql)) {
-            st.setString(1, a.getTitle());
-            st.setString(2, a.getSummary());
-            st.setString(3, a.getContent());
-            st.setString(4, "KNOWLEDGE_BASE");
-            st.setString(5, "NULL");
-            st.setString(6, a.getStatus());
-            if (a.getAuthorId() != null) {
-                st.setInt(7, a.getAuthorId());
-            } else {
-                st.setNull(7, Types.INTEGER);
-            }
-            st.setString(8, "No Error");
-            st.setString(9, a.getSymptom());
-            st.setString(10, a.getCause());
-            st.setString(11, a.getSolution());
-            return st.executeUpdate() > 0;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
+    public Article findByErrorCode(String errorCode) {
+    String sql = "SELECT * FROM article WHERE article_number = ? AND article_type = 'KNOWN_ERROR'";
+    try (PreparedStatement st = conn.prepareStatement(sql)) {
+        st.setString(1, errorCode);
+        ResultSet rs = st.executeQuery();
+        if (rs.next()) return mapArticle(rs);
+    } catch (Exception e) {
+        e.printStackTrace();
     }
+    return null;
+}
+    public boolean addArticle(Article a) {
+    String sql = "INSERT INTO article (title, summary, content, article_type, tag, status, " +
+                 "author_id, error_code, symptom, cause, solution) " +
+                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    try (PreparedStatement st = conn.prepareStatement(sql)) {
+        st.setString(1,  a.getTitle());
+        st.setString(2,  a.getSummary());
+        st.setString(3,  a.getContent());
+        st.setString(4,  "KNOWLEDGE_ARTICLE");
+        st.setString(5,  "NULL");
+        st.setString(6,  a.getStatus());
+        if (a.getAuthorId() != null) st.setInt(7, a.getAuthorId());
+        else st.setNull(7, Types.INTEGER);
+        st.setString(8,  a.getErrorCode());
+        st.setString(9,  a.getSymptom());
+        st.setString(10, a.getCause());
+        st.setString(11, a.getSolution());
+        return st.executeUpdate() > 0;
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return false;
+}
 
     public boolean updateArticle(Article a) {
         String sql
-                = "UPDATE article SET title=?, summary=?, content=?, "
+                = "UPDATE article SET title=?, summary=?, content=?, error_code=?, "
                 + "symptom=?, cause=?, solution=?, updated_at=NOW() "
                 + "WHERE article_id=?";
         try (PreparedStatement st = conn.prepareStatement(sql)) {
             st.setString(1, a.getTitle());
             st.setString(2, a.getSummary());
             st.setString(3, a.getContent());
-            st.setString(4, a.getSymptom());
-            st.setString(5, a.getCause());
-            st.setString(6, a.getSolution());
-            st.setInt(7, a.getArticleId());  // ← WHERE article_id=?
+            st.setString(4, a.getErrorCode());
+            st.setString(5, a.getSymptom());
+            st.setString(6, a.getCause());
+            st.setString(7, a.getSolution());
+            st.setInt(8, a.getArticleId());  // ← WHERE article_id=?
             return st.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -217,5 +224,19 @@ public class KnowledgeBaseDAO {
         }
         return false;
     }
+    public List<Article> listKnownErrors() {
+    List<Article> list = new ArrayList<>();
+    String sql = "SELECT * FROM article " +
+                 "WHERE article_type = 'KNOWN_ERROR' " +
+                 "AND status = 'APPROVED'";
+    try (PreparedStatement st = conn.prepareStatement(sql)) {
+        ResultSet rs = st.executeQuery();
+        while (rs.next()) list.add(mapArticle(rs));
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return list;
+}
+
 
 }

@@ -1,176 +1,258 @@
 <jsp:include page="/includes/header.jsp" />
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%-- Lấy Role ID của người đang đăng nhập từ Session --%>
+
 <c:set var="userRole" value="${sessionScope.user.roleId}" />
 
 <div class="container-fluid bg-white p-4 rounded shadow-sm">
-    
-    <%-- HIỂN THỊ THÔNG BÁO --%>
-    <c:if test="${not empty sessionScope.message}">
-        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i> ${sessionScope.message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            <c:remove var="message" scope="session"/>
-        </div>
-    </c:if>
-    <c:if test="${not empty sessionScope.error}">
-        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i> ${sessionScope.error}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            <c:remove var="error" scope="session"/>
+
+    <c:if test="${not empty param.msg}">
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <c:choose>
+                <c:when test="${param.msg eq 'created'}">Service request created successfully.</c:when>
+                <c:when test="${param.msg eq 'deleted'}">Service request deleted successfully.</c:when>
+                <c:when test="${param.msg eq 'bulk_deleted'}">Bulk delete completed. Deleted: ${param.count}</c:when>
+                <c:when test="${param.msg eq 'bulk_approved'}">Bulk approve completed. Updated: ${param.count}</c:when>
+                <c:when test="${param.msg eq 'bulk_rejected'}">Bulk reject completed. Updated: ${param.count}</c:when>
+                <c:when test="${param.msg eq 'not_found'}">Service request not found.</c:when>
+                <c:when test="${param.msg eq 'invalid_id'}">Invalid request id.</c:when>
+                <c:otherwise>Action completed.</c:otherwise>
+            </c:choose>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     </c:if>
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="h4 text-primary m-0"><i class="bi bi-ticket-detailed me-2"></i>Service Requests</h2>
-        
-        <%-- Chỉ User (Role 1) mới thấy nút tạo mới Catalog --%>
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <h2 class="h4 text-primary m-0">
+            <i class="bi bi-ticket-detailed me-2"></i>Service Request List
+        </h2>
+
         <c:if test="${userRole == 1}">
-            <a href="${pageContext.request.contextPath}/service-catalog" class="btn btn-primary shadow-sm">
-                <i class="bi bi-plus-circle me-1"></i> Back to Catalog
+            <a href="${pageContext.request.contextPath}/service-request?action=createForm"
+               class="btn btn-primary shadow-sm">
+                <i class="bi bi-plus-circle me-1"></i> Create Service Request
             </a>
         </c:if>
     </div>
 
-    <form action="${pageContext.request.contextPath}/ticket/service-request-list" method="get" 
+    <form action="${pageContext.request.contextPath}/service-request" method="get"
           class="row g-3 mb-4 bg-light p-3 rounded border mx-0">
-        <div class="col-md-6">
-            <input type="text" name="search" class="form-control" placeholder="Search by Title..." value="${search}">
+        <input type="hidden" name="action" value="list">
+
+        <div class="col-md-4">
+            <input type="text" name="keyword" class="form-control"
+                   placeholder="Search by ticket number, title, service..."
+                   value="${keyword}">
         </div>
+
         <div class="col-md-3">
-            <select name="statusFilter" class="form-select">
-                <option value="">All Statuses</option>
-                <option value="NEW" ${statusFilter == 'NEW' ? 'selected' : ''}>NEW</option>
-                <option value="IN_PROGRESS" ${statusFilter == 'IN_PROGRESS' ? 'selected' : ''}>IN PROGRESS</option>
-                <option value="APPROVED" ${statusFilter == 'IN_PROGRESS' ? 'selected' : ''}>APPROVED</option>
-                <option value="REJECTED" ${statusFilter == 'IN_PROGRESS' ? 'selected' : ''}>REJECTED</option>
-                <option value="RESOLVED" ${statusFilter == 'RESOLVED' ? 'selected' : ''}>RESOLVED</option>
-                <option value="CLOSED" ${statusFilter == 'CLOSED' ? 'selected' : ''}>CLOSED</option>
-                <option value="CANCELLED" ${ticket.status == 'CANCELLED' ? 'selected' : ''}>CANCELLED</option>
+            <select name="status" class="form-select">
+                <option value="">All Status</option>
+                <option value="NEW" ${status eq 'NEW' ? 'selected' : ''}>NEW</option>
+                <option value="ASSIGNED" ${status eq 'ASSIGNED' ? 'selected' : ''}>ASSIGNED</option>
+                <option value="IN_PROGRESS" ${status eq 'IN_PROGRESS' ? 'selected' : ''}>IN PROGRESS</option>
+                <option value="PENDING" ${status eq 'PENDING' ? 'selected' : ''}>PENDING</option>
+                <option value="RESOLVED" ${status eq 'RESOLVED' ? 'selected' : ''}>RESOLVED</option>
+                <option value="CLOSED" ${status eq 'CLOSED' ? 'selected' : ''}>CLOSED</option>
+                <option value="CANCELLED" ${status eq 'CANCELLED' ? 'selected' : ''}>CANCELLED</option>
             </select>
         </div>
-        <div class="col-md-3 d-flex gap-2">
-            <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> Filter</button>
-            <a href="${pageContext.request.contextPath}/ticket/service-request-list" class="btn btn-outline-secondary">
+
+        <div class="col-md-3">
+            <select name="approvalStatus" class="form-select">
+                <option value="">All Approval Status</option>
+                <option value="PENDING" ${approvalStatus eq 'PENDING' ? 'selected' : ''}>PENDING</option>
+                <option value="APPROVED" ${approvalStatus eq 'APPROVED' ? 'selected' : ''}>APPROVED</option>
+                <option value="REJECTED" ${approvalStatus eq 'REJECTED' ? 'selected' : ''}>REJECTED</option>
+            </select>
+        </div>
+
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="bi bi-search"></i>
+            </button>
+            <a href="${pageContext.request.contextPath}/service-request?action=list"
+               class="btn btn-outline-secondary">
                 <i class="bi bi-x-circle"></i>
             </a>
         </div>
     </form>
 
-   <%-- FORM DÙNG CHUNG CHO CÁC HÀNH ĐỘNG HÀNG LOẠT (BULK ACTIONS) --%>
     <form id="bulkForm" method="post">
-        <input type="hidden" name="action" id="actionName" value="bulk">
-        <input type="hidden" name="actionType" id="actionType" value="bulk">
-        <input type="hidden" name="newStatus" id="newStatus" value="">
-        
-        <div class="d-flex justify-content-end gap-2 mb-2">
-            <%-- Nút Delete: Chỉ User (Role 1) mới thấy --%>
+        <input type="hidden" name="action" id="bulkAction" value="">
+        <input type="hidden" name="rejectionReason" id="bulkRejectionReason" value="">
+
+        <div class="d-flex justify-content-end gap-2 mb-3 flex-wrap">
             <c:if test="${userRole == 1}">
-                <button type="button" class="btn btn-danger btn-sm shadow-sm" onclick="submitBulk('${pageContext.request.contextPath}/ticket/delete-request', 'bulk', '', 'Xác nhận XÓA các Request đã chọn?');">
-                    <i class="bi bi-trash"></i> Delete Selected
+                <button type="button" class="btn btn-danger btn-sm shadow-sm"
+                        onclick="submitBulkDelete()">
+                    <i class="bi bi-trash"></i> Bulk Delete
                 </button>
             </c:if>
-            
-            <%-- Nút Approve/Reject: Chỉ Manager (Role 3) mới thấy --%>
+
             <c:if test="${userRole == 3}">
-                <button type="button" class="btn btn-success btn-sm shadow-sm" onclick="submitBulk('${pageContext.request.contextPath}/ticket/approve-reject', 'bulk', 'APPROVED', 'Xác nhận PHÊ DUYỆT các Request đã chọn?');">
-                    <i class="bi bi-check-all"></i> Approve Selected
+                <button type="button" class="btn btn-success btn-sm shadow-sm"
+                        onclick="submitBulkApprove()">
+                    <i class="bi bi-check-circle"></i> Bulk Approve
                 </button>
-                <button type="button" class="btn btn-danger btn-sm shadow-sm" onclick="submitBulk('${pageContext.request.contextPath}/ticket/approve-reject', 'bulk', 'REJECTED', 'Xác nhận TỪ CHỐI các Request đã chọn?');">
-                    <i class="bi bi-x-square"></i> Reject Selected
+
+                <button type="button" class="btn btn-outline-danger btn-sm shadow-sm"
+                        onclick="submitBulkReject()">
+                    <i class="bi bi-x-circle"></i> Bulk Reject
                 </button>
             </c:if>
         </div>
 
         <div class="table-responsive">
-            <table class="table table-hover table-bordered align-middle mt-2">
+            <table class="table table-hover table-bordered align-middle">
                 <thead class="table-light">
                     <tr>
-                        <%-- HIỂN THỊ CỘT CHECKBOX CHO CẢ USER (1) VÀ MANAGER (3) --%>
-                        <c:if test="${userRole == 1 or userRole == 3}">
-                            <th class="text-center" style="width: 50px;">
-                                <input class="form-check-input" type="checkbox" id="selectAll">
-                            </th>
-                        </c:if>
-                        
-                        <th>Ticket ID</th>
-                        <th>Request Title</th>
-                        <th>Priority</th>
+                        <th style="width: 40px;" class="text-center">
+                            <input type="checkbox" id="selectAll" class="form-check-input">
+                        </th>
+                        <th>Ticket No.</th>
+                        <th>Title</th>
+                        <th>Service</th>
+                        <th>Requester</th>
+                        <th>Assigned To</th>
                         <th>Status</th>
+                        <th>Approval</th>
+                        <th>Created At</th>
                         <th class="text-center">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <c:forEach var="req" items="${requestList}">
+                    <c:forEach var="sr" items="${requestList}">
                         <tr>
-                            <%-- Ô CHECKBOX TỪNG DÒNG --%>
-                            <c:if test="${userRole == 1 or userRole == 3}">
-                                <td class="text-center align-middle">
-                                    <%-- User chỉ tích được vé NEW. Manager tích được vé NEW hoặc IN_PROGRESS --%>
-                                    <c:if test="${(userRole == 1 and (req.status eq 'NEW' or req.status eq 'New')) or (userRole == 3 and (req.status eq 'NEW' or req.status eq 'New' or req.status eq 'IN_PROGRESS'))}">
-                                        <input class="form-check-input ticket-checkbox" style="transform: scale(1.2);" type="checkbox" name="ticketIds" value="${req.ticketId}">
-                                    </c:if>
-                                </td>
-                            </c:if>
-                            
-                            <td><strong>#SR-${req.ticketId}</strong></td>
-                            <td class="text-primary fw-bold">${req.title}</td>
-                            <td>
-                                <span class="badge ${req.priority == 'CRITICAL' ? 'bg-danger' : (req.priority == 'HIGH' ? 'bg-warning text-dark' : 'bg-info text-dark')}">
-                                    ${req.priority}
-                                </span>
-                            </td>
-                            <td>
-                                <span class="badge bg-secondary ${req.status eq 'NEW' or req.status eq 'New' ? 'bg-primary' : (req.status eq 'RESOLVED' ? 'bg-success' : 'bg-secondary')}">
-                                    ${req.status}
-                                </span>
-                            </td>
                             <td class="text-center">
-                                <a href="${pageContext.request.contextPath}/request-detail?id=${req.ticketId}" 
-                                   class="btn btn-sm btn-outline-primary" title="View Details">
-                                    <i class="bi bi-eye"></i> View
-                                </a>
+                                <input type="checkbox" class="rowCheckbox form-check-input"
+                                       name="ticketIds" value="${sr.ticketId}">
                             </td>
-                        </tr>
-                    </c:forEach>
-                    
-                    <c:if test="${empty requestList}">
-                        <tr>
-                            <td colspan="${userRole == 1 or userRole == 3 ? 6 : 5}" class="text-center text-muted fst-italic py-4">
-                                <i class="bi bi-inbox fs-4 d-block mb-2"></i> No service requests found.
+
+                            <td><strong>${sr.ticketNumber}</strong></td>
+                            <td>${sr.title}</td>
+                            <td>
+                                <div class="fw-bold text-primary">${sr.serviceName}</div>
+                                <small class="text-muted">${sr.serviceCode}</small>
                             </td>
-                        </tr>
-                    </c:if>
-                </tbody>
-            </table>
+                            <td>${sr.reportedByName}</td>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${not empty sr.assignedToName}">
+                                        ${sr.assignedToName}
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="text-muted fst-italic">Unassigned</span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
+                            <td>
+                                <span class="badge
+                                      ${sr.status eq 'NEW' ? 'bg-primary' :
+                                        sr.status eq 'ASSIGNED' ? 'bg-info text-dark' :
+                                        sr.status eq 'IN_PROGRESS' ? 'bg-warning text-dark' :
+                                        sr.status eq 'RESOLVED' ? 'bg-success' :
+                                        sr.status eq 'CLOSED' ? 'bg-dark' :
+                                        sr.status eq 'CANCELLED' ? 'bg-secondary' : 'bg-light text-dark'}">
+                                          ${sr.status}
+                                      </span>
+                                </td>
+                                <td>
+                                    <span class="badge
+                                          ${sr.approvalStatus eq 'APPROVED' ? 'bg-success' :
+                                            sr.approvalStatus eq 'REJECTED' ? 'bg-danger' : 'bg-warning text-dark'}">
+                                              ${sr.approvalStatus}
+                                          </span>
+                                    </td>
+                                    <td>
+                                        <fmt:formatDate value="${sr.createdAt}" pattern="dd/MM/yyyy HH:mm"/>
+                                    </td>
+                                    <td class="text-center">
+                                        <c:choose>
+                                            <c:when test="${sessionScope.user.roleId == 3 || sessionScope.user.roleId == 2}">
+                                                <a href="${pageContext.request.contextPath}/service-request-manage?action=edit&id=${sr.ticketId}"
+                                                   class="btn btn-outline-primary btn-sm">
+                                                    <i class="bi bi-eye"></i> View
+                                                </a>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <a href="${pageContext.request.contextPath}/service-request?action=detail&id=${sr.ticketId}"
+                                                   class="btn btn-outline-primary btn-sm">
+                                                    <i class="bi bi-eye"></i> View
+                                                </a>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+
+                            <c:if test="${empty requestList}">
+                                <tr>
+                                    <td colspan="10" class="text-center text-muted py-4">
+                                        No service requests found.
+                                    </td>
+                                </tr>
+                            </c:if>
+                        </tbody>
+                    </table>
+                </div>
+            </form>
         </div>
-    </form>
-</div>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const selectAllCheckbox = document.getElementById('selectAll');
-        const itemCheckboxes = document.querySelectorAll('.ticket-checkbox');
-
-        if (selectAllCheckbox) {
-            selectAllCheckbox.addEventListener('change', function() {
-                itemCheckboxes.forEach(function(checkbox) {
-                    checkbox.checked = selectAllCheckbox.checked;
-                });
+        <script>
+            document.getElementById('selectAll')?.addEventListener('change', function () {
+                document.querySelectorAll('.rowCheckbox').forEach(cb => cb.checked = this.checked);
             });
-        }
-    });
 
-    // Hàm đổi hướng form tùy vào nút bấm (Duyệt/Xóa)
-    function submitBulk(actionUrl, actionType, newStatus, confirmMsg) {
-        if (!confirm(confirmMsg)) return false;
-        const form = document.getElementById('bulkForm');
-        form.action = actionUrl;
-        document.getElementById('actionType').value = actionType;
-        document.getElementById('newStatus').value = newStatus;
-        form.submit();
-    }
-</script>
+            function getCheckedCount() {
+                return document.querySelectorAll('.rowCheckbox:checked').length;
+            }
 
-<jsp:include page="/includes/footer.jsp" />>
+            function submitBulkDelete() {
+                if (getCheckedCount() === 0) {
+                    alert('Please select at least one request.');
+                    return;
+                }
+                if (!confirm('Delete selected service requests?'))
+                    return;
+
+                const form = document.getElementById('bulkForm');
+                form.action = '${pageContext.request.contextPath}/service-request';
+                document.getElementById('bulkAction').value = 'bulkDelete';
+                form.submit();
+            }
+
+            function submitBulkApprove() {
+                if (getCheckedCount() === 0) {
+                    alert('Please select at least one request.');
+                    return;
+                }
+                if (!confirm('Approve selected service requests?'))
+                    return;
+
+                const form = document.getElementById('bulkForm');
+                form.action = '${pageContext.request.contextPath}/service-request-manage';
+                document.getElementById('bulkAction').value = 'bulkApprove';
+                form.submit();
+            }
+
+            function submitBulkReject() {
+                if (getCheckedCount() === 0) {
+                    alert('Please select at least one request.');
+                    return;
+                }
+
+                const reason = prompt('Enter rejection reason (optional):', '');
+                if (reason === null)
+                    return;
+
+                const form = document.getElementById('bulkForm');
+                form.action = '${pageContext.request.contextPath}/service-request-manage';
+                document.getElementById('bulkAction').value = 'bulkReject';
+                document.getElementById('bulkRejectionReason').value = reason;
+                form.submit();
+            }
+        </script>
+
+        <jsp:include page="/includes/footer.jsp" />
