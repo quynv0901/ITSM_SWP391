@@ -38,7 +38,7 @@
         <input type="hidden" name="action" value="list">
 
         <input type="text" class="form-control" name="keyword"
-               placeholder="Search by title or number..."
+               placeholder="Tìm theo id hoặc tiêu đề"
                value="${keyword}" style="max-width: 280px;">
 
         <select class="form-select" name="status" style="max-width: 180px;">

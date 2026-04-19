@@ -31,13 +31,13 @@
     <form action="${pageContext.request.contextPath}/knowledge-article" method="get"
           class="bg-light p-3 rounded mb-4 border d-flex gap-3 align-items-center">
         <input type="text" class="form-control" name="keyword"
-               placeholder="Search articles..."
+               placeholder="Tìm bài viết"
                value="${keyword}" style="max-width: 400px;">
         <button type="submit" class="btn btn-primary">
-            <i class="bi bi-search"></i> Search
+            <i class="bi bi-search"></i> Tìm
         </button>
         <a href="${pageContext.request.contextPath}/knowledge-article"
-           class="btn btn-outline-secondary">Clear</a>
+           class="btn btn-outline-secondary">Xóa</a>
     </form>
 
     <%-- List --%>

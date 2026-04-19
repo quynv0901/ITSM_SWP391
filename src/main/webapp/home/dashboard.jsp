@@ -118,12 +118,24 @@
         color: white;
     }
 
-    .action-card .card-icon.blue { background: linear-gradient(135deg, #4e73df, #224abe); }
-    .action-card .card-icon.green { background: linear-gradient(135deg, #1cc88a, #13855c); }
-    .action-card .card-icon.purple { background: linear-gradient(135deg, #6f42c1, #5a32a3); }
-    .action-card .card-icon.orange { background: linear-gradient(135deg, #f6c23e, #dda20a); }
-    .action-card .card-icon.red { background: linear-gradient(135deg, #e74a3b, #be2617); }
-    .action-card .card-icon.teal { background: linear-gradient(135deg, #36b9cc, #258391); }
+    .action-card .card-icon.blue {
+        background: linear-gradient(135deg, #4e73df, #224abe);
+    }
+    .action-card .card-icon.green {
+        background: linear-gradient(135deg, #1cc88a, #13855c);
+    }
+    .action-card .card-icon.purple {
+        background: linear-gradient(135deg, #6f42c1, #5a32a3);
+    }
+    .action-card .card-icon.orange {
+        background: linear-gradient(135deg, #f6c23e, #dda20a);
+    }
+    .action-card .card-icon.red {
+        background: linear-gradient(135deg, #e74a3b, #be2617);
+    }
+    .action-card .card-icon.teal {
+        background: linear-gradient(135deg, #36b9cc, #258391);
+    }
 
     .action-card h3 {
         font-size: 1.05rem;
@@ -255,6 +267,19 @@
         <i class="bi bi-arrow-right card-arrow"></i>
     </a>
 
+    <a href="${pageContext.request.contextPath}/knowledge-base?action=list" class="action-card">
+        <div class="card-icon purple"><i class="bi bi-book-fill"></i></div>
+        <h3>Knowledge Base</h3>
+        <p>Tra cứu tài liệu hướng dẫn, FAQ và giải pháp từ kho tri thức nội bộ.</p>
+        <i class="bi bi-arrow-right card-arrow"></i>
+    </a>
+
+    <a href="${pageContext.request.contextPath}/knowledge-article?action=list" class="action-card">
+        <div class="card-icon bg-primary text-white"><i class="bi bi-file-earmark-text"></i></div>
+        <h3>Knowledge Article</h3>
+        <p>Tra cứu tài liệu hướng dẫn, FAQ và giải pháp từ kho tri thức nội bộ.</p>
+        <i class="bi bi-arrow-right card-arrow"></i>
+    </a>
 </div>
 
 <div class="section-title"><i class="bi bi-info-circle-fill"></i> Hệ thống ITServiceFlow</div>
@@ -265,18 +290,18 @@
         <p>Quản lý sự cố IT</p>
     </a>
     <c:if test="${sessionScope.user.roleId != 1}">
-    <a href="${pageContext.request.contextPath}/problem?action=list" class="info-card" style="text-decoration:none; color:inherit;">
-        <div class="info-icon">🧠</div>
-        <h4>Problem Management</h4>
-        <p>Phân tích nguyên nhân gốc</p>
-    </a>
+        <a href="${pageContext.request.contextPath}/problem?action=list" class="info-card" style="text-decoration:none; color:inherit;">
+            <div class="info-icon">🧠</div>
+            <h4>Problem Management</h4>
+            <p>Phân tích nguyên nhân gốc</p>
+        </a>
     </c:if>
     <c:if test="${sessionScope.user.roleId != 1}">
-    <a href="${pageContext.request.contextPath}/cmdb?action=list" class="info-card" style="text-decoration:none; color:inherit;">
-        <div class="info-icon">🖥️</div>
-        <h4>CMDB</h4>
-        <p>Cơ sở dữ liệu cấu hình</p>
-    </a>
+        <a href="${pageContext.request.contextPath}/cmdb?action=list" class="info-card" style="text-decoration:none; color:inherit;">
+            <div class="info-icon">🖥️</div>
+            <h4>CMDB</h4>
+            <p>Cơ sở dữ liệu cấu hình</p>
+        </a>
     </c:if>
 </div>
 
