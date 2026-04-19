@@ -782,11 +782,13 @@
                     Bạn có chắc muốn hủy sự cố
                     <span id="cancelTicketLabel" class="modal-ticket-id">#</span>?
                     Hành động này sẽ cập nhật trạng thái sự cố.
-                    <div style="margin-top:12px;">
-                        <label for="cancelReasonText" style="display:block;font-weight:700;margin-bottom:6px;">Lý do hủy (bắt buộc)</label>
-                        <textarea id="cancelReasonText" class="search-input" style="width:100%;min-height:90px;padding:10px;border-radius:10px;border:1px solid #e5e7eb;"
-                                  placeholder="Nhập lý do để người dùng hiểu vì sao ticket bị hủy..."></textarea>
-                    </div>
+                    <c:if test="${sessionScope.user.roleId != 1}">
+                        <div style="margin-top:12px;">
+                            <label for="cancelReasonText" style="display:block;font-weight:700;margin-bottom:6px;">Lý do hủy (bắt buộc)</label>
+                            <textarea id="cancelReasonText" class="search-input" style="width:100%;min-height:90px;padding:10px;border-radius:10px;border:1px solid #e5e7eb;"
+                                      placeholder="Nhập lý do để người dùng hiểu vì sao ticket bị hủy..."></textarea>
+                        </div>
+                    </c:if>
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeCancelModal()">Quay lại</button>
@@ -1020,7 +1022,10 @@
         function openCancelModal(ticketId) {
             document.getElementById('cancelIncidentId').value = ticketId;
             document.getElementById('cancelTicketLabel').textContent = '#' + ticketId;
-            document.getElementById('cancelReasonText').value = '';
+            const reasonEl = document.getElementById('cancelReasonText');
+            if (reasonEl) {
+                reasonEl.value = '';
+            }
             document.getElementById('cancelReasonHidden').value = '';
             document.getElementById('cancelIncidentModal').classList.add('active');
         }
@@ -1030,11 +1035,14 @@
         }
 
         function submitCancel() {
-            const reason = (document.getElementById('cancelReasonText').value || '').trim();
-            if (!reason) {
-                return;
+            const reasonEl = document.getElementById('cancelReasonText');
+            if (reasonEl) {
+                const reason = (reasonEl.value || '').trim();
+                if (!reason) {
+                    return;
+                }
+                document.getElementById('cancelReasonHidden').value = reason;
             }
-            document.getElementById('cancelReasonHidden').value = reason;
             document.getElementById('cancelIncidentForm').submit();
         }
 

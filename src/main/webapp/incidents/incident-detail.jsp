@@ -882,36 +882,50 @@
                     <div class="modal-title">Xác nhận hủy ticket</div>
                 </div>
                 <div class="modal-body">
-                    <div class="reason-group">
-                        <label>Chọn lý do hủy ticket:</label>
-                        <div class="reason-options">
-                            <div class="reason-option active" onclick="selectReason('Tôi không cần hỗ trợ nữa')">
-                                <input type="radio" name="cancelReason" value="Tôi không cần hỗ trợ nữa" checked>
-                                <span>Tôi không cần hỗ trợ nữa</span>
+                    <c:choose>
+                        <c:when test="${sessionScope.user.roleId == 1}">
+                            <div class="help-text">
+                                Bạn đang gửi <b>yêu cầu hủy</b>. Agent/Expert sẽ xem xét và quyết định.
                             </div>
-                            <div class="reason-option" onclick="selectReason('Tôi đã tự giải quyết được')">
-                                <input type="radio" name="cancelReason" value="Tôi đã tự giải quyết được">
-                                <span>Tôi đã tự giải quyết được</span>
+                            <div class="help-text" style="margin-top:8px;">
+                                (Bạn không cần nhập lý do ở bước này.)
                             </div>
-                            <div class="reason-option" onclick="selectReason('Tôi tạo nhầm ticket')">
-                                <input type="radio" name="cancelReason" value="Tôi tạo nhầm ticket">
-                                <span>Tôi tạo nhầm ticket</span>
+                            <div class="reason-detail" id="reasonDetail" style="display:none;"></div>
+                            <textarea id="reasonDetailText" style="display:none;"></textarea>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="reason-group">
+                                <label>Chọn lý do hủy ticket:</label>
+                                <div class="reason-options">
+                                    <div class="reason-option active" onclick="selectReason('Tôi không cần hỗ trợ nữa')">
+                                        <input type="radio" name="cancelReason" value="Tôi không cần hỗ trợ nữa" checked>
+                                        <span>Tôi không cần hỗ trợ nữa</span>
+                                    </div>
+                                    <div class="reason-option" onclick="selectReason('Tôi đã tự giải quyết được')">
+                                        <input type="radio" name="cancelReason" value="Tôi đã tự giải quyết được">
+                                        <span>Tôi đã tự giải quyết được</span>
+                                    </div>
+                                    <div class="reason-option" onclick="selectReason('Tôi tạo nhầm ticket')">
+                                        <input type="radio" name="cancelReason" value="Tôi tạo nhầm ticket">
+                                        <span>Tôi tạo nhầm ticket</span>
+                                    </div>
+                                    <div class="reason-option" onclick="selectReason('Vấn đề đã được giải quyết qua kênh khác')">
+                                        <input type="radio" name="cancelReason" value="Vấn đề đã được giải quyết qua kênh khác">
+                                        <span>Vấn đề đã được giải quyết qua kênh khác</span>
+                                    </div>
+                                    <div class="reason-option" onclick="selectReason('Lý do khác')">
+                                        <input type="radio" name="cancelReason" value="Lý do khác">
+                                        <span>Lý do khác</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="reason-option" onclick="selectReason('Vấn đề đã được giải quyết qua kênh khác')">
-                                <input type="radio" name="cancelReason" value="Vấn đề đã được giải quyết qua kênh khác">
-                                <span>Vấn đề đã được giải quyết qua kênh khác</span>
+
+                            <div class="reason-detail" id="reasonDetail">
+                                <label>Nhập lý do chi tiết:</label>
+                                <textarea id="reasonDetailText" placeholder="Vui lòng nhập lý do chi tiết..."></textarea>
                             </div>
-                            <div class="reason-option" onclick="selectReason('Lý do khác')">
-                                <input type="radio" name="cancelReason" value="Lý do khác">
-                                <span>Lý do khác</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="reason-detail" id="reasonDetail">
-                        <label>Nhập lý do chi tiết:</label>
-                        <textarea id="reasonDetailText" placeholder="Vui lòng nhập lý do chi tiết..."></textarea>
-                    </div>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-cancel" onclick="closeCancelModal()">Hủy bỏ</button>
@@ -942,6 +956,8 @@
         </div>
 
         <script>
+            const __isEndUser = ${sessionScope.user.roleId == 1 ? 'true' : 'false'};
+
             function switchTab(tabId, btnEl) {
                 document.querySelectorAll('.tab-btn').forEach(function (b) {
                     b.classList.remove('active');
@@ -959,6 +975,9 @@
                 document.getElementById('reasonDetail').classList.remove('active');
                 document.getElementById('reasonDetailText').value = '';
                 document.getElementById('confirmCancelBtn').classList.remove('active');
+                if (__isEndUser) {
+                    document.getElementById('confirmCancelBtn').classList.add('active');
+                }
             }
 
             function closeCancelModal() {
@@ -996,6 +1015,10 @@
             }
 
             function updateConfirmButton() {
+                if (__isEndUser) {
+                    document.getElementById('confirmCancelBtn').classList.add('active');
+                    return;
+                }
                 const selectedReason = document.querySelector('input[name="cancelReason"]:checked');
                 const detailText = document.getElementById('reasonDetailText').value.trim();
                 const detailRequired = document.getElementById('reasonDetail').classList.contains('active');
@@ -1019,13 +1042,14 @@
                     return;
                 }
 
-                const selectedReason = document.querySelector('input[name="cancelReason"]:checked').value;
-                const detailText = document.getElementById('reasonDetailText').value.trim();
-                
-                // Chuẩn bị nội dung lý do gửi lên server
-                let reasonText = selectedReason;
-                if (detailText && detailText !== '') {
-                    reasonText += ' - Chi tiết: ' + detailText;
+                let reasonText = null;
+                if (!__isEndUser) {
+                    const selectedReason = document.querySelector('input[name="cancelReason"]:checked').value;
+                    const detailText = document.getElementById('reasonDetailText').value.trim();
+                    reasonText = selectedReason;
+                    if (detailText && detailText !== '') {
+                        reasonText += ' - Chi tiết: ' + detailText;
+                    }
                 }
 
                 // Gửi form kèm lý do hủy
@@ -1048,15 +1072,16 @@
                 decisionInput.name = 'cancelDecision';
                 decisionInput.value = 'REQUEST';
 
-                const reasonInput = document.createElement('input');
-                reasonInput.type = 'hidden';
-                reasonInput.name = 'cancelReason';
-                reasonInput.value = reasonText;
-
                 form.appendChild(actionInput);
                 form.appendChild(idInput);
                 form.appendChild(decisionInput);
-                form.appendChild(reasonInput);
+                if (reasonText) {
+                    const reasonInput = document.createElement('input');
+                    reasonInput.type = 'hidden';
+                    reasonInput.name = 'cancelReason';
+                    reasonInput.value = reasonText;
+                    form.appendChild(reasonInput);
+                }
                 document.body.appendChild(form);
                 form.submit();
             }
