@@ -51,22 +51,6 @@ public class KnowledgeArticleDAO {
         return a;
     }
 
-    public int countNewArticles() {
-        String sql = "SELECT COUNT(*) FROM article "
-                + "WHERE article_type = 'KNOWLEDGE_ARTICLE' "
-                + "AND status = 'PUBLISHED' "
-                + "AND updated_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
-        try (PreparedStatement st = conn.prepareStatement(sql)) {
-            ResultSet rs = st.executeQuery();
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
     public List<Article> listArticles(String keyword, String status, String type, int offset, int limit) {
         List<Article> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder("SELECT * FROM article WHERE article_type = 'KNOWLEDGE_ARTICLE'");
@@ -107,6 +91,22 @@ public class KnowledgeArticleDAO {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public int countNewArticles() {
+        String sql = "SELECT COUNT(*) FROM article "
+                + "WHERE article_type = 'KNOWLEDGE_ARTICLE' "
+                + "AND status = 'PUBLISHED' "
+                + "AND updated_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            ResultSet rs = st.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
     public int countArticles(String keyword, String status, String type) {

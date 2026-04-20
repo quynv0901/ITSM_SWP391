@@ -3,6 +3,7 @@ package com.itserviceflow.controllers;
 import com.itserviceflow.daos.KnowledgeArticleDAO;
 import com.itserviceflow.models.Article;
 import com.itserviceflow.models.User;
+import com.itserviceflow.utils.ProfanityFilter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -151,6 +152,17 @@ public class KnowledgeArticleController extends HttpServlet {
             article.setAuthorId(sessionUser.getUserId());
             article.setStatus("PUBLISHED");
 
+            // ===== VALIDATE TỪ ĐỘC HẠI =====
+            String profanityError = checkProfanity(article);
+            if (profanityError != null) {
+                req.setAttribute("error", profanityError);
+                req.setAttribute("article", article);
+                req.setAttribute("knownErrors", kbDAO.listKnownErrors());
+                req.getRequestDispatcher("/knowledge/knowledge-article-form.jsp").forward(req, resp);
+                return;
+            }
+            // ===================================
+
             if (kbDAO.addArticle(article)) {
                 resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article?message="
                         + java.net.URLEncoder.encode("Thêm bài viết thành công", "UTF-8"));
@@ -176,6 +188,16 @@ public class KnowledgeArticleController extends HttpServlet {
             Article article = buildArticleFromRequest(req);
             article.setArticleId(Integer.parseInt(idStr));
             article.setStatus("PUBLISHED");
+            // ===== VALIDATE TỪ ĐỘC HẠI =====
+            String profanityError = checkProfanity(article);
+            if (profanityError != null) {
+                req.setAttribute("error", profanityError);
+                req.setAttribute("article", article);
+                req.setAttribute("knownErrors", kbDAO.listKnownErrors());
+                req.getRequestDispatcher("/knowledge/knowledge-article-form.jsp").forward(req, resp);
+                return;
+            }
+            // ===================================
 
             if (kbDAO.updateArticle(article)) {
                 resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article?message="
@@ -230,6 +252,28 @@ public class KnowledgeArticleController extends HttpServlet {
         a.setCause(req.getParameter("cause"));
         a.setSolution(req.getParameter("solution"));
         return a;
+    }
+
+    /**
+     * Kiểm tra tất cả các trường text của article. Trả về thông báo lỗi nếu có
+     * từ độc hại, null nếu không.
+     */
+    private String checkProfanity(Article a) {
+        java.util.Map<String, String> fields = new java.util.LinkedHashMap<>();
+        fields.put("Tiêu đề", a.getTitle());
+        fields.put("Mô tả", a.getSummary());
+        fields.put("Nội dung", a.getContent());
+        fields.put("Triệu chứng", a.getSymptom());
+        fields.put("Nguyên nhân", a.getCause());
+        fields.put("Giải pháp", a.getSolution());
+
+        for (java.util.Map.Entry<String, String> entry : fields.entrySet()) {
+            String found = ProfanityFilter.findBannedWord(entry.getValue());
+            if (found != null) {
+                return entry.getKey() + " chứa từ không phù hợp: \"" + found + "\"";
+            }
+        }
+        return null;
     }
 
     @Override
