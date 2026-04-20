@@ -205,6 +205,10 @@
                            class="menu-item ${pageContext.request.requestURI.contains('/configuration-item') ? 'active' : ''}">
                             <i class="bi bi-server"></i> Danh mục cấu hình
                         </a>
+                        <a href="${pageContext.request.contextPath}/vendor"
+                           class="menu-item ${pageContext.request.requestURI.contains('/vendor') ? 'active' : ''}">
+                            <i class="bi bi-buildings"></i> Danh mục Nhà cung cấp
+                        </a>
 
                         <li class="menu-header">Báo cáo &amp; Phân tích</li>
                         <a href="${pageContext.request.contextPath}/dashboard"
@@ -240,6 +244,10 @@
                        class="menu-item ${pageContext.request.requestURI.contains('/configuration-item') ? 'active' : ''}">
                         <i class="bi bi-server"></i> Danh mục cấu hình
                     </a>
+                    <a href="${pageContext.request.contextPath}/vendor"
+                       class="menu-item ${pageContext.request.requestURI.contains('/vendor') ? 'active' : ''}">
+                        <i class="bi bi-buildings"></i> Danh mục Nhà cung cấp
+                    </a>
 
                     <li class="menu-header">Báo cáo &amp; Phân tích</li>
                     <a href="${pageContext.request.contextPath}/dashboard"
@@ -260,6 +268,7 @@
                                 <c:when test="${pageContext.request.requestURI.contains('/problem/')}">Quản lý Vấn đề</c:when>
                                 <c:when test="${pageContext.request.requestURI.contains('/known-error/')}">Danh sách lỗi đã xác định</c:when>
                                 <c:when test="${pageContext.request.requestURI.contains('/configuration-item')}">Danh mục cấu hình</c:when>
+                                <c:when test="${pageContext.request.requestURI.contains('/vendor')}">Quản lý Nhà cung cấp</c:when>
                                 <c:when test="${pageContext.request.requestURI.contains('/ticket-category')}">Danh mục Phiếu</c:when>
                                 <c:when test="${pageContext.request.requestURI.contains('/incident/')}">Quản lý Sự cố</c:when>
                                 <c:when test="${pageContext.request.requestURI.contains('/dashboard')}">Bảng điều khiển</c:when>
