@@ -221,12 +221,19 @@ public class IncidentController extends HttpServlet {
 
         String q = request.getParameter("q");
         Integer categoryId = parsePositiveInt(request.getParameter("categoryId"));
-        int limit = 5;
+        String mode = request.getParameter("mode"); // "agent" | null
         Integer ticketId = parsePositiveInt(request.getParameter("excludeId"));
 
-        List<Ticket> suggestions = ticketDAO.suggestSimilarIncidents(q, categoryId, limit, ticketId);
+        User currentUser = (User) request.getSession().getAttribute("user");
+        boolean isEndUser = currentUser != null && currentUser.getRoleId() != null
+                && currentUser.getRoleId() == AuthUtils.ROLE_END_USER;
+        boolean agentMode = !isEndUser && "agent".equalsIgnoreCase(mode);
 
-        // Return only minimal fields to avoid leaking description
+        int limit = agentMode ? 10 : 5;
+        // End-user: only open incidents; Agent/Expert: include closed/cancelled to check "has it happened before?"
+        List<Ticket> suggestions = ticketDAO.suggestSimilarIncidents(q, categoryId, limit, ticketId, agentMode);
+
+        // Return only minimal fields; agentMode can include a bit more metadata.
         List<java.util.Map<String, Object>> payload = suggestions.stream().map(t -> {
             java.util.Map<String, Object> m = new java.util.HashMap<>();
             m.put("ticketId", t.getTicketId());
@@ -234,6 +241,9 @@ public class IncidentController extends HttpServlet {
             m.put("title", t.getTitle());
             m.put("status", t.getStatus());
             m.put("createdAt", t.getCreatedAt());
+            if (agentMode) {
+                m.put("priority", t.getPriority());
+            }
             return m;
         }).collect(Collectors.toList());
 
@@ -321,15 +331,7 @@ public class IncidentController extends HttpServlet {
         incident.setTicketType("INCIDENT");
 
         String relatedIdsStr = request.getParameter("relatedIds");
-        List<Integer> relatedIds = new ArrayList<>();
-        if (relatedIdsStr != null && !relatedIdsStr.trim().isEmpty()) {
-            for (String s : relatedIdsStr.split(",")) {
-                try {
-                    relatedIds.add(Integer.parseInt(s.trim()));
-                } catch (NumberFormatException ignored) {
-                }
-            }
-        }
+        List<Integer> relatedIds = parseRelatedIncidentIds(relatedIdsStr);
 
         boolean created = ticketDAO.createIncidentTicket(incident, creatorId);
         if (created && incident.getTicketId() > 0) {
@@ -544,15 +546,7 @@ public class IncidentController extends HttpServlet {
             return;
         }
         String relatedIdsStr = request.getParameter("relatedIds");
-        List<Integer> relatedIds = new ArrayList<>();
-        if (relatedIdsStr != null && !relatedIdsStr.trim().isEmpty()) {
-            for (String s : relatedIdsStr.split(",")) {
-                try {
-                    relatedIds.add(Integer.parseInt(s.trim()));
-                } catch (NumberFormatException ignored) {
-                }
-            }
-        }
+        List<Integer> relatedIds = parseRelatedIncidentIds(relatedIdsStr);
         HttpSession session = request.getSession();
         User currentUser = (User) session.getAttribute("user");
         int userId = (currentUser != null) ? currentUser.getUserId() : 1;
@@ -624,6 +618,34 @@ public class IncidentController extends HttpServlet {
         }
         String normalized = raw.trim().replaceAll("\\s+", " ");
         return normalized.isEmpty() ? null : normalized;
+    }
+
+    /**
+     * Accepts both numeric ticket_id and ticket number (e.g. INC-2026-0012).
+     */
+    private List<Integer> parseRelatedIncidentIds(String raw) {
+        List<Integer> ids = new ArrayList<>();
+        if (raw == null || raw.trim().isEmpty()) {
+            return ids;
+        }
+        java.util.Set<Integer> unique = new java.util.LinkedHashSet<>();
+        for (String token : raw.split(",")) {
+            String value = token == null ? "" : token.trim();
+            if (value.isEmpty()) {
+                continue;
+            }
+            Integer id = parsePositiveInt(value);
+            if (id != null) {
+                unique.add(id);
+                continue;
+            }
+            Integer resolvedId = ticketDAO.findIncidentIdByTicketNumber(value);
+            if (resolvedId != null && resolvedId > 0) {
+                unique.add(resolvedId);
+            }
+        }
+        ids.addAll(unique);
+        return ids;
     }
 
     private boolean isValidPriority(String priority) {

@@ -571,7 +571,7 @@
                     <div class="form-section">
                         <div class="section-title">🔗 Sự cố liên quan</div>
 
-                        <!-- End-user: suggest similar incidents instead of manual IDs -->
+                        <!-- Suggest similar incidents (End-user + Agent/Expert) -->
                         <c:choose>
                             <c:when test="${sessionScope.user.roleId == 1}">
                                 <div class="suggest-box">
@@ -587,14 +587,16 @@
                                 </div>
                             </c:when>
                             <c:otherwise>
-                                <!-- Agent/Expert: keep manual IDs (optional) -->
-                                <div class="form-group">
-                                    <label for="relatedIds">
-                                        Liên kết sự cố liên quan
-                                    </label>
-                                    <input type="text" id="relatedIds" name="relatedIds" class="form-control"
-                                           placeholder="ví dụ: 101, 102, 103">
-                                    <div class="help-text">Tùy chọn: Nhập ID sự cố, cách nhau bởi dấu phẩy nếu có liên quan</div>
+                                <div class="suggest-box">
+                                    <div class="suggest-title">🔎 Tra cứu sự cố đã từng xảy ra</div>
+                                    <div class="help-text">
+                                        Agent/Expert: hệ thống sẽ gợi ý theo <b>ticket number</b>, <b>mã lỗi</b> (trong tiêu đề/mô tả/cause/solution) và
+                                        <b>cả ticket đã đóng/đã hủy</b> để bạn kiểm tra lịch sử.
+                                    </div>
+                                    <input type="hidden" id="relatedIds" name="relatedIds" value="">
+                                    <div class="suggest-list" id="suggestList">
+                                        <div class="help-text" id="suggestHint">Nhập tiêu đề/mô tả để xem gợi ý.</div>
+                                    </div>
                                 </div>
                             </c:otherwise>
                         </c:choose>
@@ -614,7 +616,7 @@
         </div>
     </div>
 
-    <c:if test="${empty incident and sessionScope.user.roleId == 1}">
+    <c:if test="${empty incident}">
         <script>
             (function () {
                 const titleEl = document.getElementById('title');
@@ -622,6 +624,7 @@
                 const categoryEl = document.getElementById('categoryId');
                 const suggestList = document.getElementById('suggestList');
                 const hiddenRelated = document.getElementById('relatedIds');
+                const __isEndUser = ${sessionScope.user.roleId == 1 ? 'true' : 'false'};
 
                 let debounceTimer = null;
                 let selectedIds = new Set();
@@ -650,8 +653,9 @@
                         btn.classList.remove('btn-mini-primary');
                         chip.classList.remove('chip-selected');
                     } else {
-                        // keep it simple: max 3 selections
-                        if (selectedIds.size >= 3) return;
+                        // End-user keep small; Agent/Expert can select more
+                        const max = __isEndUser ? 3 : 10;
+                        if (selectedIds.size >= max) return;
                         selectedIds.add(id);
                         btn.textContent = 'Đã chọn';
                         btn.classList.add('btn-mini-primary');
@@ -661,7 +665,10 @@
                 }
 
                 async function fetchSuggestions() {
-                    const q = normalize(titleEl.value) || normalize(descEl.value);
+                    // Agent/Expert: use both title + description to improve matching
+                    const q = __isEndUser
+                        ? (normalize(titleEl.value) || normalize(descEl.value))
+                        : normalize((titleEl.value || '') + ' ' + (descEl.value || ''));
                     const categoryId = categoryEl.value;
 
                     if (!q || q.length < 3) {
@@ -673,6 +680,7 @@
                     params.set('action', 'suggest');
                     params.set('q', q);
                     if (categoryId) params.set('categoryId', categoryId);
+                    if (!__isEndUser) params.set('mode', 'agent');
 
                     renderHint('Đang tìm gợi ý...');
 
@@ -707,7 +715,10 @@
 
                             const meta = document.createElement('div');
                             meta.className = 'suggest-meta';
-                            meta.textContent = 'Trạng thái: ' + (item.status || 'N/A');
+                            const parts = [];
+                            parts.push('Trạng thái: ' + (item.status || 'N/A'));
+                            if (!__isEndUser && item.priority) parts.push('Ưu tiên: ' + item.priority);
+                            meta.textContent = parts.join(' • ');
 
                             main.appendChild(code);
                             main.appendChild(text);
@@ -738,6 +749,7 @@
 
                             suggestList.appendChild(wrap);
                         });
+                        updateHidden();
                     } catch (e) {
                         renderHint('Không thể tải gợi ý. Vui lòng thử lại.');
                     }

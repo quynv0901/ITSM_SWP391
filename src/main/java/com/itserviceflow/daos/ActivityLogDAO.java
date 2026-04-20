@@ -48,7 +48,14 @@ public class ActivityLogDAO {
      * Gets the latest cancellation reason for a ticket from activity logs.
      */
     public String getCancelReason(int ticketId) {
-        return getLatestReasonByActivityType(ticketId, "CANCELLED");
+        // In some flows (approve cancellation request), we log the agent-entered reason
+        // under CANCEL_APPROVED while auto-log for CANCELLED may be disabled.
+        // Prefer CANCELLED; fall back to CANCEL_APPROVED so end-user still sees the message.
+        String reason = getLatestReasonByActivityType(ticketId, "CANCELLED");
+        if (reason == null || reason.trim().isEmpty()) {
+            reason = getLatestReasonByActivityType(ticketId, "CANCEL_APPROVED");
+        }
+        return reason;
     }
 
     public String getLatestReasonByActivityType(int ticketId, String activityType) {

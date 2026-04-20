@@ -930,6 +930,26 @@ public class TicketDAO {
         }
     }
 
+    public Integer findIncidentIdByTicketNumber(String ticketNumber) {
+        if (ticketNumber == null || ticketNumber.trim().isEmpty()) {
+            return null;
+        }
+        String sql = "SELECT ticket_id FROM ticket "
+                + "WHERE ticket_type = 'INCIDENT' AND LOWER(ticket_number) = LOWER(?) "
+                + "LIMIT 1";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, ticketNumber.trim());
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("ticket_id");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     private Ticket mapRowToTicket(ResultSet rs) throws SQLException {
         Ticket t = new Ticket();
         t.setTicketId(rs.getInt("ticket_id"));
@@ -952,6 +972,16 @@ public class TicketDAO {
     }
 
     public List<Ticket> suggestSimilarIncidents(String query, Integer categoryId, int limit, Integer excludeTicketId) {
+        return suggestSimilarIncidents(query, categoryId, limit, excludeTicketId, false);
+    }
+
+    /**
+     * Suggest similar incidents for both end-user and agent/expert.
+     *
+     * @param includeClosedCancelled if true, also search CLOSED/CANCELLED (useful for agents)
+     */
+    public List<Ticket> suggestSimilarIncidents(String query, Integer categoryId, int limit, Integer excludeTicketId,
+            boolean includeClosedCancelled) {
         List<Ticket> list = new ArrayList<>();
         if (query == null) {
             return list;
@@ -965,30 +995,52 @@ public class TicketDAO {
         String like = "%" + normalized.replace(" ", "%") + "%";
 
         StringBuilder sql = new StringBuilder(
-                "SELECT ticket_id, ticket_number, title, status, created_at "
-                + "FROM ticket "
-                + "WHERE ticket_type = 'INCIDENT' "
-                + "AND status NOT IN ('CANCELLED', 'CLOSED') "
-                + "AND (title LIKE ? OR description LIKE ?) "
+                "SELECT ticket_id, ticket_number, title, status, priority, created_at "
+                        + "FROM ticket "
+                        + "WHERE ticket_type = 'INCIDENT' "
         );
+        if (!includeClosedCancelled) {
+            sql.append("AND status NOT IN ('CANCELLED', 'CLOSED') ");
+        }
+        // Agent/expert often searches by error code, ticket number, cause/solution too.
+        sql.append("AND ("
+                + "LOWER(ticket_number) LIKE LOWER(?) "
+                + "OR LOWER(title) LIKE LOWER(?) "
+                + "OR LOWER(description) LIKE LOWER(?) "
+                + "OR LOWER(cause) LIKE LOWER(?) "
+                + "OR LOWER(solution) LIKE LOWER(?)"
+                + ") ");
         if (categoryId != null && categoryId > 0) {
             sql.append(" AND category_id = ? ");
         }
         if (excludeTicketId != null && excludeTicketId > 0) {
             sql.append(" AND ticket_id <> ? ");
         }
-        sql.append(" ORDER BY created_at DESC LIMIT ?");
+        // Order with some relevance: title/ticket_number matches first, then newer tickets
+        sql.append(" ORDER BY ("
+                + "CASE WHEN LOWER(ticket_number) LIKE LOWER(?) THEN 3 ELSE 0 END "
+                + "+ CASE WHEN LOWER(title) LIKE LOWER(?) THEN 2 ELSE 0 END "
+                + "+ CASE WHEN LOWER(description) LIKE LOWER(?) THEN 1 ELSE 0 END"
+                + ") DESC, created_at DESC LIMIT ?");
 
         try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
             int idx = 1;
-            ps.setString(idx++, like);
-            ps.setString(idx++, like);
+            // match fields
+            ps.setString(idx++, like); // ticket_number
+            ps.setString(idx++, like); // title
+            ps.setString(idx++, like); // description
+            ps.setString(idx++, like); // cause
+            ps.setString(idx++, like); // solution
             if (categoryId != null && categoryId > 0) {
                 ps.setInt(idx++, categoryId);
             }
             if (excludeTicketId != null && excludeTicketId > 0) {
                 ps.setInt(idx++, excludeTicketId);
             }
+            // order-by relevance params
+            ps.setString(idx++, like);
+            ps.setString(idx++, like);
+            ps.setString(idx++, like);
             ps.setInt(idx, Math.max(1, Math.min(limit, 20)));
 
             try (ResultSet rs = ps.executeQuery()) {
@@ -998,6 +1050,7 @@ public class TicketDAO {
                     t.setTicketNumber(rs.getString("ticket_number"));
                     t.setTitle(rs.getString("title"));
                     t.setStatus(rs.getString("status"));
+                    t.setPriority(rs.getString("priority"));
                     t.setCreatedAt(rs.getTimestamp("created_at"));
                     list.add(t);
                 }

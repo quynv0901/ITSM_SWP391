@@ -1,4 +1,3 @@
-
 package com.itserviceflow.models;
 
 import java.sql.Timestamp;
@@ -15,6 +14,8 @@ public class CiRelationship {
     // Display fields populated from JOIN
     private String parentCiName;
     private String childCiName;
+    private String parentCiCode;
+    private String childCiCode;
     private String parentCiStatus;   // ACTIVE | INACTIVE | RETIRED
     private String childCiStatus;    // ACTIVE | INACTIVE | RETIRED
 
@@ -58,6 +59,12 @@ public class CiRelationship {
 
     public String getChildCiName() { return childCiName; }
     public void setChildCiName(String childCiName) { this.childCiName = childCiName; }
+
+    public String getParentCiCode() { return parentCiCode; }
+    public void setParentCiCode(String parentCiCode) { this.parentCiCode = parentCiCode; }
+
+    public String getChildCiCode() { return childCiCode; }
+    public void setChildCiCode(String childCiCode) { this.childCiCode = childCiCode; }
 
     public String getParentCiStatus() { return parentCiStatus; }
     public void setParentCiStatus(String parentCiStatus) { this.parentCiStatus = parentCiStatus; }
