@@ -269,14 +269,14 @@
 
     <a href="${pageContext.request.contextPath}/knowledge-base?action=list" class="action-card">
         <div class="card-icon purple"><i class="bi bi-book-fill"></i></div>
-        <h3>Knowledge Base</h3>
-        <p>Tra cứu tài liệu hướng dẫn, FAQ và giải pháp từ kho tri thức nội bộ.</p>
+        <h3>Thông báo</h3>
+        <p>Tra cứu thông tin về công ty TECHNICOM.</p>
         <i class="bi bi-arrow-right card-arrow"></i>
     </a>
 
     <a href="${pageContext.request.contextPath}/knowledge-article?action=list" class="action-card">
         <div class="card-icon bg-primary text-white"><i class="bi bi-file-earmark-text"></i></div>
-        <h3>Knowledge Article</h3>
+        <h3>Cơ sở kiến thức</h3>
         <p>Tra cứu tài liệu hướng dẫn, FAQ và giải pháp từ kho tri thức nội bộ.</p>
         <i class="bi bi-arrow-right card-arrow"></i>
     </a>

@@ -138,7 +138,8 @@ public class KnowledgeBaseController extends HttpServlet {
             article.setStatus("PUBLISHED"); // ← luôn là PUBLISHED, không cần submitAction
 
             if (kbDAO.addArticle(article)) {
-                resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message=Tạo bài viết thành công");
+                resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message="
+                        + java.net.URLEncoder.encode("Thêm bài viết thành công", "UTF-8"));
             } else {
                 req.setAttribute("error", "Could not create article");
                 req.setAttribute("article", article);
@@ -162,7 +163,8 @@ public class KnowledgeBaseController extends HttpServlet {
             article.setStatus("PUBLISHED"); // ← luôn là PUBLISHED
 
             if (kbDAO.updateArticle(article)) {
-                resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message=Cập nhật bài viết thành công");
+                resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message="
+                        + java.net.URLEncoder.encode("Cập nhật bài viết thành công", "UTF-8"));
             } else {
                 req.setAttribute("error", "Could not update article");
                 req.setAttribute("article", article);
@@ -174,16 +176,17 @@ public class KnowledgeBaseController extends HttpServlet {
     }
 
     private void deleteArticle(HttpServletRequest req, HttpServletResponse resp)
-        throws IOException {
-    String idStr = req.getParameter("id");
-    System.out.println(">>> deleteArticle controller idStr = " + idStr); // ← thêm dòng này
-    if (idStr == null || idStr.isEmpty()) {
-        resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base");
-        return;
+            throws IOException {
+        String idStr = req.getParameter("id");
+        System.out.println(">>> deleteArticle controller idStr = " + idStr); // ← thêm dòng này
+        if (idStr == null || idStr.isEmpty()) {
+            resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base");
+            return;
+        }
+        kbDAO.deleteArticle(Integer.parseInt(idStr));
+        resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message="
+                + java.net.URLEncoder.encode("Xóa bài viết thành công", "UTF-8"));
     }
-    kbDAO.deleteArticle(Integer.parseInt(idStr));
-    resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message=Xóa bài viết thành công");
-}
 
     private void toggleStatus(HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
@@ -194,7 +197,8 @@ public class KnowledgeBaseController extends HttpServlet {
             return;
         }
         kbDAO.toggleStatus(Integer.parseInt(idStr), newStatus);
-        resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message=Đã cập nhật trạng thái");
+        resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message="
+                + java.net.URLEncoder.encode("Đã cập nhật trạng thái", "UTF-8"));
     }
 
     // ===================== HELPER =====================
