@@ -203,6 +203,89 @@
         color: #adb5bd;
         margin: 0;
     }
+    .action-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 16px;
+    }
+
+    .action-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 16px 14px;
+        text-decoration: none;
+        color: #333;
+        position: relative;
+        transition: all 0.25s ease;
+        border: 1px solid #eee;
+        min-height: 150px;
+    }
+
+    .action-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    }
+
+    /* Icon */
+    .card-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+
+    /* Title */
+    .action-card h3 {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    /* Description */
+    .action-card p {
+        font-size: 12.5px;
+        color: #666;
+        margin: 0;
+    }
+
+    /* Arrow */
+    .card-arrow {
+        position: absolute;
+        right: 12px;
+        bottom: 12px;
+        font-size: 14px;
+        color: #aaa;
+    }
+
+    /* Màu icon (giữ tone đẹp hơn) */
+    .blue {
+        background: #e3f2fd;
+        color: #2196f3;
+    }
+    .green {
+        background: #e8f5e9;
+        color: #4caf50;
+    }
+    .red {
+        background: #fdecea;
+        color: #e53935;
+    }
+    .orange {
+        background: #fff3e0;
+        color: #fb8c00;
+    }
+    .teal {
+        background: #e0f2f1;
+        color: #009688;
+    }
+    .purple {
+        background: #f3e5f5;
+        color: #8e24aa;
+    }
 </style>
 
 <div class="home-hero">
@@ -267,19 +350,40 @@
         <i class="bi bi-arrow-right card-arrow"></i>
     </a>
 
-    <a href="${pageContext.request.contextPath}/knowledge-base?action=list" class="action-card">
+    <a href="${pageContext.request.contextPath}/knowledge-base?action=list" 
+       class="action-card" style="position: relative;">
+        <c:if test="${newArticleCount > 0}">
+            <span style="position: absolute; top: 8px; right: 8px;
+                  background: #dc3545; color: white;
+                  border-radius: 50%; width: 22px; height: 22px;
+                  font-size: 12px; font-weight: bold;
+                  display: flex; align-items: center; justify-content: center;">
+                ${newArticleCount}
+            </span>
+        </c:if>
         <div class="card-icon purple"><i class="bi bi-book-fill"></i></div>
         <h3>Thông báo</h3>
         <p>Tra cứu thông tin về công ty TECHNICOM.</p>
         <i class="bi bi-arrow-right card-arrow"></i>
     </a>
-
-    <a href="${pageContext.request.contextPath}/knowledge-article?action=list" class="action-card">
-        <div class="card-icon bg-primary text-white"><i class="bi bi-file-earmark-text"></i></div>
+    <a href="${pageContext.request.contextPath}/knowledge-article?action=list" 
+       class="action-card" style="position: relative;">
+        <c:if test="${newKnowledgeArticleCount  > 0}">
+            <span style="position: absolute; top: 8px; right: 8px;
+                  background: #dc3545; color: white;
+                  border-radius: 50%; width: 22px; height: 22px;
+                  font-size: 12px; font-weight: bold;
+                  display: flex; align-items: center; justify-content: center;">
+                ${newKnowledgeArticleCount} 
+            </span>
+        </c:if>
+        <div class="card-icon purple"><i class="bi bi-book-fill"></i></div>
         <h3>Cơ sở kiến thức</h3>
         <p>Tra cứu tài liệu hướng dẫn, FAQ và giải pháp từ kho tri thức nội bộ.</p>
         <i class="bi bi-arrow-right card-arrow"></i>
     </a>
+
+
 </div>
 
 <div class="section-title"><i class="bi bi-info-circle-fill"></i> Hệ thống ITServiceFlow</div>
