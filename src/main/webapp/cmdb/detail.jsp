@@ -96,6 +96,17 @@
                             </td>
                         </tr>
                         <tr>
+                            <td class="text-muted fw-semibold">Nhà cung cấp:</td>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${not empty ci.vendorName}">
+                                        <strong>${ci.vendorName}</strong>
+                                    </c:when>
+                                    <c:otherwise><span class="text-muted fst-italic">—</span></c:otherwise>
+                                </c:choose>
+                            </td>
+                        </tr>
+                        <tr>
                             <td class="text-muted fw-semibold">Ngày tạo:</td>
                             <td><fmt:formatDate value="${ci.createdAt}" pattern="dd/MM/yyyy HH:mm" /></td>
                         </tr>

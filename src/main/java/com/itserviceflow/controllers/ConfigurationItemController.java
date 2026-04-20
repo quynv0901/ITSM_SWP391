@@ -1,8 +1,10 @@
 package com.itserviceflow.controllers;
 
 import com.itserviceflow.daos.ConfigurationItemDAO;
+import com.itserviceflow.daos.VendorDAO;
 import com.itserviceflow.models.ConfigurationItem;
 import com.itserviceflow.models.CiRelationship;
+import com.itserviceflow.models.Vendor;
 import com.itserviceflow.utils.AuthUtils;
 import java.io.IOException;
 import java.util.Arrays;
@@ -78,6 +80,7 @@ public class ConfigurationItemController extends HttpServlet {
                 if (!AuthUtils.hasRole(request, response, AuthUtils.ROLE_ASSET_MANAGER)) {
                     return;
                 }
+                request.setAttribute("vendors", new VendorDAO().getAllVendors("", "ACTIVE"));
                 request.getRequestDispatcher("/cmdb/form.jsp").forward(request, response);
                 break;
 
@@ -94,6 +97,7 @@ public class ConfigurationItemController extends HttpServlet {
                         return;
                     }
                     request.setAttribute("ci", ciToEdit);
+                    request.setAttribute("vendors", new VendorDAO().getAllVendors("", "ACTIVE"));
                     request.getRequestDispatcher("/cmdb/form.jsp").forward(request, response);
                 } catch (NumberFormatException e) {
                     response.sendRedirect(request.getContextPath() + "/configuration-item");
@@ -155,11 +159,13 @@ public class ConfigurationItemController extends HttpServlet {
                 String version     = trim(request.getParameter("version"));
                 String description = trim(request.getParameter("description"));
                 String status      = trim(request.getParameter("status"));
+                String vendorId    = trim(request.getParameter("vendorId"));
 
                 String error = validateCI(name, type, version, description, status);
                 if (error != null) {
-                    ConfigurationItem formData = buildCI(0, name, type, version, description, status);
+                    ConfigurationItem formData = buildCI(0, name, type, version, description, status, vendorId);
                     request.setAttribute("ci", formData);
+                    request.setAttribute("vendors", new VendorDAO().getAllVendors("", "ACTIVE"));
                     request.setAttribute("errorMsg", error);
                     request.setAttribute("isNew", true);
                     request.getRequestDispatcher("/cmdb/form.jsp").forward(request, response);
@@ -167,8 +173,9 @@ public class ConfigurationItemController extends HttpServlet {
                 }
 
                 if (ciDAO.isDuplicateName(name, 0)) {
-                    ConfigurationItem formData = buildCI(0, name, type, version, description, status);
+                    ConfigurationItem formData = buildCI(0, name, type, version, description, status, vendorId);
                     request.setAttribute("ci", formData);
+                    request.setAttribute("vendors", new VendorDAO().getAllVendors("", "ACTIVE"));
                     request.setAttribute("isNew", true);
                     request.setAttribute("errorMsg",
                             "⚠️ Tên “" + name + "” đã tồn tại trong CMDB. " +
@@ -177,7 +184,7 @@ public class ConfigurationItemController extends HttpServlet {
                     return;
                 }
 
-                if (ciDAO.createConfigurationItem(buildCI(0, name, type, version, description, status))) {
+                if (ciDAO.createConfigurationItem(buildCI(0, name, type, version, description, status, vendorId))) {
                     request.getSession().setAttribute("successMessage", "✅ Thêm mục cấu hình thành công!");
                 } else {
                     request.getSession().setAttribute("errorMessage", "❌ Thêm mục cấu hình thất bại. Vui lòng thử lại.");
@@ -203,11 +210,13 @@ public class ConfigurationItemController extends HttpServlet {
                 String version     = trim(request.getParameter("version"));
                 String description = trim(request.getParameter("description"));
                 String status      = trim(request.getParameter("status"));
+                String vendorId    = trim(request.getParameter("vendorId"));
 
                 String error = validateCI(name, type, version, description, status);
                 if (error != null) {
-                    ConfigurationItem formData = buildCI(idToUpdate, name, type, version, description, status);
+                    ConfigurationItem formData = buildCI(idToUpdate, name, type, version, description, status, vendorId);
                     request.setAttribute("ci", formData);
+                    request.setAttribute("vendors", new VendorDAO().getAllVendors("", "ACTIVE"));
                     request.setAttribute("errorMsg", error);
                     request.getRequestDispatcher("/cmdb/form.jsp").forward(request, response);
                     return;
@@ -215,8 +224,9 @@ public class ConfigurationItemController extends HttpServlet {
 
                 // ── Kiểm tra trùng tên (loại trừ item đang sửa) ──────────────────────
                 if (ciDAO.isDuplicateName(name, idToUpdate)) {
-                    ConfigurationItem formData = buildCI(idToUpdate, name, type, version, description, status);
+                    ConfigurationItem formData = buildCI(idToUpdate, name, type, version, description, status, vendorId);
                     request.setAttribute("ci", formData);
+                    request.setAttribute("vendors", new VendorDAO().getAllVendors("", "ACTIVE"));
                     request.setAttribute("errorMsg",
                             "⚠️ Tên “" + name + "” đã được dùng bởi mục cấu hình khác. " +
                             "Vui lòng đặt tên khác.");
@@ -224,7 +234,7 @@ public class ConfigurationItemController extends HttpServlet {
                     return;
                 }
 
-                if (ciDAO.updateConfigurationItem(buildCI(idToUpdate, name, type, version, description, status))) {
+                if (ciDAO.updateConfigurationItem(buildCI(idToUpdate, name, type, version, description, status, vendorId))) {
                     request.getSession().setAttribute("successMessage", "✅ Cập nhật mục cấu hình thành công!");
                 } else {
                     request.getSession().setAttribute("errorMessage", "❌ Cập nhật mục cấu hình thất bại. Vui lòng thử lại.");
@@ -353,7 +363,7 @@ public class ConfigurationItemController extends HttpServlet {
     }
 
     private ConfigurationItem buildCI(int id, String name, String type,
-                                      String version, String description, String status) {
+                                      String version, String description, String status, String vendorIdStr) {
         ConfigurationItem ci = new ConfigurationItem();
         ci.setCiId(id);
         ci.setName(name);
@@ -361,6 +371,11 @@ public class ConfigurationItemController extends HttpServlet {
         ci.setVersion(version.isEmpty() ? null : version);
         ci.setDescription(description.isEmpty() ? null : description);
         ci.setStatus(status.isEmpty() ? "ACTIVE" : status);
+        if (vendorIdStr != null && !vendorIdStr.trim().isEmpty()) {
+            try {
+                ci.setVendorId(Integer.parseInt(vendorIdStr));
+            } catch (NumberFormatException e) {}
+        }
         return ci;
     }
 

@@ -34,6 +34,8 @@ public class ConfigurationItem {
     private String name;
     private String type;
     private String version;
+    private Integer vendorId;
+    private String vendorName;
     private Timestamp createdAt;
 
     public ConfigurationItem() {
@@ -201,5 +203,21 @@ public class ConfigurationItem {
 
     public void setUpdatedAt(Timestamp updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Integer getVendorId() {
+        return vendorId;
+    }
+
+    public void setVendorId(Integer vendorId) {
+        this.vendorId = vendorId;
+    }
+
+    public String getVendorName() {
+        return vendorName;
+    }
+
+    public void setVendorName(String vendorName) {
+        this.vendorName = vendorName;
     }
 }
