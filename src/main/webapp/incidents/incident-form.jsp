@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${not empty incident ? 'Edit Incident' : 'Create Incident'}</title>
+    <title>${not empty incident ? 'Chỉnh sửa Sự cố' : 'Tạo Sự cố'}</title>
     <style>
         :root {
             --primary-color: #3b82f6;
@@ -234,6 +234,127 @@
         .status-resolved { background-color: #d1fae5; color: #065f46; }
         .status-cancelled { background-color: #fee2e2; color: #991b1b; }
 
+        .alert {
+            padding: 12px 14px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .alert-error {
+            background: #fff1f2;
+            border: 1px solid #fecdd3;
+            color: #be123c;
+        }
+
+        .suggest-box {
+            border: 1px solid var(--border-color);
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .suggest-title {
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .suggest-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .suggest-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            padding: 12px 12px;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+        }
+
+        .suggest-main {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .suggest-code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 12px;
+            font-weight: 800;
+            color: #64748b;
+        }
+
+        .suggest-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 520px;
+        }
+
+        .suggest-meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 1px solid var(--border-color);
+            background: #fff;
+            color: #334155;
+            white-space: nowrap;
+        }
+
+        .chip-selected {
+            background: #eff6ff;
+            border-color: #93c5fd;
+            color: #1d4ed8;
+        }
+
+        .btn-mini {
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 800;
+            border: none;
+            cursor: pointer;
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .btn-mini:hover {
+            background: #cbd5e1;
+        }
+
+        .btn-mini-primary {
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        .btn-mini-primary:hover {
+            background: #2563eb;
+        }
+
         .incident-info {
             background-color: #f8fafc;
             border: 1px solid var(--border-color);
@@ -312,90 +433,104 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>${not empty incident ? '✏️ Edit Incident' : '➕ Create New Incident'}</h1>
-            <p>Report and manage IT service disruptions efficiently</p>
+            <h1>${not empty incident ? '✏️ Chỉnh sửa Sự cố' : '➕ Tạo Sự cố mới'}</h1>
+            <p>Báo cáo và quản lý sự cố dịch vụ CNTT hiệu quả</p>
         </div>
 
         <div class="form-container">
+            <c:if test="${not empty param.error}">
+                <div class="alert alert-error">
+                    <c:choose>
+                        <c:when test="${param.error == 'missingTitle'}">Vui lòng nhập tiêu đề sự cố.</c:when>
+                        <c:when test="${param.error == 'missingDescription'}">Vui lòng nhập mô tả chi tiết.</c:when>
+                        <c:when test="${param.error == 'invalidCategory'}">Danh mục không hợp lệ. Vui lòng chọn lại.</c:when>
+                        <c:when test="${param.error == 'invalidPriority'}">Mức ưu tiên không hợp lệ.</c:when>
+                        <c:when test="${param.error == 'invalidTitleFormat'}">Tiêu đề chỉ được chứa chữ cái và khoảng trắng (không số, không ký tự đặc biệt).</c:when>
+                        <c:when test="${param.error == 'invalidDescriptionFormat'}">Mô tả chỉ được chứa chữ cái và khoảng trắng (không số, không ký tự đặc biệt).</c:when>
+                        <c:when test="${param.error == 'invalidTextFormat'}">Tiêu đề/Mô tả không hợp lệ: chỉ cho phép chữ cái và khoảng trắng.</c:when>
+                        <c:otherwise>Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin nhập.</c:otherwise>
+                    </c:choose>
+                </div>
+            </c:if>
             <form action="${pageContext.request.contextPath}/incident?action=${not empty incident ? 'update' : 'insert'}" method="post">
                 <c:if test="${not empty incident}">
                     <input type="hidden" name="id" value="${incident.ticketId}">
                     
-                    <!-- Incident Info Section -->
+                    <!-- Khu vực thông tin incident -->
                     <div class="incident-info">
-                        <h3>📋 Incident Information</h3>
+                        <h3>📋 Thông tin Sự cố</h3>
                         <div class="info-grid">
                             <div class="info-item">
-                                <div class="info-label">Ticket Number</div>
+                                <div class="info-label">Mã ticket</div>
                                 <div class="info-value">${incident.ticketNumber}</div>
                             </div>
                             <div class="info-item">
-                                <div class="info-label">Current Status</div>
+                                <div class="info-label">Trạng thái hiện tại</div>
                                 <div class="info-value">
                                     <span class="status-badge status-${incident.status}">${incident.status}</span>
                                 </div>
                             </div>
                             <div class="info-item">
-                                <div class="info-label">Created</div>
+                                <div class="info-label">Ngày tạo</div>
                                 <div class="info-value">
                                     ${incident.createdAt}
                                 </div>
                             </div>
                             <div class="info-item">
-                                <div class="info-label">Reported By</div>
+                                <div class="info-label">Người báo cáo</div>
                                 <div class="info-value">User #${incident.reportedBy}</div>
                             </div>
                         </div>
                     </div>
                 </c:if>
 
-                <!-- Basic Information Section -->
+                <!-- Khu vực thông tin cơ bản -->
                 <div class="form-section">
-                    <div class="section-title">📝 Basic Information</div>
+                    <div class="section-title">📝 Thông tin cơ bản</div>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="title">
-                                Incident Title <span class="required">*</span>
+                                Tiêu đề sự cố <span class="required">*</span>
                             </label>
                             <input type="text" id="title" name="title" class="form-control" 
                                    value="${incident.title}" 
-                                   placeholder="Describe the issue briefly..." 
+                                   placeholder="Mô tả ngắn gọn sự cố..." 
                                    required>
                         </div>
                         <div class="form-group">
                             <label for="priority">
-                                Priority Level
+                                Mức ưu tiên
                             </label>
                             <select id="priority" name="priority" class="form-control">
-                                <option value="LOW" ${incident.priority=='LOW' ? 'selected' : ''}>🟢 Low</option>
-                                <option value="MEDIUM" ${incident.priority=='MEDIUM' ? 'selected' : ''}>🟡 Medium</option>
-                                <option value="HIGH" ${incident.priority=='HIGH' ? 'selected' : ''}>🟠 High</option>
+                                <option value="LOW" ${incident.priority=='LOW' ? 'selected' : ''}>🟢 Thấp</option>
+                                <option value="MEDIUM" ${incident.priority=='MEDIUM' ? 'selected' : ''}>🟡 Trung bình</option>
+                                <option value="HIGH" ${incident.priority=='HIGH' ? 'selected' : ''}>🟠 Cao</option>
                             </select>
-                            <div class="help-text">Choose based on business impact</div>
+                            <div class="help-text">Chọn theo mức độ ảnh hưởng đến nghiệp vụ</div>
                         </div>
                     </div>
                     
                     <div class="form-group">
                         <label for="description">
-                            Detailed Description <span class="required">*</span>
+                            Mô tả chi tiết <span class="required">*</span>
                         </label>
                         <textarea id="description" name="description" class="form-control" 
-                                  placeholder="Please provide detailed information about the issue..." 
+                                  placeholder="Vui lòng cung cấp thông tin chi tiết về sự cố..." 
                                   required>${incident.description}</textarea>
-                        <div class="help-text">Include error messages, steps to reproduce, and affected systems</div>
+                        <div class="help-text">Nên bao gồm lỗi, các bước tái hiện và hệ thống bị ảnh hưởng</div>
                     </div>
                 </div>
 
-                <!-- Categorization Section -->
+                <!-- Khu vực phân loại -->
                 <div class="form-section">
-                    <div class="section-title">🏷️ Categorization</div>
+                    <div class="section-title">🏷️ Phân loại</div>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="categoryId">
-                                Category <span class="required">*</span>
+                                Danh mục <span class="required">*</span>
                             </label>
                             <select id="categoryId" name="categoryId" class="form-control" required>
-                                <option value="">-- Select a Category --</option>
+                                <option value="">-- Chọn danh mục --</option>
                                 <c:forEach var="category" items="${categories}">
                                     <option value="${category.categoryId}" 
                                             ${incident.categoryId == category.categoryId ? 'selected' : ''}>
@@ -403,52 +538,236 @@
                                     </option>
                                 </c:forEach>
                             </select>
-                            <div class="help-text">Choose the most appropriate category for this incident</div>
+                            <div class="help-text">Chọn danh mục phù hợp nhất với sự cố này</div>
                         </div>
                         <c:if test="${not empty incident}">
                             <div class="form-group">
                                 <label for="status">
-                                    Status
+                                    Trạng thái
                                 </label>
-                                <select id="status" name="status" class="form-control">
-                                    <option value="NEW" ${incident.status=='NEW' ? 'selected' : ''}>🆕 New</option>
-                                    <option value="IN_PROGRESS" ${incident.status=='IN_PROGRESS' ? 'selected' : ''}>🔄 In Progress</option>
-                                    <option value="RESOLVED" ${incident.status=='RESOLVED' ? 'selected' : ''}>✅ Resolved</option>
-                                    <option value="CANCELLED" ${incident.status=='CANCELLED' ? 'selected' : ''}>❌ Cancelled</option>
-                                </select>
-                                <div class="help-text">Update status as you work on the incident</div>
+                                <c:choose>
+                                    <c:when test="${isEndUserEditingOwnTicket}">
+                                        <input type="text" class="form-control" value="${incident.status}" readonly>
+                                        <input type="hidden" name="status" value="${incident.status}">
+                                        <div class="help-text">End-user không được đổi trạng thái ticket.</div>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <select id="status" name="status" class="form-control">
+                                            <option value="NEW" ${incident.status=='NEW' ? 'selected' : ''}>🆕 Mới</option>
+                                            <option value="IN_PROGRESS" ${incident.status=='IN_PROGRESS' ? 'selected' : ''}>🔄 Đang xử lý</option>
+                                            <option value="RESOLVED" ${incident.status=='RESOLVED' ? 'selected' : ''}>✅ Đã xử lý</option>
+                                            <option value="CANCELLED" ${incident.status=='CANCELLED' ? 'selected' : ''}>❌ Đã hủy</option>
+                                        </select>
+                                        <div class="help-text">Cập nhật trạng thái trong quá trình xử lý sự cố</div>
+                                    </c:otherwise>
+                                </c:choose>
                             </div>
                         </c:if>
                     </div>
                 </div>
 
-                <!-- Related Incidents Section -->
+                <!-- Khu vực incident liên quan -->
                 <c:if test="${empty incident}">
                     <div class="form-section">
-                        <div class="section-title">🔗 Related Incidents</div>
-                        <div class="form-group">
-                            <label for="relatedIds">
-                                Link Related Incidents
-                            </label>
-                            <input type="text" id="relatedIds" name="relatedIds" class="form-control" 
-                                   placeholder="e.g. 101, 102, 103">
-                            <div class="help-text">Optional: Enter comma-separated incident IDs if this is related to existing incidents</div>
-                        </div>
+                        <div class="section-title">🔗 Sự cố liên quan</div>
+
+                        <!-- Suggest similar incidents (End-user + Agent/Expert) -->
+                        <c:choose>
+                            <c:when test="${sessionScope.user.roleId == 1}">
+                                <div class="suggest-box">
+                                    <div class="suggest-title">✨ Gợi ý sự cố tương tự</div>
+                                    <div class="help-text">
+                                        Dựa trên tiêu đề/mô tả bạn nhập, hệ thống sẽ gợi ý các sự cố có thể trùng.
+                                        Nếu đúng, bạn có thể chọn để liên kết (giúp xử lý nhanh hơn).
+                                    </div>
+                                    <input type="hidden" id="relatedIds" name="relatedIds" value="">
+                                    <div class="suggest-list" id="suggestList">
+                                        <div class="help-text" id="suggestHint">Nhập tiêu đề/mô tả để xem gợi ý.</div>
+                                    </div>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="suggest-box">
+                                    <div class="suggest-title">🔎 Tra cứu sự cố đã từng xảy ra</div>
+                                    <div class="help-text">
+                                        Agent/Expert: hệ thống sẽ gợi ý theo <b>ticket number</b>, <b>mã lỗi</b> (trong tiêu đề/mô tả/cause/solution) và
+                                        <b>cả ticket đã đóng/đã hủy</b> để bạn kiểm tra lịch sử.
+                                    </div>
+                                    <input type="hidden" id="relatedIds" name="relatedIds" value="">
+                                    <div class="suggest-list" id="suggestList">
+                                        <div class="help-text" id="suggestHint">Nhập tiêu đề/mô tả để xem gợi ý.</div>
+                                    </div>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                 </c:if>
 
-                <!-- Action Buttons -->
+                <!-- Nhóm nút thao tác -->
                 <div class="btn-group">
                     <button type="submit" class="btn btn-primary">
-                        ${not empty incident ? '💾 Save Changes' : '➕ Create Incident'}
+                        ${not empty incident ? '💾 Lưu thay đổi' : '➕ Tạo sự cố'}
                     </button>
                     <a href="${pageContext.request.contextPath}/incident?action=list" class="btn btn-secondary">
-                        ↩️ Cancel
+                        ↩️ Hủy
                     </a>
                 </div>
             </form>
         </div>
     </div>
+
+    <c:if test="${empty incident}">
+        <script>
+            (function () {
+                const titleEl = document.getElementById('title');
+                const descEl = document.getElementById('description');
+                const categoryEl = document.getElementById('categoryId');
+                const suggestList = document.getElementById('suggestList');
+                const hiddenRelated = document.getElementById('relatedIds');
+                const __isEndUser = ${sessionScope.user.roleId == 1 ? 'true' : 'false'};
+
+                let debounceTimer = null;
+                let selectedIds = new Set();
+
+                function normalize(value) {
+                    if (value == null) return '';
+                    return String(value).trim().replace(/\s+/g, ' ');
+                }
+
+                function renderHint(text) {
+                    suggestList.innerHTML = '';
+                    const div = document.createElement('div');
+                    div.className = 'help-text';
+                    div.textContent = text;
+                    suggestList.appendChild(div);
+                }
+
+                function updateHidden() {
+                    hiddenRelated.value = Array.from(selectedIds).join(',');
+                }
+
+                function toggleSelect(id, btn, chip) {
+                    if (selectedIds.has(id)) {
+                        selectedIds.delete(id);
+                        btn.textContent = 'Chọn';
+                        btn.classList.remove('btn-mini-primary');
+                        chip.classList.remove('chip-selected');
+                    } else {
+                        // End-user keep small; Agent/Expert can select more
+                        const max = __isEndUser ? 3 : 10;
+                        if (selectedIds.size >= max) return;
+                        selectedIds.add(id);
+                        btn.textContent = 'Đã chọn';
+                        btn.classList.add('btn-mini-primary');
+                        chip.classList.add('chip-selected');
+                    }
+                    updateHidden();
+                }
+
+                async function fetchSuggestions() {
+                    // Agent/Expert: use both title + description to improve matching
+                    const q = __isEndUser
+                        ? (normalize(titleEl.value) || normalize(descEl.value))
+                        : normalize((titleEl.value || '') + ' ' + (descEl.value || ''));
+                    const categoryId = categoryEl.value;
+
+                    if (!q || q.length < 3) {
+                        renderHint('Nhập ít nhất 3 ký tự trong tiêu đề hoặc mô tả để xem gợi ý.');
+                        return;
+                    }
+
+                    const params = new URLSearchParams();
+                    params.set('action', 'suggest');
+                    params.set('q', q);
+                    if (categoryId) params.set('categoryId', categoryId);
+                    if (!__isEndUser) params.set('mode', 'agent');
+
+                    renderHint('Đang tìm gợi ý...');
+
+                    try {
+                        const res = await fetch('${pageContext.request.contextPath}/incident?' + params.toString(), {
+                            headers: { 'Accept': 'application/json' }
+                        });
+                        if (!res.ok) throw new Error('HTTP ' + res.status);
+                        const data = await res.json();
+
+                        suggestList.innerHTML = '';
+                        if (!Array.isArray(data) || data.length === 0) {
+                            renderHint('Không tìm thấy sự cố tương tự.');
+                            return;
+                        }
+
+                        data.forEach(item => {
+                            const id = String(item.ticketId);
+                            const wrap = document.createElement('div');
+                            wrap.className = 'suggest-item';
+
+                            const main = document.createElement('div');
+                            main.className = 'suggest-main';
+
+                            const code = document.createElement('div');
+                            code.className = 'suggest-code';
+                            code.textContent = item.ticketNumber || ('#' + id);
+
+                            const text = document.createElement('div');
+                            text.className = 'suggest-text';
+                            text.textContent = item.title || '';
+
+                            const meta = document.createElement('div');
+                            meta.className = 'suggest-meta';
+                            const parts = [];
+                            parts.push('Trạng thái: ' + (item.status || 'N/A'));
+                            if (!__isEndUser && item.priority) parts.push('Ưu tiên: ' + item.priority);
+                            meta.textContent = parts.join(' • ');
+
+                            main.appendChild(code);
+                            main.appendChild(text);
+                            main.appendChild(meta);
+
+                            const right = document.createElement('div');
+                            right.style.display = 'flex';
+                            right.style.alignItems = 'center';
+                            right.style.gap = '10px';
+
+                            const chip = document.createElement('span');
+                            chip.className = 'chip' + (selectedIds.has(id) ? ' chip-selected' : '');
+                            chip.textContent = selectedIds.has(id) ? 'Đã chọn' : 'Gợi ý';
+
+                            const btn = document.createElement('button');
+                            btn.type = 'button';
+                            btn.className = 'btn-mini' + (selectedIds.has(id) ? ' btn-mini-primary' : '');
+                            btn.textContent = selectedIds.has(id) ? 'Đã chọn' : 'Chọn';
+                            btn.addEventListener('click', function () {
+                                toggleSelect(id, btn, chip);
+                            });
+
+                            right.appendChild(chip);
+                            right.appendChild(btn);
+
+                            wrap.appendChild(main);
+                            wrap.appendChild(right);
+
+                            suggestList.appendChild(wrap);
+                        });
+                        updateHidden();
+                    } catch (e) {
+                        renderHint('Không thể tải gợi ý. Vui lòng thử lại.');
+                    }
+                }
+
+                function scheduleFetch() {
+                    if (debounceTimer) clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(fetchSuggestions, 350);
+                }
+
+                titleEl.addEventListener('input', scheduleFetch);
+                descEl.addEventListener('input', scheduleFetch);
+                categoryEl.addEventListener('change', scheduleFetch);
+
+                renderHint('Nhập tiêu đề/mô tả để xem gợi ý.');
+            })();
+        </script>
+    </c:if>
 
 </body>
 </html>

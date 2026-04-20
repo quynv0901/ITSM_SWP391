@@ -1,67 +1,42 @@
 package com.itserviceflow.controllers;
 
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
-
-import com.itserviceflow.daos.TicketDAO;
-import com.itserviceflow.models.Ticket;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
-
 
 /**
- *
- * @author vumin
+ * Legacy/detail URL: forwards to {@link IncidentController} so chi tiết incident
+ * luôn dùng đúng JSP và đủ dữ liệu ({@code incident}, {@code relatedIncidents}, …).
  */
 @WebServlet(name = "IncidentDetailServlet", urlPatterns = {"/incident-detail"})
 public class IncidentDetailServlet extends HttpServlet {
 
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet IncidentDetailServlet</title>");            
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet IncidentDetailServlet at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
-        }
-    }
-
-   
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        int id = Integer.parseInt(request.getParameter("id"));
-        TicketDAO dao = new TicketDAO();
-        Ticket ticket = dao.getTicketById(id);
-        request.setAttribute("ticket", ticket);
-        request.getRequestDispatcher("/incidents/incidentDetail.jsp").forward(request, response);
+        String idParam = request.getParameter("id");
+        if (idParam == null || idParam.isBlank()) {
+            response.sendRedirect(request.getContextPath() + "/incident?action=list");
+            return;
+        }
+        try {
+            int id = Integer.parseInt(idParam.trim());
+            if (id <= 0) {
+                response.sendRedirect(request.getContextPath() + "/incident?action=list");
+                return;
+            }
+            response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + id);
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/incident?action=list");
+        }
     }
 
-    
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        doGet(request, response);
     }
-
-    
-    @Override
-    public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
-
 }
