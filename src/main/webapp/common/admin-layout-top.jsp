@@ -177,6 +177,10 @@
                class="menu-item ${pageContext.request.requestURI.contains('/ticket-category') ? 'active' : ''}">
                 <i class="bi bi-tags"></i> Ticket Categories
             </a>
+            <a href="${pageContext.request.contextPath}/time-tracking"
+               class="menu-item ${pageContext.request.requestURI.contains('/time-tracking') ? 'active' : ''}">
+                <i class="bi bi-clock-history"></i> Time Tracking
+            </a>
                     </ul>
     </div>
 
