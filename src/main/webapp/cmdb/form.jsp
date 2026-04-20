@@ -103,6 +103,20 @@
                         </select>
                     </div>
 
+                    <%-- Nhà cung cấp --%>
+                    <div class="mb-3">
+                        <label for="vendorId" class="form-label fw-semibold">
+                            Nhà cung cấp
+                        </label>
+                        <select class="form-select" id="vendorId" name="vendorId">
+                            <option value="">-- Không xác định --</option>
+                            <c:forEach var="v" items="${vendors}">
+                                <option value="${v.vendorId}" ${ci.vendorId == v.vendorId ? 'selected' : ''}>${v.name}</option>
+                            </c:forEach>
+                        </select>
+                        <div class="form-text text-muted small">Đối tác quản lý hoặc cung cấp tài sản/dịch vụ này.</div>
+                    </div>
+
                     <%-- Mô tả --%>
                     <div class="mb-4">
                         <label for="description" class="form-label fw-semibold">Mô tả</label>
