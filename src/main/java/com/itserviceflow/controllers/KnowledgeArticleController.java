@@ -3,6 +3,7 @@ package com.itserviceflow.controllers;
 import com.itserviceflow.daos.KnowledgeArticleDAO;
 import com.itserviceflow.models.Article;
 import com.itserviceflow.models.User;
+import com.itserviceflow.utils.ProfanityFilter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -62,7 +63,6 @@ public class KnowledgeArticleController extends HttpServlet {
                 resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article");
         }
     }
-    
 
     // ===================== VIEW HANDLERS =====================
     private void listArticles(HttpServletRequest req, HttpServletResponse resp)
@@ -90,117 +90,141 @@ public class KnowledgeArticleController extends HttpServlet {
         req.getRequestDispatcher("/support-agent/knowledge-article.jsp").forward(req, resp);
     }
 
-private void addView(HttpServletRequest req, HttpServletResponse resp)
-        throws ServletException, IOException {
-    req.setAttribute("article", new Article());
-    req.setAttribute("knownErrors", kbDAO.listKnownErrors());
-    req.getRequestDispatcher("/knowledge/knowledge-article-form.jsp").forward(req, resp);
-}
-
-private void editView(HttpServletRequest req, HttpServletResponse resp)
-        throws ServletException, IOException {
-    String idStr = req.getParameter("id");
-    if (idStr == null || idStr.isEmpty()) {
-        resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article");
-        return;
+    private void addView(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        req.setAttribute("article", new Article());
+        req.setAttribute("knownErrors", kbDAO.listKnownErrors());
+        req.getRequestDispatcher("/knowledge/knowledge-article-form.jsp").forward(req, resp);
     }
-    Article article = kbDAO.findById(Integer.parseInt(idStr));
-    if (article == null) {
-        resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article?error=Article not found");
-        return;
-    }
-    req.setAttribute("article", article);
-    req.setAttribute("knownErrors", kbDAO.listKnownErrors());
-    req.getRequestDispatcher("/knowledge/knowledge-article-form.jsp").forward(req, resp);
-}
 
-private void detailView(HttpServletRequest req, HttpServletResponse resp)
-        throws ServletException, IOException {
-    // Tìm theo errorCode (từ link click)
-    String errorCode = req.getParameter("errorCode");
-    if (errorCode != null && !errorCode.isEmpty()) {
-        Article article = kbDAO.findByErrorCode(errorCode);
+    private void editView(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        String idStr = req.getParameter("id");
+        if (idStr == null || idStr.isEmpty()) {
+            resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article");
+            return;
+        }
+        Article article = kbDAO.findById(Integer.parseInt(idStr));
+        if (article == null) {
+            resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article?error=Article not found");
+            return;
+        }
+        req.setAttribute("article", article);
+        req.setAttribute("knownErrors", kbDAO.listKnownErrors());
+        req.getRequestDispatcher("/knowledge/knowledge-article-form.jsp").forward(req, resp);
+    }
+
+    private void detailView(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        // Tìm theo errorCode (từ link click)
+        String errorCode = req.getParameter("errorCode");
+        if (errorCode != null && !errorCode.isEmpty()) {
+            Article article = kbDAO.findByErrorCode(errorCode);
+            if (article == null) {
+                resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article?error=Article not found");
+                return;
+            }
+            req.setAttribute("article", article);
+            req.getRequestDispatcher("/support-agent/knowledge-article-detail-agent.jsp").forward(req, resp);
+            return;
+        }
+
+        // Tìm theo id (bình thường)
+        String idStr = req.getParameter("id");
+        if (idStr == null || idStr.isEmpty()) {
+            resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article");
+            return;
+        }
+        Article article = kbDAO.findById(Integer.parseInt(idStr));
         if (article == null) {
             resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article?error=Article not found");
             return;
         }
         req.setAttribute("article", article);
         req.getRequestDispatcher("/support-agent/knowledge-article-detail-agent.jsp").forward(req, resp);
-        return;
     }
 
-    // Tìm theo id (bình thường)
-    String idStr = req.getParameter("id");
-    if (idStr == null || idStr.isEmpty()) {
-        resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article");
-        return;
-    }
-    Article article = kbDAO.findById(Integer.parseInt(idStr));
-    if (article == null) {
-        resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article?error=Article not found");
-        return;
-    }
-    req.setAttribute("article", article);
-    req.getRequestDispatcher("/support-agent/knowledge-article-detail-agent.jsp").forward(req, resp);
-}
+    private void addArticle(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        try {
+            User sessionUser = (User) req.getSession().getAttribute("user");
+            Article article = buildArticleFromRequest(req);
+            article.setAuthorId(sessionUser.getUserId());
+            article.setStatus("PUBLISHED");
 
-private void addArticle(HttpServletRequest req, HttpServletResponse resp)
-        throws ServletException, IOException {
-    try {
-        User sessionUser = (User) req.getSession().getAttribute("user");
-        Article article = buildArticleFromRequest(req);
-        article.setAuthorId(sessionUser.getUserId());
-        article.setStatus("PUBLISHED");
+            // ===== VALIDATE TỪ ĐỘC HẠI =====
+            String profanityError = checkProfanity(article);
+            if (profanityError != null) {
+                req.setAttribute("error", profanityError);
+                req.setAttribute("article", article);
+                req.setAttribute("knownErrors", kbDAO.listKnownErrors());
+                req.getRequestDispatcher("/knowledge/knowledge-article-form.jsp").forward(req, resp);
+                return;
+            }
+            // ===================================
 
-        if (kbDAO.addArticle(article)) {
-            resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article?message=Tạo bài viết thành công");
-        } else {
-            req.setAttribute("error", "Could not create article");
-            req.setAttribute("article", article);
-            req.setAttribute("knownErrors", kbDAO.listKnownErrors());
-            req.getRequestDispatcher("/knowledge/knowledge-article-form.jsp").forward(req, resp);
+            if (kbDAO.addArticle(article)) {
+                resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article?message="
+                        + java.net.URLEncoder.encode("Thêm bài viết thành công", "UTF-8"));
+            } else {
+                req.setAttribute("error", "Could not create article");
+                req.setAttribute("article", article);
+                req.setAttribute("knownErrors", kbDAO.listKnownErrors());
+                req.getRequestDispatcher("/knowledge/knowledge-article-form.jsp").forward(req, resp);
+            }
+        } catch (Exception e) {
+            System.out.println("addArticle error: " + e);
         }
-    } catch (Exception e) {
-        System.out.println("addArticle error: " + e);
     }
-}
 
-private void updateArticle(HttpServletRequest req, HttpServletResponse resp)
-        throws ServletException, IOException {
-    try {
-        String idStr = req.getParameter("articleId");
+    private void updateArticle(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        try {
+            String idStr = req.getParameter("articleId");
+            if (idStr == null || idStr.isEmpty()) {
+                resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article");
+                return;
+            }
+            Article article = buildArticleFromRequest(req);
+            article.setArticleId(Integer.parseInt(idStr));
+            article.setStatus("PUBLISHED");
+            // ===== VALIDATE TỪ ĐỘC HẠI =====
+            String profanityError = checkProfanity(article);
+            if (profanityError != null) {
+                req.setAttribute("error", profanityError);
+                req.setAttribute("article", article);
+                req.setAttribute("knownErrors", kbDAO.listKnownErrors());
+                req.getRequestDispatcher("/knowledge/knowledge-article-form.jsp").forward(req, resp);
+                return;
+            }
+            // ===================================
+
+            if (kbDAO.updateArticle(article)) {
+                resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article?message="
+                        + java.net.URLEncoder.encode("Cập nhật bài viết thành công", "UTF-8"));
+            } else {
+                req.setAttribute("error", "Could not update article");
+                req.setAttribute("article", article);
+                req.setAttribute("knownErrors", kbDAO.listKnownErrors());
+                req.getRequestDispatcher("/knowledge/knowledge-article-form.jsp").forward(req, resp);
+            }
+        } catch (Exception e) {
+            System.out.println("updateArticle error: " + e);
+        }
+    }
+
+    private void deleteArticle(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException {
+        String idStr = req.getParameter("id");
+        System.out.println(">>> deleteArticle controller idStr = " + idStr); // ← thêm dòng này
         if (idStr == null || idStr.isEmpty()) {
             resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article");
             return;
         }
-        Article article = buildArticleFromRequest(req);
-        article.setArticleId(Integer.parseInt(idStr));
-        article.setStatus("PUBLISHED");
-
-        if (kbDAO.updateArticle(article)) {
-            resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article?message=Cập nhật bài viết thành công");
-        } else {
-            req.setAttribute("error", "Could not update article");
-            req.setAttribute("article", article);
-            req.setAttribute("knownErrors", kbDAO.listKnownErrors());
-            req.getRequestDispatcher("/knowledge/knowledge-article-form.jsp").forward(req, resp);
-        }
-    } catch (Exception e) {
-        System.out.println("updateArticle error: " + e);
+        kbDAO.deleteArticle(Integer.parseInt(idStr));
+        resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article?message="
+                + java.net.URLEncoder.encode("Xóa bài viết thành công", "UTF-8"));
     }
-}
-
-    private void deleteArticle(HttpServletRequest req, HttpServletResponse resp)
-        throws IOException {
-    String idStr = req.getParameter("id");
-    System.out.println(">>> deleteArticle controller idStr = " + idStr); // ← thêm dòng này
-    if (idStr == null || idStr.isEmpty()) {
-        resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article");
-        return;
-    }
-    kbDAO.deleteArticle(Integer.parseInt(idStr));
-    resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article?message=Xóa bài viết thành công");
-}
 
     private void toggleStatus(HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
@@ -211,7 +235,8 @@ private void updateArticle(HttpServletRequest req, HttpServletResponse resp)
             return;
         }
         kbDAO.toggleStatus(Integer.parseInt(idStr), newStatus);
-        resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article?message=Đã cập nhật trạng thái");
+        resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article?message="
+                + java.net.URLEncoder.encode("Đã cập nhật trạng thái", "UTF-8"));
     }
 
     // ===================== HELPER =====================
@@ -227,6 +252,28 @@ private void updateArticle(HttpServletRequest req, HttpServletResponse resp)
         a.setCause(req.getParameter("cause"));
         a.setSolution(req.getParameter("solution"));
         return a;
+    }
+
+    /**
+     * Kiểm tra tất cả các trường text của article. Trả về thông báo lỗi nếu có
+     * từ độc hại, null nếu không.
+     */
+    private String checkProfanity(Article a) {
+        java.util.Map<String, String> fields = new java.util.LinkedHashMap<>();
+        fields.put("Tiêu đề", a.getTitle());
+        fields.put("Mô tả", a.getSummary());
+        fields.put("Nội dung", a.getContent());
+        fields.put("Triệu chứng", a.getSymptom());
+        fields.put("Nguyên nhân", a.getCause());
+        fields.put("Giải pháp", a.getSolution());
+
+        for (java.util.Map.Entry<String, String> entry : fields.entrySet()) {
+            String found = ProfanityFilter.findBannedWord(entry.getValue());
+            if (found != null) {
+                return entry.getKey() + " chứa từ không phù hợp: \"" + found + "\"";
+            }
+        }
+        return null;
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.itserviceflow.controllers;
 import com.itserviceflow.daos.KnowledgeBaseDAO;
 import com.itserviceflow.models.Article;
 import com.itserviceflow.models.User;
+import com.itserviceflow.utils.ProfanityFilter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -136,9 +137,19 @@ public class KnowledgeBaseController extends HttpServlet {
             Article article = buildArticleFromRequest(req);
             article.setAuthorId(sessionUser.getUserId());
             article.setStatus("PUBLISHED"); // ← luôn là PUBLISHED, không cần submitAction
+            // ===== VALIDATE TỪ ĐỘC HẠI =====
+            String profanityError = checkProfanity(article);
+            if (profanityError != null) {
+                req.setAttribute("error", profanityError);
+                req.setAttribute("article", article);
+                req.getRequestDispatcher("/knowledge/knowledge-base-form.jsp").forward(req, resp);
+                return;
+            }
+            // ===================================
 
             if (kbDAO.addArticle(article)) {
-                resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message=Tạo bài viết thành công");
+                resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message="
+                        + java.net.URLEncoder.encode("Thêm bài viết thành công", "UTF-8"));
             } else {
                 req.setAttribute("error", "Could not create article");
                 req.setAttribute("article", article);
@@ -160,9 +171,19 @@ public class KnowledgeBaseController extends HttpServlet {
             Article article = buildArticleFromRequest(req);
             article.setArticleId(Integer.parseInt(idStr));
             article.setStatus("PUBLISHED"); // ← luôn là PUBLISHED
+            // ===== VALIDATE TỪ ĐỘC HẠI =====
+            String profanityError = checkProfanity(article);
+            if (profanityError != null) {
+                req.setAttribute("error", profanityError);
+                req.setAttribute("article", article);
+                req.getRequestDispatcher("/knowledge/knowledge-base-form.jsp").forward(req, resp);
+                return;
+            }
+            // ===================================
 
             if (kbDAO.updateArticle(article)) {
-                resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message=Cập nhật bài viết thành công");
+                resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message="
+                        + java.net.URLEncoder.encode("Cập nhật bài viết thành công", "UTF-8"));
             } else {
                 req.setAttribute("error", "Could not update article");
                 req.setAttribute("article", article);
@@ -174,16 +195,17 @@ public class KnowledgeBaseController extends HttpServlet {
     }
 
     private void deleteArticle(HttpServletRequest req, HttpServletResponse resp)
-        throws IOException {
-    String idStr = req.getParameter("id");
-    System.out.println(">>> deleteArticle controller idStr = " + idStr); // ← thêm dòng này
-    if (idStr == null || idStr.isEmpty()) {
-        resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base");
-        return;
+            throws IOException {
+        String idStr = req.getParameter("id");
+        System.out.println(">>> deleteArticle controller idStr = " + idStr); // ← thêm dòng này
+        if (idStr == null || idStr.isEmpty()) {
+            resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base");
+            return;
+        }
+        kbDAO.deleteArticle(Integer.parseInt(idStr));
+        resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message="
+                + java.net.URLEncoder.encode("Xóa bài viết thành công", "UTF-8"));
     }
-    kbDAO.deleteArticle(Integer.parseInt(idStr));
-    resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message=Xóa bài viết thành công");
-}
 
     private void toggleStatus(HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
@@ -194,7 +216,8 @@ public class KnowledgeBaseController extends HttpServlet {
             return;
         }
         kbDAO.toggleStatus(Integer.parseInt(idStr), newStatus);
-        resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message=Đã cập nhật trạng thái");
+        resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message="
+                + java.net.URLEncoder.encode("Đã cập nhật trạng thái", "UTF-8"));
     }
 
     // ===================== HELPER =====================
@@ -211,7 +234,23 @@ public class KnowledgeBaseController extends HttpServlet {
         a.setSolution(req.getParameter("solution"));
         return a;
     }
+private String checkProfanity(Article a) {
+        java.util.Map<String, String> fields = new java.util.LinkedHashMap<>();
+        fields.put("Tiêu đề", a.getTitle());
+        fields.put("Mô tả", a.getSummary());
+        fields.put("Nội dung", a.getContent());
+        fields.put("Triệu chứng", a.getSymptom());
+        fields.put("Nguyên nhân", a.getCause());
+        fields.put("Giải pháp", a.getSolution());
 
+        for (java.util.Map.Entry<String, String> entry : fields.entrySet()) {
+            String found = ProfanityFilter.findBannedWord(entry.getValue());
+            if (found != null) {
+                return entry.getKey() + " chứa từ không phù hợp: \"" + found + "\"";
+            }
+        }
+        return null;
+    }
     @Override
     public String getServletInfo() {
         return "KnowledgeBaseController - Handles knowledge base CRUD";
