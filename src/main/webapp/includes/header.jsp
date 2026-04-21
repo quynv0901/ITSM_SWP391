@@ -205,10 +205,12 @@
                            class="menu-item ${pageContext.request.requestURI.contains('/configuration-item') ? 'active' : ''}">
                             <i class="bi bi-server"></i> Danh mục cấu hình
                         </a>
-                        <a href="${pageContext.request.contextPath}/vendor"
-                           class="menu-item ${pageContext.request.requestURI.contains('/vendor') ? 'active' : ''}">
-                            <i class="bi bi-buildings"></i> Danh mục Nhà cung cấp
-                        </a>
+                        <c:if test="${sessionScope.user != null && (sessionScope.user.roleId == 8 || sessionScope.user.roleId == 10)}">
+                            <a href="${pageContext.request.contextPath}/vendor"
+                               class="menu-item ${pageContext.request.requestURI.contains('/vendor') ? 'active' : ''}">
+                                <i class="bi bi-buildings"></i> Danh mục Nhà cung cấp
+                            </a>
+                        </c:if>
 
                         <li class="menu-header">Báo cáo &amp; Phân tích</li>
                         <a href="${pageContext.request.contextPath}/dashboard"
@@ -244,10 +246,12 @@
                        class="menu-item ${pageContext.request.requestURI.contains('/configuration-item') ? 'active' : ''}">
                         <i class="bi bi-server"></i> Danh mục cấu hình
                     </a>
-                    <a href="${pageContext.request.contextPath}/vendor"
-                       class="menu-item ${pageContext.request.requestURI.contains('/vendor') ? 'active' : ''}">
-                        <i class="bi bi-buildings"></i> Danh mục Nhà cung cấp
-                    </a>
+                    <c:if test="${sessionScope.user != null && (sessionScope.user.roleId == 8 || sessionScope.user.roleId == 10)}">
+                        <a href="${pageContext.request.contextPath}/vendor"
+                           class="menu-item ${pageContext.request.requestURI.contains('/vendor') ? 'active' : ''}">
+                            <i class="bi bi-buildings"></i> Danh mục Nhà cung cấp
+                        </a>
+                    </c:if>
 
                     <li class="menu-header">Báo cáo &amp; Phân tích</li>
                     <a href="${pageContext.request.contextPath}/dashboard"

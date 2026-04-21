@@ -30,8 +30,10 @@ public class VendorController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Optionally check authentication/authorization here using AuthUtils
-        // if (!AuthUtils.isLoggedIn(request)) { response.sendRedirect("auth?action=login"); return; }
+        // Validate: only Admin(10) and Asset Manager(8) are allowed to access Vendor Management
+        if (!AuthUtils.hasRole(request, response, AuthUtils.ROLE_ASSET_MANAGER)) {
+            return;
+        }
 
         String action = request.getParameter("action");
         if (action == null) {
@@ -68,6 +70,10 @@ public class VendorController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        if (!AuthUtils.hasRole(request, response, AuthUtils.ROLE_ASSET_MANAGER)) {
+            return;
+        }
 
         String action = request.getParameter("action");
         if ("save".equals(action)) {
