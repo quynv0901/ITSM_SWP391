@@ -131,4 +131,18 @@ public class VendorDAO {
             return false;
         }
     }
+
+    public boolean isDuplicateVendorName(String name, int excludeId) {
+        String sql = "SELECT COUNT(*) FROM vendor WHERE LOWER(TRIM(name)) = LOWER(TRIM(?)) AND vendor_id != ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, name);
+            ps.setInt(2, excludeId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }
