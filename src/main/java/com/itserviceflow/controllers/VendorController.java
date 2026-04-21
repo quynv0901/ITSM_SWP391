@@ -9,6 +9,8 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import com.itserviceflow.daos.ConfigurationItemDAO;
+import com.itserviceflow.models.ConfigurationItem;
 import java.io.IOException;
 import java.util.List;
 
@@ -16,10 +18,12 @@ import java.util.List;
 public class VendorController extends HttpServlet {
 
     private VendorDAO vendorDAO;
+    private ConfigurationItemDAO configurationItemDAO;
 
     @Override
     public void init() throws ServletException {
         vendorDAO = new VendorDAO();
+        configurationItemDAO = new ConfigurationItemDAO();
     }
 
     @Override
@@ -47,6 +51,9 @@ public class VendorController extends HttpServlet {
                     break;
                 case "toggle":
                     toggleVendorStatus(request, response);
+                    break;
+                case "detail":
+                    showVendorDetail(request, response);
                     break;
                 case "list":
                 default:
@@ -103,6 +110,24 @@ public class VendorController extends HttpServlet {
         }
     }
 
+    private void showVendorDetail(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
+            int id = Integer.parseInt(request.getParameter("id"));
+            Vendor vendor = vendorDAO.getVendorById(id);
+            if (vendor == null) {
+                response.sendRedirect(request.getContextPath() + "/vendor?error=" + java.net.URLEncoder.encode("Không tìm thấy Nhà cung cấp", "UTF-8"));
+                return;
+            }
+            List<ConfigurationItem> vendorCIs = configurationItemDAO.getCIsByVendorId(id);
+            request.setAttribute("vendor", vendor);
+            request.setAttribute("vendorCIs", vendorCIs);
+            request.getRequestDispatcher("/vendor/detail.jsp").forward(request, response);
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/vendor");
+        }
+    }
+
     private void saveVendor(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
@@ -113,27 +138,34 @@ public class VendorController extends HttpServlet {
         String address = request.getParameter("address");
         String status = request.getParameter("status");
 
-        if (name == null || name.trim().isEmpty()) {
-            Vendor v = new Vendor();
-            v.setContactEmail(email);
-            v.setContactPhone(phone);
-            v.setAddress(address);
-            v.setStatus(status);
-            request.setAttribute("errorMessage", "Tên nhà cung cấp không được để trống!");
-            showForm(request, response, v);
-            return;
+        int id = 0;
+        if (idStr != null && !idStr.isEmpty()) {
+            try { id = Integer.parseInt(idStr); } catch (NumberFormatException ignored) {}
         }
 
         Vendor vendor = new Vendor();
-        vendor.setName(name);
-        vendor.setContactEmail(email);
-        vendor.setContactPhone(phone);
-        vendor.setAddress(address);
+        vendor.setVendorId(id);
+        vendor.setName(name != null ? name.trim() : "");
+        vendor.setContactEmail(email != null ? email.trim() : "");
+        vendor.setContactPhone(phone != null ? phone.trim() : "");
+        vendor.setAddress(address != null ? address.trim() : "");
         vendor.setStatus(status != null ? status : "ACTIVE");
 
+        String error = validateVendor(vendor.getName(), vendor.getContactEmail(), vendor.getContactPhone(), vendor.getAddress());
+        if (error != null) {
+            request.setAttribute("errorMessage", error);
+            showForm(request, response, vendor);
+            return;
+        }
+
+        if (vendorDAO.isDuplicateVendorName(vendor.getName(), vendor.getVendorId())) {
+            request.setAttribute("errorMessage", "Tên Nhà cung cấp đã tồn tại trong hệ thống. Vui lòng chọn tên khác!");
+            showForm(request, response, vendor);
+            return;
+        }
+
         boolean success = false;
-        if (idStr != null && !idStr.isEmpty()) {
-            vendor.setVendorId(Integer.parseInt(idStr));
+        if (id > 0) {
             success = vendorDAO.updateVendor(vendor);
         } else {
             success = vendorDAO.createVendor(vendor);
@@ -142,7 +174,7 @@ public class VendorController extends HttpServlet {
         if (success) {
             response.sendRedirect(request.getContextPath() + "/vendor?success=" + java.net.URLEncoder.encode("Lưu nhà cung cấp thành công!", "UTF-8"));
         } else {
-            request.setAttribute("errorMessage", "Đã có lỗi xảy ra khi lưu dữ liệu.");
+            request.setAttribute("errorMessage", "Đã có lỗi xảy ra khi lưu dữ liệu vào cơ sở dữ liệu.");
             showForm(request, response, vendor);
         }
     }
@@ -175,5 +207,27 @@ public class VendorController extends HttpServlet {
         } catch (NumberFormatException e) {
             response.sendRedirect(request.getContextPath() + "/vendor");
         }
+    }
+
+    private String validateVendor(String name, String email, String phone, String address) {
+        if (name == null || name.isEmpty()) return "Tên Nhà cung cấp là bắt buộc.";
+        if (name.length() > 150) return "Tên Nhà cung cấp không được vượt quá 150 ký tự.";
+        if (!name.matches("^[\\p{L}0-9 .\\-_()&]+$")) return "Tên chứa ký tự không hợp lệ. Chỉ chấp nhận chữ cái, số và khoảng trắng, ., -, _, (, ), &.";
+        
+        if (email != null && !email.isEmpty()) {
+            if (email.length() > 255) return "Email không được vượt quá 255 ký tự.";
+            if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) return "Email không đúng định dạng.";
+        }
+        
+        if (phone != null && !phone.isEmpty()) {
+            if (phone.length() > 50) return "Số điện thoại không được vượt quá 50 ký tự.";
+            if (!phone.matches("^[0-9 .+\\-()]+$")) return "Số điện thoại chứa ký tự không hợp lệ. Chỉ chấp nhận số và dấu (+) (-) (.) ( ).";
+        }
+
+        if (address != null && address.length() > 255) {
+            return "Địa chỉ không được vượt quá 255 ký tự.";
+        }
+
+        return null;
     }
 }
