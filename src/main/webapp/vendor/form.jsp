@@ -109,8 +109,8 @@
                         Danh mục <strong>Nhà cung cấp</strong> hỗ trợ việc theo dõi và quản lý xuất xứ của các thiết bị (Configuration Items - CMDB) và dịch vụ liên quan.
                     </p>
                     <ul class="text-secondary small ps-3 mb-0">
-                        <li class="mb-2"><strong>Tên Nhà cung cấp:</strong> Là trường bắt buộc, điền chính xác tên doanh nghiệp.</li>
-                        <li class="mb-2"><strong>Email / SĐT:</strong> Nên điền thông tin của bộ phận Sale / Hỗ trợ kỹ thuật trực tiếp để tiện bảo hành.</li>
+                        <li class="mb-2"><strong>Tên Nhà cung cấp:</strong> Là trường bắt buộc, tối đa 150 ký tự. Không chứa ký tự đặc biệt lạ.</li>
+                        <li class="mb-2"><strong>Email / SĐT:</strong> Nên điền thông tin của bộ phận Sale / Hỗ trợ kỹ thuật. Vui lòng nhập đúng định dạng.</li>
                         <li><strong>Trạng thái Inactive:</strong> Sẽ ẩn đối tác này khỏi danh sách chọn khi tạo mới Thiết bị trong CMDB.</li>
                     </ul>
                 </div>
@@ -118,5 +118,75 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById('vendorForm').addEventListener('submit', function (e) {
+        let valid = true;
+        
+        // Remove old error texts and red borders if they exist
+        document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        document.querySelectorAll('.text-danger.mt-1').forEach(el => el.remove());
+
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('contactEmail').value.trim();
+        const phone = document.getElementById('contactPhone').value.trim();
+        const address = document.getElementById('address').value.trim();
+
+        // Validate name
+        if (name === '') {
+            showError('name', 'Tên là bắt buộc.');
+            valid = false;
+        } else if (name.length > 150) {
+            showError('name', 'Tên không được vượt quá 150 ký tự.');
+            valid = false;
+        } else if (!/^[\p{L}0-9 .\-_()&]+$/u.test(name)) {
+            showError('name', 'Tên chứa ký tự không hợp lệ.');
+            valid = false;
+        }
+
+        // Validate email
+        if (email !== '') {
+            if (email.length > 255) {
+                showError('contactEmail', 'Email không vượt quá 255 ký tự.');
+                valid = false;
+            } else if (!/^[A-Za-z0-9+_.-]+@(.+)$/.test(email)) {
+                showError('contactEmail', 'Email không đúng định dạng.');
+                valid = false;
+            }
+        }
+
+        // Validate phone
+        if (phone !== '') {
+            if (phone.length > 50) {
+                showError('contactPhone', 'Số điện thoại không vượt quá 50 ký tự.');
+                valid = false;
+            } else if (!/^[0-9 .+\-()]+$/.test(phone)) {
+                showError('contactPhone', 'Số điện thoại chỉ được chứa số và ký tự (+ - . () ).');
+                valid = false;
+            }
+        }
+
+        if (address.length > 255) {
+            showError('address', 'Địa chỉ không vượt quá 255 ký tự.');
+            valid = false;
+        }
+
+        if (!valid) {
+            e.preventDefault();
+        }
+    });
+
+    function showError(fieldId, message) {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.classList.add('is-invalid');
+            const errDiv = document.createElement('div');
+            errDiv.className = 'text-danger mt-1 small';
+            errDiv.innerText = message;
+            // Append error below input-group
+            field.parentNode.parentNode.appendChild(errDiv);
+        }
+    }
+</script>
 
 <jsp:include page="/includes/footer.jsp" />

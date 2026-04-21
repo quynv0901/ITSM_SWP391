@@ -216,6 +216,32 @@ public class ConfigurationItemDAO {
         } catch (SQLException e) { e.printStackTrace(); }
         return list;
     }
+
+    public List<ConfigurationItem> getCIsByVendorId(int vendorId) {
+        List<ConfigurationItem> list = new ArrayList<>();
+        String sql = "SELECT * FROM configuration_item WHERE vendor_id = ? ORDER BY type, name";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, vendorId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ConfigurationItem ci = new ConfigurationItem();
+                    ci.setCiId(rs.getInt("ci_id"));
+                    ci.setName(rs.getString("name"));
+                    ci.setType(rs.getString("type"));
+                    ci.setVersion(rs.getString("version"));
+                    ci.setDescription(rs.getString("description"));
+                    ci.setStatus(rs.getString("status"));
+                    ci.setVendorId(vendorId);
+                    ci.setCreatedAt(rs.getTimestamp("created_at"));
+                    ci.setUpdatedAt(rs.getTimestamp("updated_at"));
+                    list.add(ci);
+                }
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return list;
+    }
+
     // ─────────────────────────────────────────────────────────────────
     //  CI RELATIONSHIP methods
     // ─────────────────────────────────────────────────────────────────

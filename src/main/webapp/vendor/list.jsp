@@ -111,8 +111,12 @@
                                             </c:choose>
                                         </td>
                                         <td class="text-end pe-4">
+                                            <a href="${pageContext.request.contextPath}/vendor?action=detail&id=${v.vendorId}" 
+                                               class="btn btn-sm btn-outline-info" title="Xem chi tiết">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
                                             <a href="${pageContext.request.contextPath}/vendor?action=edit&id=${v.vendorId}" 
-                                               class="btn btn-sm btn-outline-primary" title="Chỉnh sửa">
+                                               class="btn btn-sm btn-outline-primary ms-1" title="Chỉnh sửa">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
                                             <!-- Nút Toggle Active/Inactive -->

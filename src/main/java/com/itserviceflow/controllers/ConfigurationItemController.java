@@ -161,7 +161,7 @@ public class ConfigurationItemController extends HttpServlet {
                 String status      = trim(request.getParameter("status"));
                 String vendorId    = trim(request.getParameter("vendorId"));
 
-                String error = validateCI(name, type, version, description, status);
+                String error = validateCI(name, type, version, description, status, vendorId);
                 if (error != null) {
                     ConfigurationItem formData = buildCI(0, name, type, version, description, status, vendorId);
                     request.setAttribute("ci", formData);
@@ -212,7 +212,7 @@ public class ConfigurationItemController extends HttpServlet {
                 String status      = trim(request.getParameter("status"));
                 String vendorId    = trim(request.getParameter("vendorId"));
 
-                String error = validateCI(name, type, version, description, status);
+                String error = validateCI(name, type, version, description, status, vendorId);
                 if (error != null) {
                     ConfigurationItem formData = buildCI(idToUpdate, name, type, version, description, status, vendorId);
                     request.setAttribute("ci", formData);
@@ -380,7 +380,7 @@ public class ConfigurationItemController extends HttpServlet {
     }
 
     private String validateCI(String name, String type, String version,
-                               String description, String status) {
+                               String description, String status, String vendorId) {
         if (name == null || name.isEmpty())
             return "Tên là bắt buộc và không được để trống.";
         if (name.length() > 100)
@@ -399,6 +399,8 @@ public class ConfigurationItemController extends HttpServlet {
             return "Trạng thái là bắt buộc.";
         if (!VALID_STATUSES.contains(status))
             return "Giá trị trạng thái không hợp lệ: '" + status + "'.";
+        if (vendorId == null || vendorId.isEmpty())
+            return "Vui lòng phân công Nhà cung cấp chính xác cho mục cấu hình này.";
         return null;
     }
 }
