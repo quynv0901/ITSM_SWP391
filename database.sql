@@ -462,21 +462,21 @@ INSERT INTO ci_type (type_name) VALUES
 ('Application');
 
 INSERT INTO service (service_name, service_code, description, estimated_delivery_day, status) VALUES
-('Email Account Provisioning', 'SRV-EMAIL-001', 'Create and configure a corporate email account for a new user.', 1, 'ACTIVE'),
-('Password Reset Service', 'SRV-ACC-001', 'Reset password for internal systems, email, or domain accounts.', 0, 'ACTIVE'),
-('Software Installation', 'SRV-SW-001', 'Install approved software on user desktop or laptop devices.', 2, 'ACTIVE'),
-('Hardware Request Service', 'SRV-HW-001', 'Provide standard IT hardware such as mouse, keyboard, monitor, or laptop.', 5, 'ACTIVE'),
-('VPN Access Request', 'SRV-NET-001', 'Grant VPN access for secure remote connection to internal resources.', 2, 'ACTIVE'),
-('Shared Folder Access', 'SRV-FILE-001', 'Grant read or write access to department shared folders.', 1, 'ACTIVE'),
-('Printer Setup Service', 'SRV-PRN-001', 'Install and configure network printer access for end users.', 1, 'ACTIVE'),
-('New Employee Onboarding', 'SRV-HRIT-001', 'Prepare IT accounts, devices, and access permissions for new employees.', 3, 'ACTIVE'),
-('Employee Offboarding', 'SRV-HRIT-002', 'Disable accounts, revoke access, and collect IT assets for departing employees.', 1, 'ACTIVE'),
-('Server Access Request', 'SRV-INF-001', 'Grant controlled access to servers for authorized technical staff.', 2, 'ACTIVE'),
-('Database Access Request', 'SRV-DB-001', 'Grant database login or schema access for approved users.', 2, 'ACTIVE'),
-('Application Access Request', 'SRV-APP-001', 'Provide access to internal business applications based on approval.', 1, 'ACTIVE'),
-('Laptop Replacement Service', 'SRV-HW-002', 'Replace old or damaged laptop devices for eligible employees.', 7, 'ACTIVE'),
-('Network Port Activation', 'SRV-NET-002', 'Activate or reconfigure office network ports for desktops or IP phones.', 1, 'ACTIVE'),
-('Security Access Review', 'SRV-SEC-001', 'Review and update user access permissions for security compliance.', 3, 'ACTIVE');
+('Cấp tài khoản email', 'SRV-EMAIL-001', 'Tạo và cấu hình tài khoản email cho nhân viên mới.', 1, 'ACTIVE'),
+('Đặt lại mật khẩu', 'SRV-ACC-001', 'Đặt lại mật khẩu cho hệ thống nội bộ, email hoặc domain.', 0, 'ACTIVE'),
+('Cài đặt phần mềm', 'SRV-SW-001', 'Cài đặt phần mềm được phê duyệt trên máy tính người dùng.', 2, 'ACTIVE'),
+('Yêu cầu thiết bị phần cứng', 'SRV-HW-001', 'Cấp phát thiết bị IT như chuột, bàn phím, màn hình hoặc laptop.', 5, 'ACTIVE'),
+('Yêu cầu truy cập VPN', 'SRV-NET-001', 'Cấp quyền truy cập VPN để kết nối từ xa an toàn.', 2, 'ACTIVE'),
+('Cấp quyền thư mục dùng chung', 'SRV-FILE-001', 'Cấp quyền đọc/ghi thư mục nội bộ theo phòng ban.', 1, 'ACTIVE'),
+('Cài đặt máy in', 'SRV-PRN-001', 'Cài đặt và cấu hình máy in mạng cho người dùng.', 1, 'ACTIVE'),
+('Khởi tạo nhân viên mới', 'SRV-HRIT-001', 'Chuẩn bị tài khoản, thiết bị và quyền truy cập cho nhân viên mới.', 3, 'ACTIVE'),
+('Kết thúc nhân viên', 'SRV-HRIT-002', 'Thu hồi tài khoản và tài sản IT của nhân viên nghỉ việc.', 1, 'ACTIVE'),
+('Yêu cầu truy cập server', 'SRV-INF-001', 'Cấp quyền truy cập server cho nhân sự kỹ thuật.', 2, 'ACTIVE'),
+('Yêu cầu truy cập cơ sở dữ liệu', 'SRV-DB-001', 'Cấp quyền truy cập database cho người dùng được phê duyệt.', 2, 'ACTIVE'),
+('Yêu cầu truy cập ứng dụng', 'SRV-APP-001', 'Cấp quyền truy cập các ứng dụng nội bộ.', 1, 'ACTIVE'),
+('Thay thế laptop', 'SRV-HW-002', 'Thay thế laptop cũ hoặc bị hỏng.', 7, 'ACTIVE'),
+('Kích hoạt cổng mạng', 'SRV-NET-002', 'Kích hoạt hoặc cấu hình lại cổng mạng tại văn phòng.', 1, 'ACTIVE'),
+('Rà soát quyền truy cập bảo mật', 'SRV-SEC-001', 'Kiểm tra và cập nhật quyền truy cập để đảm bảo an toàn.', 3, 'ACTIVE');
 
 INSERT INTO ticket (
     ticket_number,
@@ -490,16 +490,16 @@ INSERT INTO ticket (
     assigned_to,
     department_id
 ) VALUES
-('INC-20261000', 'INCIDENT', 'Internal network connection lost', 'Users on the third floor cannot connect to the LAN network.', 'NEW', 'HIGH', 1, 1, 3, 1),
-('INC-20261001', 'INCIDENT', 'Meeting room printer is out of toner', 'The printer shows a toner empty message and cannot print documents.', 'NEW', 'LOW', 2, 2, 3, 1),
-('INC-20261002', 'INCIDENT', 'Accounting software returns error 500', 'The application crashes when exporting the monthly report.', 'IN_PROGRESS', 'CRITICAL', 3, 1, 3, 1),
-('INC-20261003', 'INCIDENT', 'Outlook cannot send email', 'Emails with attachments larger than 20MB remain stuck in the outbox.', 'RESOLVED', 'HIGH', 1, 2, 3, 1),
-('INC-20261004', 'INCIDENT', 'WiFi account is locked', 'The wireless account was locked after multiple failed password attempts.', 'NEW', 'MEDIUM', 1, 1, 3, 1),
-('INC-20261005', 'INCIDENT', 'Projector display is blurry', 'The projector in the main meeting room shows color distortion and horizontal lines.', 'NEW', 'LOW', 2, 2, 3, 1),
-('INC-20261006', 'INCIDENT', 'Internal website loads slowly', 'The home page takes around 30 seconds to load completely.', 'INVESTIGATING', 'HIGH', 3, 1, 3, 1),
-('INC-20261007', 'INCIDENT', 'Design software installation error', 'The software reports a license activation problem on workstation P204.', 'RESOLVED', 'MEDIUM', 3, 2, 3, 1),
-('INC-20261008', 'INCIDENT', 'Wireless mouse not working properly', 'The mouse disconnects intermittently and input becomes unstable.', 'NEW', 'LOW', 2, 1, 3, 1),
-('INC-20261009', 'INCIDENT', 'Forgot system password', 'The HR user needs a password reset for the internal system account.', 'NEW', 'HIGH', 1, 2, 3, 1);
+('INC-20261000', 'INCIDENT', 'Mất kết nối mạng nội bộ', 'Người dùng tầng 3 không thể kết nối mạng LAN.', 'NEW', 'HIGH', 1, 1, 3, 1),
+('INC-20261001', 'INCIDENT', 'Máy in phòng họp hết mực', 'Máy in hiển thị hết mực và không thể in tài liệu.', 'NEW', 'LOW', 2, 2, 3, 1),
+('INC-20261002', 'INCIDENT', 'Phần mềm kế toán lỗi 500', 'Ứng dụng bị crash khi xuất báo cáo tháng.', 'IN_PROGRESS', 'CRITICAL', 3, 1, 3, 1),
+('INC-20261003', 'INCIDENT', 'Outlook không gửi được email', 'Email có file đính kèm >20MB bị kẹt.', 'RESOLVED', 'HIGH', 1, 2, 3, 1),
+('INC-20261004', 'INCIDENT', 'Tài khoản wifi bị khóa', 'Bị khóa sau nhiều lần nhập sai mật khẩu.', 'NEW', 'MEDIUM', 1, 1, 3, 1),
+('INC-20261005', 'INCIDENT', 'Máy chiếu bị mờ', 'Hình ảnh bị nhiễu và sai màu.', 'NEW', 'LOW', 2, 2, 3, 1),
+('INC-20261006', 'INCIDENT', 'Website nội bộ tải chậm', 'Trang chủ mất 30 giây để tải.', 'INVESTIGATING', 'HIGH', 3, 1, 3, 1),
+('INC-20261007', 'INCIDENT', 'Lỗi cài phần mềm thiết kế', 'Không kích hoạt được license.', 'RESOLVED', 'MEDIUM', 3, 2, 3, 1),
+('INC-20261008', 'INCIDENT', 'Chuột không ổn định', 'Chuột bị ngắt kết nối liên tục.', 'NEW', 'LOW', 2, 1, 3, 1),
+('INC-20261009', 'INCIDENT', 'Quên mật khẩu hệ thống', 'Người dùng HR cần reset mật khẩu.', 'NEW', 'HIGH', 1, 2, 3, 1);
 
 INSERT INTO ticket (
     ticket_number,
@@ -514,11 +514,11 @@ INSERT INTO ticket (
     department_id,
     service_id
 ) VALUES
-('SR-20261010', 'SERVICE_REQUEST', 'Request new email account', 'Need a new email account for a newly hired employee.', 'NEW', 'HIGH', 4, 1, 3, 1, 1),
-('SR-20261011', 'SERVICE_REQUEST', 'Request VPN access', 'Need VPN access for remote work during business travel.', 'ASSIGNED', 'MEDIUM', 4, 2, 3, 1, 5),
-('SR-20261012', 'SERVICE_REQUEST', 'Install design software', 'Please install approved design software on laptop device.', 'IN_PROGRESS', 'MEDIUM', 5, 1, 3, 1, 3),
-('SR-20261013', 'SERVICE_REQUEST', 'Request shared folder access', 'Need write access to the finance shared folder.', 'NEW', 'LOW', 4, 2, 3, 1, 6),
-('SR-20261014', 'SERVICE_REQUEST', 'Request new laptop', 'Current laptop is outdated and needs replacement.', 'PENDING', 'HIGH', 5, 1, 3, 1, 13);
+('SR-20261010', 'SERVICE_REQUEST', 'Yêu cầu tạo email mới', 'Cần tạo email cho nhân viên mới.', 'NEW', 'HIGH', 4, 1, 3, 1, 1),
+('SR-20261011', 'SERVICE_REQUEST', 'Yêu cầu cấp VPN', 'Cần VPN để làm việc từ xa.', 'ASSIGNED', 'MEDIUM', 4, 2, 3, 1, 5),
+('SR-20261012', 'SERVICE_REQUEST', 'Cài phần mềm thiết kế', 'Cài phần mềm thiết kế trên laptop.', 'IN_PROGRESS', 'MEDIUM', 5, 1, 3, 1, 3),
+('SR-20261013', 'SERVICE_REQUEST', 'Cấp quyền thư mục', 'Cần quyền ghi thư mục tài chính.', 'NEW', 'LOW', 4, 2, 3, 1, 6),
+('SR-20261014', 'SERVICE_REQUEST', 'Yêu cầu laptop mới', 'Laptop hiện tại đã cũ.', 'PENDING', 'HIGH', 5, 1, 3, 1, 13);
 
 INSERT INTO sla_policy (policy_name, category_id, priority, response_time_hour, resolution_time_hour, is_active) VALUES
 ('Hardware Low Priority SLA', 1, 'LOW', 8, 48, 1),
