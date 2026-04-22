@@ -151,13 +151,15 @@
                     <c:if test="${not empty token}">
                         <label class="form-label">Mật khẩu mới</label>
                         <div class="input-wrapper">
-                            <input type="password" name="password" placeholder="Tối thiểu 8 ký tự..." required>
+                            <input type="password" name="password" id="password"
+                                   placeholder="Tối thiểu 8 ký tự..." required minlength="8">
                             <i class="bi bi-shield-lock"></i>
                         </div>
 
                         <label class="form-label">Xác nhận mật khẩu</label>
                         <div class="input-wrapper">
-                            <input type="password" name="confirm_password" placeholder="Nhập lại mật khẩu..." required>
+                            <input type="password" name="confirm_password" id="confirm_password"
+                                   placeholder="Nhập lại mật khẩu..." required minlength="8">
                             <i class="bi bi-check2-circle"></i>
                         </div>
 
@@ -170,5 +172,21 @@
         </div>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            document.querySelector("form").addEventListener("submit", function (e) {
+                const pass = document.getElementById("password").value;
+                const confirm = document.getElementById("confirm_password").value;
+
+                if (pass.length < 8) {
+                    e.preventDefault();
+                    alert("Mật khẩu phải có ít nhất 8 ký tự!");
+                    return;
+                }
+                if (pass !== confirm) {
+                    e.preventDefault();
+                    alert("Mật khẩu xác nhận không khớp!");
+                }
+            });
+        </script>
     </body>
 </html>

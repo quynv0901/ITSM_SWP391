@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import org.mindrot.jbcrypt.BCrypt;
 
-@WebServlet(name = "AuthController", urlPatterns = { "/auth", "/profile" })
+@WebServlet(name = "AuthController", urlPatterns = {"/auth", "/profile"})
 public class AuthController extends HttpServlet {
 
     private UserDAO userDAO = new UserDAO();
@@ -87,7 +87,6 @@ public class AuthController extends HttpServlet {
     }
 
     // ===================== VIEW HANDLERS =====================
-
     private void loginView(HttpServletRequest request, HttpServletResponse response) {
         try {
             request.getRequestDispatcher("/auth/login.jsp").forward(request, response);
@@ -143,7 +142,6 @@ public class AuthController extends HttpServlet {
     }
 
     // ===================== ACTION HANDLERS =====================
-
     private void login(HttpServletRequest request, HttpServletResponse response) {
         try {
             String username = request.getParameter("username");
@@ -229,7 +227,15 @@ public class AuthController extends HttpServlet {
             String newPass = request.getParameter("password");
             String confirmPass = request.getParameter("confirm_password");
 
-            if (newPass == null || !newPass.equals(confirmPass)) {
+            // ✅ Validate độ dài mật khẩu
+            if (newPass == null || newPass.length() < 8) {
+                request.setAttribute("error", "Mật khẩu phải có ít nhất 8 ký tự!");
+                request.setAttribute("token", token);
+                request.getRequestDispatcher("/auth/reset_password.jsp").forward(request, response);
+                return;
+            }
+
+            if (!newPass.equals(confirmPass)) {
                 request.setAttribute("error", "Mật khẩu không khớp!");
                 request.setAttribute("token", token);
                 request.getRequestDispatcher("/auth/reset_password.jsp").forward(request, response);
