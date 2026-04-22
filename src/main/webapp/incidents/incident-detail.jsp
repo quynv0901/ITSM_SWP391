@@ -623,6 +623,12 @@
         <c:if test="${not empty param.logError}">
             <div class="alert alert-error">Không thể lưu nhật ký thời gian (${param.logError}).</div>
         </c:if>
+        <c:if test="${param.commentSuccess eq '1'}">
+            <div class="alert alert-success">Đã thêm bình luận nội bộ.</div>
+        </c:if>
+        <c:if test="${not empty param.commentError}">
+            <div class="alert alert-error">Không thể thêm bình luận (${param.commentError}).</div>
+        </c:if>
         <c:if test="${param.editError eq 'locked'}">
             <div class="alert alert-error">Bạn không thể chỉnh sửa incident này vì trạng thái đã được Agent/Expert cập nhật.</div>
         </c:if>
@@ -750,6 +756,7 @@
                     <button class="tab-btn active" onclick="switchTab('timelog', this)">&#9201; Nhật ký thời gian</button>
                     <button class="tab-btn" onclick="switchTab('related', this)">&#128279; Sự cố
                         liên quan</button>
+                    <button class="tab-btn" onclick="switchTab('comment', this)">&#128172; Bình luận nội bộ</button>
                 </div>
 
                 <!-- Tab nhật ký thời gian -->
@@ -867,6 +874,54 @@
                             <div class="empty-state">
                                 <div class="empty-icon">&#128279;</div>
                                 <p>Không có sự cố liên quan.</p>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+
+                <div id="tab-comment" class="tab-content">
+                    <div class="manual-log-form">
+                        <h4>Bình luận nội bộ (Agent/Expert)</h4>
+                        <form action="${pageContext.request.contextPath}/incident" method="post">
+                            <input type="hidden" name="action" value="comment">
+                            <input type="hidden" name="id" value="${incident.ticketId}">
+                            <div class="form-row">
+                                <div class="form-group fg-desc" style="flex:1;">
+                                    <label for="commentText">Nội dung bình luận</label>
+                                    <input type="text" id="commentText" name="commentText"
+                                           maxlength="1000"
+                                           placeholder="Mô tả cập nhật xử lý, phân tích lỗi, hướng xử lý tiếp theo..." required>
+                                </div>
+                                <div class="form-group">
+                                    <label>&nbsp;</label>
+                                    <button type="submit" class="btn btn-primary">Gửi bình luận</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <c:choose>
+                        <c:when test="${not empty comments}">
+                            <ul class="related-list">
+                                <c:forEach var="cmt" items="${comments}">
+                                    <li style="display:block;">
+                                        <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;">
+                                            <div>
+                                                <strong>${cmt.userName}</strong>
+                                                <span style="color:#718096;">(#${cmt.userId})</span>
+                                            </div>
+                                            <span style="color:#a0aec0; font-size:12px;">
+                                                <fmt:formatDate value="${cmt.createdAt}" pattern="dd/MM/yyyy HH:mm" />
+                                            </span>
+                                        </div>
+                                        <div style="margin-top:8px;color:#4a5568;white-space:pre-wrap;">${cmt.commentText}</div>
+                                    </li>
+                                </c:forEach>
+                            </ul>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="empty-state">
+                                <p>Chưa có bình luận nội bộ.</p>
                             </div>
                         </c:otherwise>
                     </c:choose>

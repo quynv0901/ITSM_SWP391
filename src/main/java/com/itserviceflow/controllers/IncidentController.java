@@ -113,6 +113,9 @@ public class IncidentController extends HttpServlet {
             case "logtime":
                 manualLogTime(request, response);
                 break;
+            case "comment":
+                addIncidentComment(request, response);
+                break;
             default:
                 response.sendRedirect(request.getContextPath() + "/incident?action=list");
                 break;
@@ -155,6 +158,7 @@ public class IncidentController extends HttpServlet {
             return;
         }
         List<Ticket> related = ticketDAO.getRelatedIncidents(id);
+        List<com.itserviceflow.models.Comment> comments = ticketDAO.getCommentsByTicketId(id);
 
         // Load time logs cho ticket này
         com.itserviceflow.daos.TimeLogDAO timeLogDAO = new com.itserviceflow.daos.TimeLogDAO();
@@ -189,6 +193,7 @@ public class IncidentController extends HttpServlet {
         request.setAttribute("canCurrentUserEditIncident", canCurrentUserEditIncident(currentUser, incident));
         request.setAttribute("incident", incident);
         request.setAttribute("relatedIncidents", related);
+        request.setAttribute("comments", comments);
         request.setAttribute("timeLogs", timeLogs);
         request.setAttribute("totalTimeSpent", totalTimeSpent);
         request.setAttribute("category", category);
@@ -513,12 +518,29 @@ public class IncidentController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/incident?action=list&error=invalidInput");
             return;
         }
+        User currentUser = (User) request.getSession().getAttribute("user");
+        if (currentUser == null || currentUser.getRoleId() == null
+                || currentUser.getRoleId() == AuthUtils.ROLE_END_USER) {
+            response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + id + "&error=forbidden");
+            return;
+        }
+        Ticket existing = ticketDAO.getTicketWithDetails(id);
+        if (existing == null || "CLOSED".equalsIgnoreCase(existing.getStatus())
+                || "CANCELLED".equalsIgnoreCase(existing.getStatus())) {
+            response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + id + "&error=invalidState");
+            return;
+        }
+        UserDAO userDAO = new UserDAO();
+        User assignee = userDAO.findById(assignedTo);
+        if (assignee == null || assignee.getRoleId() == null
+                || assignee.getRoleId() == AuthUtils.ROLE_END_USER) {
+            response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + id + "&error=invalidAssignee");
+            return;
+        }
         ticketDAO.assignIncidentTicket(id, assignedTo);
 
         Ticket ticket = ticketDAO.getTicketWithDetails(id);
         if (ticket != null) {
-            UserDAO userDAO = new UserDAO();
-            User assignee = userDAO.findById(assignedTo);
             if (assignee == null || assignee.getRoleId() == null || assignee.getRoleId() != AuthUtils.ROLE_END_USER) {
                 timeLogService.autoLog(ticket, assignedTo, "ASSIGNED");
             }
@@ -571,11 +593,15 @@ public class IncidentController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + ticketId + "&logError=invalidTime");
             return;
         }
-        if (timeSpent <= 0) {
+        if (timeSpent <= 0 || timeSpent > 24) {
             response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + ticketId + "&logError=invalidTime");
             return;
         }
-        String description = request.getParameter("logDescription");
+        String description = normalizeWhitespace(request.getParameter("logDescription"));
+        if (description == null || description.length() < 5 || description.length() > 500 || !isSafeText(description)) {
+            response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + ticketId + "&logError=invalidDescription");
+            return;
+        }
 
         HttpSession session = request.getSession();
         User currentUser = (User) session.getAttribute("user");
@@ -590,6 +616,39 @@ public class IncidentController extends HttpServlet {
         boolean saved = timeLogService.manualLog(ticketId, agentId, timeSpent, description);
         String param = saved ? "&logSuccess=1" : "&logError=saveFailed";
         response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + ticketId + param);
+    }
+
+    private void addIncidentComment(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        Integer ticketId = parsePositiveInt(request.getParameter("id"));
+        if (ticketId == null) {
+            response.sendRedirect(request.getContextPath() + "/incident?action=list&commentError=invalidId");
+            return;
+        }
+        User currentUser = (User) request.getSession().getAttribute("user");
+        if (currentUser == null || currentUser.getRoleId() == null) {
+            response.sendRedirect(request.getContextPath() + "/auth?action=login");
+            return;
+        }
+        if (currentUser.getRoleId() == AuthUtils.ROLE_END_USER) {
+            response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + ticketId + "&commentError=forbidden");
+            return;
+        }
+        Ticket incident = ticketDAO.getTicketWithDetails(ticketId);
+        if (incident == null || !"INCIDENT".equalsIgnoreCase(incident.getTicketType())) {
+            response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + ticketId + "&commentError=notFound");
+            return;
+        }
+
+        String commentText = normalizeWhitespace(request.getParameter("commentText"));
+        if (commentText == null || commentText.length() < 2 || commentText.length() > 1000 || !isSafeText(commentText)) {
+            response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + ticketId + "&commentError=invalidText");
+            return;
+        }
+
+        boolean saved = ticketDAO.addComment(ticketId, currentUser.getUserId(), commentText);
+        response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + ticketId
+                + (saved ? "&commentSuccess=1" : "&commentError=saveFailed"));
     }
 
     private Integer parsePositiveInt(String raw) {
@@ -658,6 +717,16 @@ public class IncidentController extends HttpServlet {
 
     private boolean isValidTextOnly(String value) {
         return value != null && value.matches("^[\\p{L} ]+$");
+    }
+
+    private boolean isSafeText(String value) {
+        if (value == null) {
+            return false;
+        }
+        String lowered = value.toLowerCase();
+        return !lowered.contains("<script")
+                && !lowered.contains("</script>")
+                && !lowered.contains("javascript:");
     }
 
     private boolean canCurrentUserEditIncident(User currentUser, Ticket incident) {
