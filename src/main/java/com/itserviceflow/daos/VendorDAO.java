@@ -145,4 +145,32 @@ public class VendorDAO {
         }
         return false;
     }
+
+    public boolean isDuplicateVendorEmail(String email, int excludeId) {
+        String sql = "SELECT COUNT(*) FROM vendor WHERE LOWER(TRIM(contact_email)) = LOWER(TRIM(?)) AND vendor_id != ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            ps.setInt(2, excludeId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean isDuplicateVendorPhone(String phone, int excludeId) {
+        String sql = "SELECT COUNT(*) FROM vendor WHERE TRIM(contact_phone) = TRIM(?) AND vendor_id != ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, phone);
+            ps.setInt(2, excludeId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

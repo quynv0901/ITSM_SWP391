@@ -50,7 +50,7 @@ public class ConfigurationItemController extends HttpServlet {
                 String status  = request.getParameter("status");
 
                 // ── Pagination ──────────────────────────────────
-                final int PAGE_SIZE = 10;
+                final int PAGE_SIZE = 5;
                 int currentPage = 1;
                 try {
                     String pageParam = request.getParameter("page");

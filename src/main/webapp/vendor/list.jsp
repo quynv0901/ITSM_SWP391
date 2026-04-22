@@ -39,7 +39,7 @@
                     <div class="input-group">
                         <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
                         <input type="text" class="form-control border-start-0" name="keyword" 
-                               placeholder="Tên, Email hoặc Số điện thoại..." value="${keyword}">
+                               placeholder="Tên, Email, SĐT hoặc Địa chỉ..." value="${keyword}">
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -51,7 +51,10 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel"></i> Lọc dữ liệu</button>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel"></i> Lọc dữ liệu</button>
+                        <a href="${pageContext.request.contextPath}/vendor" class="btn btn-outline-secondary w-100"><i class="bi bi-x-circle"></i> Xóa bộ lọc</a>
+                    </div>
                 </div>
             </form>
         </div>
@@ -125,12 +128,6 @@
                                                onclick="return confirm('Bạn có chắc muốn chuyển đổi trạng thái của nhà cung cấp này?');"
                                                title="Đổi trạng thái">
                                                 <i class="bi bi-arrow-repeat"></i>
-                                            </a>
-                                            <a href="${pageContext.request.contextPath}/vendor?action=delete&id=${v.vendorId}" 
-                                               class="btn btn-sm btn-outline-danger ms-1"
-                                               onclick="return confirm('Bạn muốn chuyển nhà cung cấp này vào trạng thái INACTIVE?');"
-                                               title="Xóa/Inactive">
-                                                <i class="bi bi-trash"></i>
                                             </a>
                                         </td>
                                     </tr>

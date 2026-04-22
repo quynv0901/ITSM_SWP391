@@ -48,9 +48,6 @@ public class VendorController extends HttpServlet {
                 case "edit":
                     showEditForm(request, response);
                     break;
-                case "delete":
-                    deleteVendor(request, response);
-                    break;
                 case "toggle":
                     toggleVendorStatus(request, response);
                     break;
@@ -170,6 +167,18 @@ public class VendorController extends HttpServlet {
             return;
         }
 
+        if (vendorDAO.isDuplicateVendorEmail(vendor.getContactEmail(), vendor.getVendorId())) {
+            request.setAttribute("errorMessage", "Email liên hệ này đã được sử dụng bởi một Nhà cung cấp khác. Vui lòng kiểm tra lại!");
+            showForm(request, response, vendor);
+            return;
+        }
+
+        if (vendorDAO.isDuplicateVendorPhone(vendor.getContactPhone(), vendor.getVendorId())) {
+            request.setAttribute("errorMessage", "Số điện thoại này đã được đăng ký cho một Nhà cung cấp khác. Vui lòng kiểm tra lại!");
+            showForm(request, response, vendor);
+            return;
+        }
+
         boolean success = false;
         if (id > 0) {
             success = vendorDAO.updateVendor(vendor);
@@ -185,20 +194,6 @@ public class VendorController extends HttpServlet {
         }
     }
 
-    private void deleteVendor(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
-        try {
-            int id = Integer.parseInt(request.getParameter("id"));
-            boolean success = vendorDAO.deleteVendor(id);
-            if (success) {
-                response.sendRedirect(request.getContextPath() + "/vendor?success=" + java.net.URLEncoder.encode("Đã xóa nhà cung cấp!", "UTF-8"));
-            } else {
-                response.sendRedirect(request.getContextPath() + "/vendor?error=" + java.net.URLEncoder.encode("Lỗi khi xóa nhà cung cấp", "UTF-8"));
-            }
-        } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/vendor");
-        }
-    }
     
     private void toggleVendorStatus(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
@@ -215,24 +210,29 @@ public class VendorController extends HttpServlet {
         }
     }
 
-    private String validateVendor(String name, String email, String phone, String address) {
+    private String validateVendor(String name, String contactEmail, String contactPhone, String address) {
         if (name == null || name.isEmpty()) return "Tên Nhà cung cấp là bắt buộc.";
         if (name.length() > 150) return "Tên Nhà cung cấp không được vượt quá 150 ký tự.";
         if (!name.matches("^[\\p{L}0-9 .\\-_()&]+$")) return "Tên chứa ký tự không hợp lệ. Chỉ chấp nhận chữ cái, số và khoảng trắng, ., -, _, (, ), &.";
         
-        if (email != null && !email.isEmpty()) {
-            if (email.length() > 255) return "Email không được vượt quá 255 ký tự.";
-            if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) return "Email không đúng định dạng.";
-        }
-        
-        if (phone != null && !phone.isEmpty()) {
-            if (phone.length() > 50) return "Số điện thoại không được vượt quá 50 ký tự.";
-            if (!phone.matches("^[0-9 .+\\-()]+$")) return "Số điện thoại chứa ký tự không hợp lệ. Chỉ chấp nhận số và dấu (+) (-) (.) ( ).";
-        }
+        if (contactEmail == null || contactEmail.isEmpty())
+            return "Email liên hệ là bắt buộc.";
+        if (contactEmail.length() > 255)
+            return "Email liên hệ không được vượt quá 255 ký tự.";
+        if (!contactEmail.matches("^[A-Za-z0-9+_.-]+@(.+)$"))
+            return "Email liên hệ không hợp lệ.";
 
-        if (address != null && address.length() > 255) {
+        if (contactPhone == null || contactPhone.isEmpty())
+            return "Số điện thoại là bắt buộc.";
+        if (contactPhone.length() > 50)
+            return "Số điện thoại không được vượt quá 50 ký tự.";
+        if (!contactPhone.matches("^[0-9 .+\\-()]+$"))
+            return "Số điện thoại chứa ký tự không hợp lệ.";
+
+        if (address == null || address.isEmpty())
+            return "Địa chỉ là bắt buộc.";
+        if (address.length() > 255)
             return "Địa chỉ không được vượt quá 255 ký tự.";
-        }
 
         return null;
     }

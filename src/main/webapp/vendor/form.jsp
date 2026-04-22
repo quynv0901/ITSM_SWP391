@@ -33,7 +33,7 @@
                     <h5 class="card-title mb-0 fw-bold">Thông tin chung</h5>
                 </div>
                 <div class="card-body p-4">
-                    <form action="${pageContext.request.contextPath}/vendor" method="POST" id="vendorForm">
+                    <form action="${pageContext.request.contextPath}/vendor" method="POST" id="vendorForm" novalidate>
                         <input type="hidden" name="action" value="save">
                         <input type="hidden" name="vendorId" value="${vendor != null ? vendor.vendorId : ''}">
 
@@ -50,31 +50,31 @@
 
                         <div class="row mb-4">
                             <div class="col-md-6">
-                                <label for="contactEmail" class="form-label fw-semibold">Email Liên hệ</label>
+                                <label for="contactEmail" class="form-label fw-semibold">Email Liên hệ <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
                                     <input type="email" class="form-control" id="contactEmail" name="contactEmail" 
-                                           value="${vendor != null ? vendor.contactEmail : ''}"
+                                           value="${vendor != null ? vendor.contactEmail : ''}" required
                                            placeholder="contact@domain.com">
                                 </div>
                             </div>
                             <div class="col-md-6 mt-3 mt-md-0">
-                                <label for="contactPhone" class="form-label fw-semibold">Số điện thoại</label>
+                                <label for="contactPhone" class="form-label fw-semibold">Số điện thoại <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light"><i class="bi bi-telephone"></i></span>
                                     <input type="text" class="form-control" id="contactPhone" name="contactPhone" 
-                                           value="${vendor != null ? vendor.contactPhone : ''}"
+                                           value="${vendor != null ? vendor.contactPhone : ''}" required
                                            placeholder="09xx.xxx.xxx">
                                 </div>
                             </div>
                         </div>
 
                         <div class="mb-4">
-                            <label for="address" class="form-label fw-semibold">Địa chỉ</label>
+                            <label for="address" class="form-label fw-semibold">Địa chỉ <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light"><i class="bi bi-geo-alt"></i></span>
                                 <input type="text" class="form-control" id="address" name="address" 
-                                       value="${vendor != null ? vendor.address : ''}"
+                                       value="${vendor != null ? vendor.address : ''}" required
                                        placeholder="Số nhà, đường, Quận, Thành phố...">
                             </div>
                         </div>
@@ -145,28 +145,34 @@
         }
 
         // Validate email
-        if (email !== '') {
-            if (email.length > 255) {
-                showError('contactEmail', 'Email không vượt quá 255 ký tự.');
-                valid = false;
-            } else if (!/^[A-Za-z0-9+_.-]+@(.+)$/.test(email)) {
-                showError('contactEmail', 'Email không đúng định dạng.');
-                valid = false;
-            }
+        if (email === '') {
+            showError('contactEmail', 'Email liên hệ là bắt buộc.');
+            valid = false;
+        } else if (email.length > 255) {
+            showError('contactEmail', 'Email không vượt quá 255 ký tự.');
+            valid = false;
+        } else if (!/^[A-Za-z0-9+_.-]+@(.+)$/.test(email)) {
+            showError('contactEmail', 'Email không đúng định dạng.');
+            valid = false;
         }
 
         // Validate phone
-        if (phone !== '') {
-            if (phone.length > 50) {
-                showError('contactPhone', 'Số điện thoại không vượt quá 50 ký tự.');
-                valid = false;
-            } else if (!/^[0-9 .+\-()]+$/.test(phone)) {
-                showError('contactPhone', 'Số điện thoại chỉ được chứa số và ký tự (+ - . () ).');
-                valid = false;
-            }
+        if (phone === '') {
+            showError('contactPhone', 'Số điện thoại là bắt buộc.');
+            valid = false;
+        } else if (phone.length > 50) {
+            showError('contactPhone', 'Số điện thoại không vượt quá 50 ký tự.');
+            valid = false;
+        } else if (!/^[0-9 .+\-()]+$/.test(phone)) {
+            showError('contactPhone', 'Số điện thoại chỉ được chứa số và ký tự (+ - . () ).');
+            valid = false;
         }
 
-        if (address.length > 255) {
+        // Validate address
+        if (address === '') {
+            showError('address', 'Địa chỉ là bắt buộc.');
+            valid = false;
+        } else if (address.length > 255) {
             showError('address', 'Địa chỉ không vượt quá 255 ký tự.');
             valid = false;
         }
