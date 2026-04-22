@@ -164,6 +164,24 @@ CREATE TABLE ci_relationship (
         REFERENCES configuration_item(ci_id) ON DELETE CASCADE
 );
 
+-- ==========================================
+-- 9. BẢNG NHẬT KÝ BẢO TRÌ IT (Maintenance Log)
+-- ==========================================
+CREATE TABLE maintenance_log (
+    log_id           INT AUTO_INCREMENT PRIMARY KEY,
+    ci_id            INT NOT NULL,
+    maintenance_type VARCHAR(50) NOT NULL,
+    maintenance_date DATE NOT NULL,
+    downtime_minutes INT DEFAULT 0,
+    description      TEXT,
+    performed_by     INT,
+    status           VARCHAR(20) DEFAULT 'ACTIVE',
+    created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (ci_id) REFERENCES configuration_item(ci_id) ON DELETE CASCADE,
+    FOREIGN KEY (performed_by) REFERENCES `user`(user_id) ON DELETE SET NULL
+);
+
 -- ============================================================
 -- DỮ LIỆU MẪU
 -- ============================================================
@@ -343,3 +361,10 @@ INSERT INTO ci_relationship (parent_ci_id, child_ci_id, relationship_type, descr
 (4,  1, 'CONNECTED_TO', 'Máy chủ Web 01 kết nối qua Switch Tầng 1'),
 (4,  2, 'CONNECTED_TO', 'Máy chủ CSDL kết nối qua Switch Tầng 1'),
 (3,  4, 'CONNECTED_TO', 'Tường lửa kiểm soát lưu lượng vào Switch');
+
+-- ── Nhật ký Bảo trì (Maintenance Log) ─────────────────────────────
+INSERT INTO maintenance_log (ci_id, maintenance_type, maintenance_date, downtime_minutes, description, performed_by, status) VALUES
+(1, 'FIRMWARE_UPDATE', '2026-03-10', 45, 'Cập nhật hệ điều hành Ubuntu lên phiên bản 22.04.3 LTS và khởi động lại dịch vụ.', 6, 'ACTIVE'),
+(2, 'ROUTINE', '2026-03-15', 0, 'Bảo dưỡng định kỳ hàng tháng, kiểm tra tình trạng ổ cứng và dọn dẹp dung lượng trống.', 6, 'ACTIVE'),
+(3, 'SECURITY_PATCH', '2026-04-01', 15, 'Vá lỗ hổng bảo mật khẩn cấp (CVE-2026-1234) trên Tường lửa cứng. Yêu cầu restart nhẹ.', 6, 'ACTIVE'),
+(4, 'HARDWARE_UPGRADE', '2026-04-10', 60, 'Thay thế module quang (SFP) bị lỗi port số 2 và cấu hình lại VLAN.', 6, 'ACTIVE');
