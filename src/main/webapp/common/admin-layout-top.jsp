@@ -135,49 +135,57 @@
                class="menu-item ${pageContext.request.requestURI.contains('/dashboard') ? 'active' : ''}">
                 <i class="bi bi-speedometer2"></i> Bảng điều khiển
             </a>
+
             <li class="menu-header">Hệ thống</li>
             <a href="${pageContext.request.contextPath}/admin/users"
-               class="menu-item ${pageContext.request.requestURI.endsWith('/admin/users.jsp') ? 'active' : ''}">
+               class="menu-item ${pageContext.request.requestURI.contains('/admin/users') ? 'active' : ''}">
                 <i class="bi bi-person-gear"></i> Quản lý người dùng
             </a>
-                        <a href="${pageContext.request.contextPath}/admin/knowledge-base"
-               class="menu-item ${pageContext.request.requestURI.endsWith('/admin/knowledge-base.jsp') ? 'active' : ''}">
+            <a href="${pageContext.request.contextPath}/admin/knowledge-base"
+               class="menu-item ${pageContext.request.requestURI.contains('/admin/knowledge-base') ? 'active' : ''}">
                 <i class="bi bi-journal-text"></i> Quản lý bài viết
             </a>
-            <a href="#" class="menu-item"><i class="bi bi-shield-lock"></i> Danh sách Quyền</a>
+            <a href="#" class="menu-item"><i class="bi bi-shield-lock"></i> Danh sách quyền</a>
             <a href="#" class="menu-item"><i class="bi bi-gear"></i> Cấu hình hệ thống</a>
 
-            <li class="menu-header">Ticket Management</li>
+            <li class="menu-header">Quản lý phiếu</li>
             <a href="${pageContext.request.contextPath}/incident?action=list"
                class="menu-item ${pageContext.request.requestURI.contains('/incident/') ? 'active' : ''}">
-                <i class="bi bi-exclamation-circle"></i> Incident Management
+                <i class="bi bi-exclamation-circle"></i> Quản lý Sự cố
             </a>
             <a href="${pageContext.request.contextPath}/problem?action=list"
                class="menu-item ${pageContext.request.requestURI.contains('/problem/') ? 'active' : ''}">
-                <i class="bi bi-exclamation-octagon"></i> Problem Management
+                <i class="bi bi-exclamation-octagon"></i> Quản lý Vấn đề
             </a>
             <a href="${pageContext.request.contextPath}/known-error?action=list"
                class="menu-item ${pageContext.request.requestURI.contains('/known-error/') ? 'active' : ''}">
-                <i class="bi bi-bug"></i> Known Error Database
+                <i class="bi bi-bug"></i> Lỗi đã biết
             </a>
-
-            <li class="menu-header">Infrastructure</li>
-            <a href="${pageContext.request.contextPath}/configuration-item"
-               class="menu-item ${pageContext.request.requestURI.contains('/configuration-item') ? 'active' : ''}">
-                <i class="bi bi-server"></i> CMDB
-            </a>
-
-            <li class="menu-header">Service</li>
-            <a href="${pageContext.request.contextPath}/admin/service-management"
-               class="menu-item ${pageContext.request.requestURI.contains('/admin/service-management') ? 'active' : ''}">
-                <i class="bi bi-hdd-network"></i> Service Management
-            </a>
-            <li class="menu-header">Ticket Management</li>
             <a href="${pageContext.request.contextPath}/ticket-category"
                class="menu-item ${pageContext.request.requestURI.contains('/ticket-category') ? 'active' : ''}">
-                <i class="bi bi-tags"></i> Ticket Categories
+                <i class="bi bi-tags"></i> Danh mục phiếu
             </a>
-                    </ul>
+
+            <li class="menu-header">Hạ tầng &amp; Tài sản</li>
+            <a href="${pageContext.request.contextPath}/configuration-item"
+               class="menu-item ${pageContext.request.requestURI.contains('/configuration-item') ? 'active' : ''}">
+                <i class="bi bi-server"></i> Mục cấu hình
+            </a>
+            <a href="${pageContext.request.contextPath}/vendor"
+               class="menu-item ${pageContext.request.requestURI.contains('/vendor') ? 'active' : ''}">
+                <i class="bi bi-building"></i> Nhà cung cấp
+            </a>
+            <a href="${pageContext.request.contextPath}/maintenance-log"
+               class="menu-item ${pageContext.request.requestURI.contains('/maintenance-log') ? 'active' : ''}">
+                <i class="bi bi-tools"></i> Nhật ký bảo trì
+            </a>
+
+            <li class="menu-header">Dịch vụ</li>
+            <a href="${pageContext.request.contextPath}/admin/service-management"
+               class="menu-item ${pageContext.request.requestURI.contains('/admin/service-management') ? 'active' : ''}">
+                <i class="bi bi-hdd-network"></i> Quản lý dịch vụ
+            </a>
+                </ul>
     </div>
 
     <div class="admin-main">
