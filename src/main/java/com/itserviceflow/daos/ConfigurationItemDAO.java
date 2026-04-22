@@ -250,6 +250,18 @@ public class ConfigurationItemDAO {
         return list;
     }
 
+    public boolean updateCiStatus(int ciId, String status) {
+        String sql = "UPDATE configuration_item SET status = ? WHERE ci_id = ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setInt(2, ciId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     // ─────────────────────────────────────────────────────────────────
     //  CI RELATIONSHIP methods
     // ─────────────────────────────────────────────────────────────────

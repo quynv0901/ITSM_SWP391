@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
-<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="vi">
 
@@ -193,27 +193,17 @@
                         <i class="bi bi-exclamation-circle"></i> Quản lý Sự cố
                     </a>
 
-                    <!-- Problem, Known Error — trừ End User (1) -->
-                    <c:choose>
-                        <c:when test="${sessionScope.user.roleId != 1}">
-                            <a href="${pageContext.request.contextPath}/problem?action=list"
-                               class="menu-item ${pageContext.request.requestURI.contains('/problem/') ? 'active' : ''}">
-                                <i class="bi bi-exclamation-octagon"></i> Quản lý Vấn đề
-                            </a>
-                            <a href="${pageContext.request.contextPath}/known-error?action=list"
-                               class="menu-item ${pageContext.request.requestURI.contains('/known-error/') ? 'active' : ''}">
-                                <i class="bi bi-bug"></i> Lỗi đã biết
-                            </a>
-                        </c:when>
-                        <c:otherwise>
-                            <a href="${pageContext.request.contextPath}/auth?action=forbid" class="menu-item text-muted">
-                                <i class="bi bi-lock"></i> Quản lý Vấn đề
-                            </a>
-                            <a href="${pageContext.request.contextPath}/auth?action=forbid" class="menu-item text-muted">
-                                <i class="bi bi-lock"></i> Lỗi đã biết (KEDB)
-                            </a>
-                        </c:otherwise>
-                    </c:choose>
+                    <!-- Problem, Known Error — chỉ role != End User (1) -->
+                    <c:if test="${sessionScope.user.roleId != 1}">
+                        <a href="${pageContext.request.contextPath}/problem?action=list"
+                           class="menu-item ${pageContext.request.requestURI.contains('/problem/') ? 'active' : ''}">
+                            <i class="bi bi-exclamation-octagon"></i> Quản lý Vấn đề
+                        </a>
+                        <a href="${pageContext.request.contextPath}/known-error?action=list"
+                           class="menu-item ${pageContext.request.requestURI.contains('/known-error/') ? 'active' : ''}">
+                            <i class="bi bi-bug"></i> Lỗi đã biết
+                        </a>
+                    </c:if>
 
                     <!-- Danh mục phiếu — Admin (10) -->
                     <c:if test="${sessionScope.user.roleId == 10}">
@@ -223,51 +213,26 @@
                         </a>
                     </c:if>
 
-                    <!-- Hạ tầng & Tài sản — trừ End User (1) -->
-                    <li class="menu-header">Hạ tầng &amp; Tài sản</li>
-                    <c:choose>
-                        <c:when test="${sessionScope.user.roleId != 1}">
-                            <a href="${pageContext.request.contextPath}/configuration-item"
-                               class="menu-item ${pageContext.request.requestURI.contains('/configuration-item') ? 'active' : ''}">
-                                <i class="bi bi-server"></i> Mục cấu hình
-                            </a>
-                        </c:when>
-                        <c:otherwise>
-                            <a href="${pageContext.request.contextPath}/auth?action=forbid" class="menu-item text-muted">
-                                <i class="bi bi-lock"></i> Mục cấu hình (CMDB)
-                            </a>
-                        </c:otherwise>
-                    </c:choose>
-
-                    <!-- Nhà cung cấp — Asset Manager (8) và Admin (10) -->
-                    <c:choose>
-                        <c:when test="${sessionScope.user.roleId == 8 || sessionScope.user.roleId == 10}">
+                    <!-- Hạ tầng & Tài sản — chỉ role != End User (1) -->
+                    <c:if test="${sessionScope.user.roleId != 1}">
+                        <li class="menu-header">Hạ tầng &amp; Tài sản</li>
+                        <a href="${pageContext.request.contextPath}/configuration-item"
+                           class="menu-item ${pageContext.request.requestURI.contains('/configuration-item') ? 'active' : ''}">
+                            <i class="bi bi-server"></i> Mục cấu hình
+                        </a>
+                        <c:if test="${sessionScope.user.roleId == 8 || sessionScope.user.roleId == 10}">
                             <a href="${pageContext.request.contextPath}/vendor"
                                class="menu-item ${pageContext.request.requestURI.contains('/vendor') ? 'active' : ''}">
                                 <i class="bi bi-building"></i> Nhà cung cấp
                             </a>
-                        </c:when>
-                        <c:otherwise>
-                            <a href="${pageContext.request.contextPath}/auth?action=forbid" class="menu-item text-muted">
-                                <i class="bi bi-lock"></i> Nhà cung cấp
-                            </a>
-                        </c:otherwise>
-                    </c:choose>
-
-                    <!-- Nhật ký bảo trì — System Engineer (6), Asset Manager (8), Admin (10) -->
-                    <c:choose>
-                        <c:when test="${sessionScope.user.roleId == 6 || sessionScope.user.roleId == 8 || sessionScope.user.roleId == 10}">
+                        </c:if>
+                        <c:if test="${sessionScope.user.roleId == 6 || sessionScope.user.roleId == 8 || sessionScope.user.roleId == 10}">
                             <a href="${pageContext.request.contextPath}/maintenance-log"
                                class="menu-item ${pageContext.request.requestURI.contains('/maintenance-log') ? 'active' : ''}">
                                 <i class="bi bi-tools"></i> Nhật ký bảo trì
                             </a>
-                        </c:when>
-                        <c:otherwise>
-                            <a href="${pageContext.request.contextPath}/auth?action=forbid" class="menu-item text-muted">
-                                <i class="bi bi-lock"></i> Nhật ký bảo trì
-                            </a>
-                        </c:otherwise>
-                    </c:choose>
+                        </c:if>
+                    </c:if>
 
                     <!-- Dịch vụ — tất cả -->
                     <li class="menu-header">Dịch vụ</li>
