@@ -281,7 +281,7 @@
                             <input type="text" id="editServiceCode" name="serviceCode" class="form-control"
                                    maxlength="50"
                                    value="${selectedService.serviceCode}" required>
-                            <div class="form-text">Chỉ được nhập chữ cái, số, dấu gạch ngang (-), gạch dưới (_) và dấu chấm (.). Tối đa 50 ký tự.</div>
+                            <div class="form-text">Tên dịch vụ tối đa 50 ký tự, Mô tả tối đa 3000 kí tự</div>
                         </div>
 
                         <div class="col-md-6">
@@ -412,7 +412,7 @@
         }
 
         if (!/^[A-Za-z0-9._-]+$/.test(serviceCode)) {
-            showFormError(errorElementId, 'Mã dịch vụ không hợp lệ. Chỉ được nhập chữ cái, số, dấu gạch ngang (-), gạch dưới (_) và dấu chấm (.).');
+            showFormError(errorElementId, 'Mã dịch vụ không hợp lệ. Tên dịch vụ tối đa 50 ký tự, Mô tả tối đa 3000 kí tự.');
             return false;
         }
 

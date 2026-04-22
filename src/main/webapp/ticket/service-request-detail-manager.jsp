@@ -283,7 +283,7 @@
                             <input type="hidden" name="ticketId" value="${ticket.ticketId}">
 
                             <div class="mb-3">
-                                <label class="form-label fw-bold">Lý do từ chối</label>
+                                <label class="form-label fw-bold">Chỉnh sửa lý do từ chối</label>
                                 <textarea name="rejectionReason" rows="3" class="form-control" placeholder="Nhập lý do từ chối nếu có..."></textarea>
                             </div>
 
