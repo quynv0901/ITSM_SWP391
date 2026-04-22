@@ -57,6 +57,13 @@ public class ConfigurationItemDAO {
         return list;
     }
 
+    /**
+     * Overload không tham số: lấy toàn bộ CI đang ACTIVE, dùng cho dropdown ở các module khác (Maintenance Log, ...).
+     */
+    public List<ConfigurationItem> getAllConfigurationItems() {
+        return getAllConfigurationItems(null, "ACTIVE");
+    }
+
     public ConfigurationItem getConfigurationItemById(int id) {
         String sql = "SELECT c.*, v.name AS vendor_name FROM configuration_item c LEFT JOIN vendor v ON c.vendor_id = v.vendor_id WHERE c.ci_id = ?";
         try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
