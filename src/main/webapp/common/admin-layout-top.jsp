@@ -147,39 +147,43 @@
             <a href="#" class="menu-item"><i class="bi bi-shield-lock"></i> Danh sách Quyền</a>
             <a href="#" class="menu-item"><i class="bi bi-gear"></i> Cấu hình hệ thống</a>
 
-            <li class="menu-header">Ticket Management</li>
+            <li class="menu-header">Quản lý Ticket</li>
             <a href="${pageContext.request.contextPath}/incident?action=list"
                class="menu-item ${pageContext.request.requestURI.contains('/incident/') ? 'active' : ''}">
-                <i class="bi bi-exclamation-circle"></i> Incident Management
+                <i class="bi bi-exclamation-circle"></i> Quản lý Sự cố
             </a>
             <a href="${pageContext.request.contextPath}/problem?action=list"
                class="menu-item ${pageContext.request.requestURI.contains('/problem/') ? 'active' : ''}">
-                <i class="bi bi-exclamation-octagon"></i> Problem Management
+                <i class="bi bi-exclamation-octagon"></i> Quản lý Vấn đề
             </a>
             <a href="${pageContext.request.contextPath}/known-error?action=list"
                class="menu-item ${pageContext.request.requestURI.contains('/known-error/') ? 'active' : ''}">
-                <i class="bi bi-bug"></i> Known Error Database
+                <i class="bi bi-bug"></i> Cơ sở Lỗi đã biết
             </a>
 
-            <li class="menu-header">Infrastructure</li>
+            <li class="menu-header">Cơ sở hạ tầng</li>
             <a href="${pageContext.request.contextPath}/configuration-item"
                class="menu-item ${pageContext.request.requestURI.contains('/configuration-item') ? 'active' : ''}">
                 <i class="bi bi-server"></i> CMDB
             </a>
 
-            <li class="menu-header">Service</li>
+            <li class="menu-header">Dịch vụ</li>
             <a href="${pageContext.request.contextPath}/admin/service-management"
                class="menu-item ${pageContext.request.requestURI.contains('/admin/service-management') ? 'active' : ''}">
-                <i class="bi bi-hdd-network"></i> Service Management
+                <i class="bi bi-hdd-network"></i> Quản lý Dịch vụ
             </a>
-            <li class="menu-header">Ticket Management</li>
+            <li class="menu-header">Quản lý Ticket</li>
             <a href="${pageContext.request.contextPath}/ticket-category"
                class="menu-item ${pageContext.request.requestURI.contains('/ticket-category') ? 'active' : ''}">
-                <i class="bi bi-tags"></i> Ticket Categories
+                <i class="bi bi-tags"></i> Danh mục Ticket
             </a>
             <a href="${pageContext.request.contextPath}/time-tracking"
                class="menu-item ${pageContext.request.requestURI.contains('/time-tracking') ? 'active' : ''}">
-                <i class="bi bi-clock-history"></i> Time Tracking
+                <i class="bi bi-clock-history"></i> Theo dõi Thời gian
+            </a>
+            <a href="${pageContext.request.contextPath}/workflows"
+               class="menu-item ${pageContext.request.requestURI.contains('/workflows') ? 'active' : ''}">
+                <i class="bi bi-diagram-3"></i> Quản lý Workflow
             </a>
                     </ul>
     </div>
@@ -193,8 +197,10 @@
                     <c:choose>
                         <c:when test="${pageContext.request.requestURI.contains('/dashboard')}">Bảng điều khiển</c:when>
                         <c:when test="${pageContext.request.requestURI.contains('/admin/users')}">Quản lý người dùng</c:when>
-                        <c:when test="${pageContext.request.requestURI.contains('/ticket-category')}">Ticket Categories</c:when>
-                        <c:otherwise>IT Service Management</c:otherwise>
+                        <c:when test="${pageContext.request.requestURI.contains('/ticket-category')}">Danh mục Ticket</c:when>
+                        <c:when test="${pageContext.request.requestURI.contains('/workflows')}">Quản lý Workflow</c:when>
+                        <c:when test="${pageContext.request.requestURI.contains('/time-tracking')}">Theo dõi Thời gian</c:when>
+                        <c:otherwise>Hệ thống Quản lý CNTT</c:otherwise>
                     </c:choose>
                 </span>
             </div>
