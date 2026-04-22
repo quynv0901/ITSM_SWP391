@@ -44,6 +44,7 @@ public class VendorDAO {
                 v.setContactEmail(rs.getString("contact_email"));
                 v.setContactPhone(rs.getString("contact_phone"));
                 v.setAddress(rs.getString("address"));
+                v.setVendorType(rs.getString("vendor_type"));
                 v.setStatus(rs.getString("status"));
                 v.setCreatedAt(rs.getTimestamp("created_at"));
                 v.setUpdatedAt(rs.getTimestamp("updated_at"));
@@ -67,6 +68,7 @@ public class VendorDAO {
                 v.setContactEmail(rs.getString("contact_email"));
                 v.setContactPhone(rs.getString("contact_phone"));
                 v.setAddress(rs.getString("address"));
+                v.setVendorType(rs.getString("vendor_type"));
                 v.setStatus(rs.getString("status"));
                 v.setCreatedAt(rs.getTimestamp("created_at"));
                 v.setUpdatedAt(rs.getTimestamp("updated_at"));
@@ -79,13 +81,14 @@ public class VendorDAO {
     }
 
     public boolean createVendor(Vendor v) {
-        String sql = "INSERT INTO vendor (name, contact_email, contact_phone, address, status) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO vendor (name, contact_email, contact_phone, address, vendor_type, status) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, v.getName());
             ps.setString(2, v.getContactEmail());
             ps.setString(3, v.getContactPhone());
             ps.setString(4, v.getAddress());
-            ps.setString(5, v.getStatus() != null ? v.getStatus() : "ACTIVE");
+            ps.setString(5, v.getVendorType() != null ? v.getVendorType() : "TIER_1");
+            ps.setString(6, v.getStatus() != null ? v.getStatus() : "ACTIVE");
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -94,14 +97,15 @@ public class VendorDAO {
     }
 
     public boolean updateVendor(Vendor v) {
-        String sql = "UPDATE vendor SET name = ?, contact_email = ?, contact_phone = ?, address = ?, status = ? WHERE vendor_id = ?";
+        String sql = "UPDATE vendor SET name = ?, contact_email = ?, contact_phone = ?, address = ?, vendor_type = ?, status = ? WHERE vendor_id = ?";
         try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, v.getName());
             ps.setString(2, v.getContactEmail());
             ps.setString(3, v.getContactPhone());
             ps.setString(4, v.getAddress());
-            ps.setString(5, v.getStatus());
-            ps.setInt(6, v.getVendorId());
+            ps.setString(5, v.getVendorType());
+            ps.setString(6, v.getStatus());
+            ps.setInt(7, v.getVendorId());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -172,5 +176,89 @@ public class VendorDAO {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public int countVendors(String keyword, String status) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM vendor WHERE 1=1");
+        boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
+        boolean hasStatus = status != null && !status.trim().isEmpty();
+
+        if (hasKeyword) {
+            sql.append(" AND (name LIKE ? OR contact_email LIKE ? OR contact_phone LIKE ? OR address LIKE ?)");
+        }
+        if (hasStatus) {
+            sql.append(" AND status = ?");
+        }
+
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            int paramIndex = 1;
+            if (hasKeyword) {
+                String searchParam = "%" + keyword.trim() + "%";
+                ps.setString(paramIndex++, searchParam);
+                ps.setString(paramIndex++, searchParam);
+                ps.setString(paramIndex++, searchParam);
+                ps.setString(paramIndex++, searchParam);
+            }
+            if (hasStatus) {
+                ps.setString(paramIndex++, status.trim());
+            }
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt(1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public List<Vendor> getVendorsPaged(String keyword, String status, int page, int pageSize) {
+        List<Vendor> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT * FROM vendor WHERE 1=1");
+        
+        boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
+        boolean hasStatus = status != null && !status.trim().isEmpty();
+
+        if (hasKeyword) {
+            sql.append(" AND (name LIKE ? OR contact_email LIKE ? OR contact_phone LIKE ? OR address LIKE ?)");
+        }
+        if (hasStatus) {
+            sql.append(" AND status = ?");
+        }
+        sql.append(" ORDER BY vendor_id DESC LIMIT ? OFFSET ?");
+
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            int paramIndex = 1;
+            
+            if (hasKeyword) {
+                String searchParam = "%" + keyword.trim() + "%";
+                ps.setString(paramIndex++, searchParam);
+                ps.setString(paramIndex++, searchParam);
+                ps.setString(paramIndex++, searchParam);
+                ps.setString(paramIndex++, searchParam);
+            }
+            if (hasStatus) {
+                ps.setString(paramIndex++, status.trim());
+            }
+            ps.setInt(paramIndex++, pageSize);
+            ps.setInt(paramIndex, (page - 1) * pageSize);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Vendor v = new Vendor();
+                v.setVendorId(rs.getInt("vendor_id"));
+                v.setName(rs.getString("name"));
+                v.setContactEmail(rs.getString("contact_email"));
+                v.setContactPhone(rs.getString("contact_phone"));
+                v.setAddress(rs.getString("address"));
+                v.setVendorType(rs.getString("vendor_type"));
+                v.setStatus(rs.getString("status"));
+                v.setCreatedAt(rs.getTimestamp("created_at"));
+                v.setUpdatedAt(rs.getTimestamp("updated_at"));
+                list.add(v);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 }

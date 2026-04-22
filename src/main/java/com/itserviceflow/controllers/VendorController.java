@@ -85,10 +85,30 @@ public class VendorController extends HttpServlet {
         String keyword = request.getParameter("keyword");
         String status = request.getParameter("status");
 
-        List<Vendor> vendors = vendorDAO.getAllVendors(keyword, status);
+        int page = 1;
+        int pageSize = 5;
+        try {
+            String pageParam = request.getParameter("page");
+            if (pageParam != null && !pageParam.isEmpty()) {
+                page = Integer.parseInt(pageParam);
+                if (page < 1) page = 1;
+            }
+        } catch (NumberFormatException e) {
+            page = 1;
+        }
+
+        int totalRecords = vendorDAO.countVendors(keyword, status);
+        int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
+        if (page > totalPages && totalPages > 0) page = totalPages;
+
+        List<Vendor> vendors = vendorDAO.getVendorsPaged(keyword, status, page, pageSize);
+
         request.setAttribute("vendors", vendors);
         request.setAttribute("keyword", keyword);
         request.setAttribute("status", status);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalRecords", totalRecords);
 
         request.getRequestDispatcher("/vendor/list.jsp").forward(request, response);
     }
@@ -139,6 +159,7 @@ public class VendorController extends HttpServlet {
         String email = request.getParameter("contactEmail");
         String phone = request.getParameter("contactPhone");
         String address = request.getParameter("address");
+        String vendorType = request.getParameter("vendorType");
         String status = request.getParameter("status");
 
         int id = 0;
@@ -152,6 +173,7 @@ public class VendorController extends HttpServlet {
         vendor.setContactEmail(email != null ? email.trim() : "");
         vendor.setContactPhone(phone != null ? phone.trim() : "");
         vendor.setAddress(address != null ? address.trim() : "");
+        vendor.setVendorType(vendorType != null ? vendorType : "TIER_1");
         vendor.setStatus(status != null ? status : "ACTIVE");
 
         String error = validateVendor(vendor.getName(), vendor.getContactEmail(), vendor.getContactPhone(), vendor.getAddress());

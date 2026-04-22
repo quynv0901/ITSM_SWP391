@@ -8,6 +8,7 @@ public class Vendor {
     private String contactEmail;
     private String contactPhone;
     private String address;
+    private String vendorType;
     private String status;
     private Timestamp createdAt;
     private Timestamp updatedAt;
@@ -29,6 +30,9 @@ public class Vendor {
 
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
+
+    public String getVendorType() { return vendorType; }
+    public void setVendorType(String vendorType) { this.vendorType = vendorType; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
