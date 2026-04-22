@@ -2,6 +2,7 @@ package com.itserviceflow.controllers;
 
 import com.itserviceflow.daos.ServiceRequestDAO;
 import com.itserviceflow.dtos.CategoryOptionDTO;
+import com.itserviceflow.dtos.DepartmentOptionDTO;
 import com.itserviceflow.dtos.ServiceOptionDTO;
 import com.itserviceflow.dtos.ServiceRequestDetailDTO;
 import com.itserviceflow.dtos.ServiceRequestFilterDTO;
@@ -34,6 +35,10 @@ public class ServiceRequestServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html; charset=UTF-8");
+        response.setCharacterEncoding("UTF-8");
+
         User loginUser = getLoggedInUser(request);
         if (loginUser == null) {
             response.sendRedirect(request.getContextPath() + "/login");
@@ -62,13 +67,15 @@ public class ServiceRequestServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html; charset=UTF-8");
+        response.setCharacterEncoding("UTF-8");
+
         User loginUser = getLoggedInUser(request);
         if (loginUser == null) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
-
-        request.setCharacterEncoding("UTF-8");
 
         String action = request.getParameter("action");
         if (action == null || action.trim().isEmpty()) {
@@ -111,7 +118,7 @@ public class ServiceRequestServlet extends HttpServlet {
         } else if (loginUser.getRoleId() == ROLE_MANAGER) {
             requests = serviceRequestDAO.getServiceRequestsByDepartment(loginUser.getDepartmentId(), filter);
         } else {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied.");
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập.");
             return;
         }
 
@@ -142,7 +149,7 @@ public class ServiceRequestServlet extends HttpServlet {
             }
 
             if (!canViewRequest(loginUser, dto)) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied.");
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập.");
                 return;
             }
 
@@ -163,16 +170,11 @@ public class ServiceRequestServlet extends HttpServlet {
             throws ServletException, IOException {
 
         if (loginUser.getRoleId() != ROLE_END_USER) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only end-user can create service requests.");
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Chỉ người dùng cuối mới được tạo yêu cầu dịch vụ.");
             return;
         }
 
-        List<ServiceOptionDTO> serviceOptions = serviceRequestDAO.getActiveServicesForOption();
-        List<CategoryOptionDTO> categoryOptions = serviceRequestDAO.getServiceRequestCategories();
-
-        request.setAttribute("serviceOptions", serviceOptions);
-        request.setAttribute("categoryOptions", categoryOptions);
-
+        loadCreateFormData(request);
         request.getRequestDispatcher("/ticket/create-request.jsp").forward(request, response);
     }
 
@@ -180,7 +182,7 @@ public class ServiceRequestServlet extends HttpServlet {
             throws ServletException, IOException {
 
         if (loginUser.getRoleId() != ROLE_END_USER) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only end-user can create service requests.");
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Chỉ người dùng cuối mới được tạo yêu cầu dịch vụ.");
             return;
         }
 
@@ -189,15 +191,20 @@ public class ServiceRequestServlet extends HttpServlet {
         String description = trim(request.getParameter("description"));
         String priority = trim(request.getParameter("priority"));
         String categoryIdRaw = request.getParameter("categoryId");
+        String departmentIdRaw = request.getParameter("departmentId");
         String justification = trim(request.getParameter("justification"));
 
-        String error = validateCreateInput(serviceIdRaw, title, priority, justification);
+        String error = validateCreateInput(serviceIdRaw, title, priority, justification, departmentIdRaw);
         if (error != null) {
+            loadCreateFormData(request);
             request.setAttribute("errorMessage", error);
             request.setAttribute("title", title);
             request.setAttribute("description", description);
             request.setAttribute("priority", priority);
             request.setAttribute("justification", justification);
+            request.setAttribute("selectedServiceId", serviceIdRaw);
+            request.setAttribute("selectedCategoryId", categoryIdRaw);
+            request.setAttribute("selectedDepartmentId", departmentIdRaw);
             request.getRequestDispatcher("/ticket/create-request.jsp").forward(request, response);
             return;
         }
@@ -211,7 +218,7 @@ public class ServiceRequestServlet extends HttpServlet {
             dto.setPriority(priority);
             dto.setJustification(justification);
             dto.setReportedBy(loginUser.getUserId());
-            dto.setDepartmentId(loginUser.getDepartmentId());
+            dto.setDepartmentId(Integer.parseInt(departmentIdRaw));
 
             if (categoryIdRaw != null && !categoryIdRaw.trim().isEmpty()) {
                 dto.setCategoryId(Integer.parseInt(categoryIdRaw));
@@ -222,12 +229,21 @@ public class ServiceRequestServlet extends HttpServlet {
             if (created) {
                 response.sendRedirect(request.getContextPath() + "/service-request?action=list&msg=created");
             } else {
-                request.setAttribute("errorMessage", "Create failed. Service may be inactive or data is invalid.");
+                loadCreateFormData(request);
+                request.setAttribute("errorMessage", "Tạo yêu cầu thất bại. Dịch vụ có thể đang ngừng hoạt động hoặc dữ liệu không hợp lệ.");
+                request.setAttribute("title", title);
+                request.setAttribute("description", description);
+                request.setAttribute("priority", priority);
+                request.setAttribute("justification", justification);
+                request.setAttribute("selectedServiceId", serviceIdRaw);
+                request.setAttribute("selectedCategoryId", categoryIdRaw);
+                request.setAttribute("selectedDepartmentId", departmentIdRaw);
                 request.getRequestDispatcher("/ticket/create-request.jsp").forward(request, response);
             }
 
         } catch (NumberFormatException e) {
-            request.setAttribute("errorMessage", "Invalid numeric input.");
+            loadCreateFormData(request);
+            request.setAttribute("errorMessage", "Dữ liệu số không hợp lệ.");
             request.getRequestDispatcher("/ticket/create-request.jsp").forward(request, response);
         }
     }
@@ -236,7 +252,7 @@ public class ServiceRequestServlet extends HttpServlet {
             throws IOException {
 
         if (loginUser.getRoleId() != ROLE_END_USER) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only end-user can delete service request.");
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Chỉ người dùng cuối mới được xóa yêu cầu dịch vụ.");
             return;
         }
 
@@ -265,7 +281,7 @@ public class ServiceRequestServlet extends HttpServlet {
             throws IOException {
 
         if (loginUser.getRoleId() != ROLE_END_USER) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only end-user can bulk delete.");
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Chỉ người dùng cuối mới được xóa hàng loạt.");
             return;
         }
 
@@ -293,7 +309,7 @@ public class ServiceRequestServlet extends HttpServlet {
             } else if (loginUser.getRoleId() == ROLE_MANAGER) {
                 cancelled = serviceRequestDAO.cancelServiceRequest(ticketId);
             } else {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied.");
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập.");
                 return;
             }
 
@@ -312,7 +328,7 @@ public class ServiceRequestServlet extends HttpServlet {
             throws IOException {
 
         if (!isRequesterOrAgentOrManager(loginUser)) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied.");
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập.");
             return;
         }
 
@@ -337,6 +353,16 @@ public class ServiceRequestServlet extends HttpServlet {
         } catch (NumberFormatException e) {
             response.sendRedirect(request.getContextPath() + "/service-request?action=list&msg=invalid_id");
         }
+    }
+
+    private void loadCreateFormData(HttpServletRequest request) {
+        List<ServiceOptionDTO> serviceOptions = serviceRequestDAO.getActiveServicesForOption();
+        List<CategoryOptionDTO> categoryOptions = serviceRequestDAO.getServiceRequestCategories();
+        List<DepartmentOptionDTO> departmentOptions = serviceRequestDAO.getActiveDepartments();
+
+        request.setAttribute("serviceOptions", serviceOptions);
+        request.setAttribute("categoryOptions", categoryOptions);
+        request.setAttribute("departmentOptions", departmentOptions);
     }
 
     private boolean canViewRequest(User loginUser, ServiceRequestDetailDTO dto) {
@@ -366,23 +392,27 @@ public class ServiceRequestServlet extends HttpServlet {
         return filter;
     }
 
-    private String validateCreateInput(String serviceIdRaw, String title, String priority, String justification) {
+    private String validateCreateInput(String serviceIdRaw, String title, String priority, String justification, String departmentIdRaw) {
         if (serviceIdRaw == null || serviceIdRaw.trim().isEmpty()) {
-            return "Service is required.";
+            return "Bạn phải chọn dịch vụ.";
+        }
+        if (departmentIdRaw == null || departmentIdRaw.trim().isEmpty()) {
+            return "Bạn phải chọn phòng ban.";
         }
         if (title == null || title.isEmpty()) {
-            return "Title is required.";
+            return "Bạn phải nhập tiêu đề.";
         }
         if (priority == null || priority.isEmpty()) {
-            return "Priority is required.";
+            return "Bạn phải chọn mức độ ưu tiên.";
         }
         if (justification == null || justification.isEmpty()) {
-            return "Justification is required.";
+            return "Bạn phải nhập lý do yêu cầu.";
         }
         try {
             Integer.parseInt(serviceIdRaw);
+            Integer.parseInt(departmentIdRaw);
         } catch (NumberFormatException e) {
-            return "Invalid service id.";
+            return "ID dịch vụ hoặc phòng ban không hợp lệ.";
         }
         return null;
     }

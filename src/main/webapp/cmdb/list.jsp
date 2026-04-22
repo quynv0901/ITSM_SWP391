@@ -53,7 +53,7 @@
         <input type="hidden" name="action" value="list">
         <div class="flex-grow-1">
             <input type="text" name="q" value="${q}" class="form-control"
-                   placeholder="Tìm theo tên, loại hoặc mô tả...">
+                   placeholder="Tìm theo tên, loại, phiên bản hoặc mô tả...">
         </div>
         <div style="width: 200px;">
             <select name="status" class="form-select">

@@ -39,7 +39,7 @@
                     <div class="input-group">
                         <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
                         <input type="text" class="form-control border-start-0" name="keyword" 
-                               placeholder="Tên, Email hoặc Số điện thoại..." value="${keyword}">
+                               placeholder="Tên, Email, SĐT hoặc Địa chỉ..." value="${keyword}">
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -51,7 +51,10 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel"></i> Lọc dữ liệu</button>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel"></i> Lọc dữ liệu</button>
+                        <a href="${pageContext.request.contextPath}/vendor" class="btn btn-outline-secondary w-100"><i class="bi bi-x-circle"></i> Xóa bộ lọc</a>
+                    </div>
                 </div>
             </form>
         </div>
@@ -66,6 +69,7 @@
                         <tr>
                             <th class="ps-4">ID</th>
                             <th>Tên nhà cung cấp</th>
+                            <th>Phân loại</th>
                             <th>Liên hệ</th>
                             <th>Địa chỉ</th>
                             <th>Trạng thái</th>
@@ -76,7 +80,7 @@
                         <c:choose>
                             <c:when test="${empty vendors}">
                                 <tr>
-                                    <td colspan="6" class="text-center py-5 text-muted">
+                                    <td colspan="7" class="text-center py-5 text-muted">
                                         <i class="bi bi-inbox fs-1 d-block mb-3"></i>
                                         Không tìm thấy nhà cung cấp nào.
                                     </td>
@@ -88,6 +92,14 @@
                                         <td class="ps-4 fw-bold text-muted">#${v.vendorId}</td>
                                         <td>
                                             <span class="fw-semibold text-dark">${v.name}</span>
+                                        </td>
+                                        <td>
+                                            <c:choose>
+                                                <c:when test="${v.vendorType == 'TIER_1'}"><span class="badge bg-primary">Đối tác chiến lược</span></c:when>
+                                                <c:when test="${v.vendorType == 'TIER_2'}"><span class="badge bg-info">Đại lý ủy quyền</span></c:when>
+                                                <c:when test="${v.vendorType == 'TIER_3'}"><span class="badge bg-secondary">Nhà bán lẻ</span></c:when>
+                                                <c:otherwise><span class="badge bg-dark">${v.vendorType}</span></c:otherwise>
+                                            </c:choose>
                                         </td>
                                         <td>
                                             <div class="small">
@@ -111,8 +123,12 @@
                                             </c:choose>
                                         </td>
                                         <td class="text-end pe-4">
+                                            <a href="${pageContext.request.contextPath}/vendor?action=detail&id=${v.vendorId}" 
+                                               class="btn btn-sm btn-outline-info" title="Xem chi tiết">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
                                             <a href="${pageContext.request.contextPath}/vendor?action=edit&id=${v.vendorId}" 
-                                               class="btn btn-sm btn-outline-primary" title="Chỉnh sửa">
+                                               class="btn btn-sm btn-outline-primary ms-1" title="Chỉnh sửa">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
                                             <!-- Nút Toggle Active/Inactive -->
@@ -122,12 +138,6 @@
                                                title="Đổi trạng thái">
                                                 <i class="bi bi-arrow-repeat"></i>
                                             </a>
-                                            <a href="${pageContext.request.contextPath}/vendor?action=delete&id=${v.vendorId}" 
-                                               class="btn btn-sm btn-outline-danger ms-1"
-                                               onclick="return confirm('Bạn muốn chuyển nhà cung cấp này vào trạng thái INACTIVE?');"
-                                               title="Xóa/Inactive">
-                                                <i class="bi bi-trash"></i>
-                                            </a>
                                         </td>
                                     </tr>
                                 </c:forEach>
@@ -136,6 +146,58 @@
                     </tbody>
                 </table>
             </div>
+            </div>
+            
+            <%-- Phân trang --%>
+            <c:if test="${totalPages > 1}">
+                <nav aria-label="Phân trang" class="mt-4">
+                    <ul class="pagination justify-content-center">
+
+                        <%-- Nút Trước --%>
+                        <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
+                            <a class="page-link"
+                               href="?keyword=${keyword}&status=${status}&page=${currentPage - 1}">
+                                <i class="bi bi-chevron-left"></i> Trước
+                            </a>
+                        </li>
+
+                        <%-- Số trang --%>
+                        <c:forEach begin="1" end="${totalPages}" var="i">
+                            <c:choose>
+                                <c:when test="${i == currentPage}">
+                                    <li class="page-item active">
+                                        <span class="page-link">${i}</span>
+                                    </li>
+                                </c:when>
+                                <c:when test="${i == 1 || i == totalPages || (i >= currentPage - 2 && i <= currentPage + 2)}">
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                           href="?keyword=${keyword}&status=${status}&page=${i}">${i}</a>
+                                    </li>
+                                </c:when>
+                                <c:when test="${i == currentPage - 3 || i == currentPage + 3}">
+                                    <li class="page-item disabled">
+                                        <span class="page-link">&hellip;</span>
+                                    </li>
+                                </c:when>
+                            </c:choose>
+                        </c:forEach>
+
+                        <%-- Nút Sau --%>
+                        <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
+                            <a class="page-link"
+                               href="?keyword=${keyword}&status=${status}&page=${currentPage + 1}">
+                                Sau <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+
+                    </ul>
+                </nav>
+                <div class="text-center text-muted small mt-2">
+                    Hiển thị trang ${currentPage} / ${totalPages} &mdash; Tổng ${totalRecords} mục
+                </div>
+            </c:if>
+            
         </div>
     </div>
 </div>

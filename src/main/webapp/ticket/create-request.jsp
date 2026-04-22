@@ -1,6 +1,9 @@
-<jsp:include page="/includes/header.jsp" />
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<fmt:requestEncoding value="UTF-8" />
+<fmt:setLocale value="vi_VN" />
+<jsp:include page="/includes/header.jsp" />
 
 <div class="container mt-5 mb-5">
     <div class="row justify-content-center">
@@ -9,16 +12,16 @@
             <nav aria-label="breadcrumb" class="mb-3">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item">
-                        <a href="${pageContext.request.contextPath}/service-catalog">Service Catalog</a>
+                        <a href="${pageContext.request.contextPath}/service-catalog">Danh mục dịch vụ</a>
                     </li>
-                    <li class="breadcrumb-item active">Create Service Request</li>
+                    <li class="breadcrumb-item active" aria-current="page">Tạo yêu cầu dịch vụ</li>
                 </ol>
             </nav>
 
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-success text-white py-3">
                     <h4 class="mb-0">
-                        <i class="bi bi-file-earmark-plus me-2"></i>Create Service Request
+                        <i class="bi bi-file-earmark-plus me-2"></i>Tạo yêu cầu dịch vụ
                     </h4>
                 </div>
 
@@ -27,64 +30,77 @@
                         <div class="alert alert-danger">${errorMessage}</div>
                     </c:if>
 
-                    <form action="${pageContext.request.contextPath}/service-request" method="post">
+                    <form action="${pageContext.request.contextPath}/service-request" method="post" accept-charset="UTF-8">
                         <input type="hidden" name="action" value="create">
 
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Service</label>
+                                <label class="form-label fw-bold">Dịch vụ</label>
                                 <select name="serviceId" class="form-select" required>
-                                    <option value="">Select service</option>
+                                    <option value="">-- Chọn dịch vụ --</option>
                                     <c:forEach var="svc" items="${serviceOptions}">
                                         <option value="${svc.serviceId}"
-                                                ${param.serviceId == svc.serviceId ? 'selected' : ''}>
+                                                <c:if test="${selectedServiceId == svc.serviceId || param.serviceId == svc.serviceId}">selected</c:if>>
                                             ${svc.serviceName} (${svc.serviceCode})
                                         </option>
                                     </c:forEach>
                                 </select>
-                                <div class="form-text">Only active services are shown.</div>
+                                <div class="form-text">Chỉ hiển thị các dịch vụ đang hoạt động.</div>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Category</label>
+                                <label class="form-label fw-bold">Phòng ban</label>
+                                <select name="departmentId" class="form-select" required>
+                                    <option value="">-- Chọn phòng ban --</option>
+                                    <c:forEach var="dept" items="${departmentOptions}">
+                                        <option value="${dept.departmentId}"
+                                                <c:if test="${selectedDepartmentId == dept.departmentId || sessionScope.user.departmentId == dept.departmentId}">selected</c:if>>
+                                            ${dept.departmentName}
+                                            <c:if test="${not empty dept.departmentCode}">(${dept.departmentCode})</c:if>
+                                        </option>
+                                    </c:forEach>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Danh mục</label>
                                 <select name="categoryId" class="form-select">
-                                    <option value="">Select category</option>
+                                    <option value="">-- Chọn danh mục --</option>
                                     <c:forEach var="cat" items="${categoryOptions}">
                                         <option value="${cat.categoryId}"
-                                                ${param.categoryId == cat.categoryId ? 'selected' : ''}>
+                                                <c:if test="${selectedCategoryId == cat.categoryId || param.categoryId == cat.categoryId}">selected</c:if>>
                                             ${cat.categoryName}
                                         </option>
                                     </c:forEach>
                                 </select>
                             </div>
 
-                            <div class="col-12">
-                                <label class="form-label fw-bold">Title</label>
-                                <input type="text" name="title" class="form-control"
-                                       value="${title}" required>
-                            </div>
-
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Priority</label>
+                                <label class="form-label fw-bold">Mức độ ưu tiên</label>
                                 <select name="priority" class="form-select" required>
-                                    <option value="">Select priority</option>
-                                    <option value="LOW" ${priority eq 'LOW' ? 'selected' : ''}>LOW</option>
-                                    <option value="MEDIUM" ${priority eq 'MEDIUM' ? 'selected' : ''}>MEDIUM</option>
-                                    <option value="HIGH" ${priority eq 'HIGH' ? 'selected' : ''}>HIGH</option>
-                                    <option value="CRITICAL" ${priority eq 'CRITICAL' ? 'selected' : ''}>CRITICAL</option>
+                                    <option value="">-- Chọn mức độ ưu tiên --</option>
+                                    <option value="LOW" ${priority eq 'LOW' ? 'selected' : ''}>Thấp</option>
+                                    <option value="MEDIUM" ${priority eq 'MEDIUM' ? 'selected' : ''}>Trung bình</option>
+                                    <option value="HIGH" ${priority eq 'HIGH' ? 'selected' : ''}>Cao</option>
+                                    <option value="CRITICAL" ${priority eq 'CRITICAL' ? 'selected' : ''}>Khẩn cấp</option>
                                 </select>
                             </div>
 
                             <div class="col-12">
-                                <label class="form-label fw-bold">Description</label>
-                                <textarea name="description" class="form-control" rows="4"
-                                          placeholder="Describe what you need...">${description}</textarea>
+                                <label class="form-label fw-bold">Tiêu đề</label>
+                                <input type="text" name="title" class="form-control" value="${title}" required>
                             </div>
 
                             <div class="col-12">
-                                <label class="form-label fw-bold">Justification</label>
+                                <label class="form-label fw-bold">Mô tả</label>
+                                <textarea name="description" class="form-control" rows="4"
+                                          placeholder="Mô tả chi tiết nhu cầu của bạn...">${description}</textarea>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Lý do yêu cầu</label>
                                 <textarea name="justification" class="form-control" rows="4"
-                                          placeholder="Explain why you need this request..." required>${justification}</textarea>
+                                          placeholder="Giải thích lý do bạn cần yêu cầu này..." required>${justification}</textarea>
                             </div>
                         </div>
 
@@ -93,11 +109,11 @@
                         <div class="d-flex justify-content-between">
                             <a href="${pageContext.request.contextPath}/service-request?action=list"
                                class="btn btn-outline-secondary">
-                                <i class="bi bi-arrow-left me-1"></i> Back
+                                <i class="bi bi-arrow-left me-1"></i>Quay lại
                             </a>
 
                             <button type="submit" class="btn btn-success">
-                                <i class="bi bi-send-check me-1"></i> Submit Request
+                                <i class="bi bi-send-check me-1"></i>Gửi yêu cầu
                             </button>
                         </div>
                     </form>

@@ -16,7 +16,10 @@ import java.sql.SQLException;
  *       environment variables instead of hardcoding here.
  */
 public class DBConnection {
+ Viet
     private static final String URL = "jdbc:mysql://localhost:3306/itsm_db";
+
+ main
     private static final String USER = "root";
     private static final String PASSWORD = "123456";
 

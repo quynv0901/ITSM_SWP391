@@ -33,7 +33,7 @@
                     <h5 class="card-title mb-0 fw-bold">Thông tin chung</h5>
                 </div>
                 <div class="card-body p-4">
-                    <form action="${pageContext.request.contextPath}/vendor" method="POST" id="vendorForm">
+                    <form action="${pageContext.request.contextPath}/vendor" method="POST" id="vendorForm" novalidate>
                         <input type="hidden" name="action" value="save">
                         <input type="hidden" name="vendorId" value="${vendor != null ? vendor.vendorId : ''}">
 
@@ -50,41 +50,51 @@
 
                         <div class="row mb-4">
                             <div class="col-md-6">
-                                <label for="contactEmail" class="form-label fw-semibold">Email Liên hệ</label>
+                                <label for="contactEmail" class="form-label fw-semibold">Email Liên hệ <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
                                     <input type="email" class="form-control" id="contactEmail" name="contactEmail" 
-                                           value="${vendor != null ? vendor.contactEmail : ''}"
+                                           value="${vendor != null ? vendor.contactEmail : ''}" required
                                            placeholder="contact@domain.com">
                                 </div>
                             </div>
                             <div class="col-md-6 mt-3 mt-md-0">
-                                <label for="contactPhone" class="form-label fw-semibold">Số điện thoại</label>
+                                <label for="contactPhone" class="form-label fw-semibold">Số điện thoại <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light"><i class="bi bi-telephone"></i></span>
                                     <input type="text" class="form-control" id="contactPhone" name="contactPhone" 
-                                           value="${vendor != null ? vendor.contactPhone : ''}"
+                                           value="${vendor != null ? vendor.contactPhone : ''}" required
                                            placeholder="09xx.xxx.xxx">
                                 </div>
                             </div>
                         </div>
 
                         <div class="mb-4">
-                            <label for="address" class="form-label fw-semibold">Địa chỉ</label>
+                            <label for="address" class="form-label fw-semibold">Địa chỉ <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light"><i class="bi bi-geo-alt"></i></span>
                                 <input type="text" class="form-control" id="address" name="address" 
-                                       value="${vendor != null ? vendor.address : ''}"
+                                       value="${vendor != null ? vendor.address : ''}" required
                                        placeholder="Số nhà, đường, Quận, Thành phố...">
                             </div>
                         </div>
                         
-                        <div class="mb-4">
-                            <label for="status" class="form-label fw-semibold">Trạng thái (Tùy chọn)</label>
-                            <select class="form-select" id="status" name="status">
-                                <option value="ACTIVE" ${vendor != null && vendor.status == 'ACTIVE' ? 'selected' : ''}>Hoạt động (Active)</option>
-                                <option value="INACTIVE" ${vendor != null && vendor.status == 'INACTIVE' ? 'selected' : ''}>Ngừng hoạt động (Inactive)</option>
-                            </select>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="vendorType" class="form-label fw-semibold">Phân loại <span class="text-danger">*</span></label>
+                                <select class="form-select" id="vendorType" name="vendorType" required>
+                                    <option value="TIER_1" ${vendor != null && vendor.vendorType == 'TIER_1' ? 'selected' : ''}>Đối tác chiến lược (Strategic Partner)</option>
+                                    <option value="TIER_2" ${vendor != null && vendor.vendorType == 'TIER_2' ? 'selected' : ''}>Đại lý ủy quyền (Authorized Distributor)</option>
+                                    <option value="TIER_3" ${vendor != null && vendor.vendorType == 'TIER_3' ? 'selected' : ''}>Nhà bán lẻ (Retailer)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="status" class="form-label fw-semibold">Trạng thái (Tùy chọn)</label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="ACTIVE" ${vendor != null && vendor.status == 'ACTIVE' ? 'selected' : ''}>Hoạt động (Active)</option>
+                                    <option value="INACTIVE" ${vendor != null && vendor.status == 'INACTIVE' ? 'selected' : ''}>Ngừng hoạt động (Inactive)</option>
+                                </select>
+                            </div>
                         </div>
 
                     </form>
@@ -109,8 +119,8 @@
                         Danh mục <strong>Nhà cung cấp</strong> hỗ trợ việc theo dõi và quản lý xuất xứ của các thiết bị (Configuration Items - CMDB) và dịch vụ liên quan.
                     </p>
                     <ul class="text-secondary small ps-3 mb-0">
-                        <li class="mb-2"><strong>Tên Nhà cung cấp:</strong> Là trường bắt buộc, điền chính xác tên doanh nghiệp.</li>
-                        <li class="mb-2"><strong>Email / SĐT:</strong> Nên điền thông tin của bộ phận Sale / Hỗ trợ kỹ thuật trực tiếp để tiện bảo hành.</li>
+                        <li class="mb-2"><strong>Tên Nhà cung cấp:</strong> Là trường bắt buộc, tối đa 150 ký tự. Không chứa ký tự đặc biệt lạ.</li>
+                        <li class="mb-2"><strong>Email / SĐT:</strong> Nên điền thông tin của bộ phận Sale / Hỗ trợ kỹ thuật. Vui lòng nhập đúng định dạng.</li>
                         <li><strong>Trạng thái Inactive:</strong> Sẽ ẩn đối tác này khỏi danh sách chọn khi tạo mới Thiết bị trong CMDB.</li>
                     </ul>
                 </div>
@@ -118,5 +128,81 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById('vendorForm').addEventListener('submit', function (e) {
+        let valid = true;
+        
+        // Remove old error texts and red borders if they exist
+        document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        document.querySelectorAll('.text-danger.mt-1').forEach(el => el.remove());
+
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('contactEmail').value.trim();
+        const phone = document.getElementById('contactPhone').value.trim();
+        const address = document.getElementById('address').value.trim();
+
+        // Validate name
+        if (name === '') {
+            showError('name', 'Tên là bắt buộc.');
+            valid = false;
+        } else if (name.length > 150) {
+            showError('name', 'Tên không được vượt quá 150 ký tự.');
+            valid = false;
+        } else if (!/^[\p{L}0-9 .\-_()&]+$/u.test(name)) {
+            showError('name', 'Tên chứa ký tự không hợp lệ.');
+            valid = false;
+        }
+
+        // Validate email
+        if (email === '') {
+            showError('contactEmail', 'Email liên hệ là bắt buộc.');
+            valid = false;
+        } else if (email.length > 255) {
+            showError('contactEmail', 'Email không vượt quá 255 ký tự.');
+            valid = false;
+        } else if (!/^[A-Za-z0-9+_.-]+@(.+)$/.test(email)) {
+            showError('contactEmail', 'Email không đúng định dạng.');
+            valid = false;
+        }
+
+        // Validate phone
+        if (phone === '') {
+            showError('contactPhone', 'Số điện thoại là bắt buộc.');
+            valid = false;
+        } else if (phone.length > 50) {
+            showError('contactPhone', 'Số điện thoại không vượt quá 50 ký tự.');
+            valid = false;
+        } else if (!/^[0-9 .+\-()]+$/.test(phone)) {
+            showError('contactPhone', 'Số điện thoại chỉ được chứa số và ký tự (+ - . () ).');
+            valid = false;
+        }
+
+        // Validate address
+        if (address === '') {
+            showError('address', 'Địa chỉ là bắt buộc.');
+            valid = false;
+        } else if (address.length > 255) {
+            showError('address', 'Địa chỉ không vượt quá 255 ký tự.');
+            valid = false;
+        }
+
+        if (!valid) {
+            e.preventDefault();
+        }
+    });
+
+    function showError(fieldId, message) {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.classList.add('is-invalid');
+            const errDiv = document.createElement('div');
+            errDiv.className = 'text-danger mt-1 small';
+            errDiv.innerText = message;
+            // Append error below input-group
+            field.parentNode.parentNode.appendChild(errDiv);
+        }
+    }
+</script>
 
 <jsp:include page="/includes/footer.jsp" />
