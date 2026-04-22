@@ -81,14 +81,12 @@ CREATE TABLE article (
     content          TEXT         NOT NULL,
     summary          VARCHAR(500),
     category_id      INT          NULL,
-    tag              TEXT,
     status           VARCHAR(20)  NOT NULL,
     author_id        INT          NOT NULL,
     approved_by      INT          NULL,
     approved_at      DATETIME     NULL,
     rejection_reason TEXT,
     published_at     DATETIME     NULL,
-    error_code       VARCHAR(50),
     symptom          TEXT,
     cause            TEXT,
     solution         TEXT,
@@ -102,7 +100,23 @@ CREATE TABLE article (
 );
 
 -- ==========================================
--- 6. BẢNG MỤC CẤU HÌNH (CMDB)
+-- 6. BẢNG QUẢN LÝ NHÀ CUNG CẤP (Vendor) 
+-- Bảng cấp thấp, thường được tham chiếu bởi CMDB/Asset.
+-- ==========================================
+CREATE TABLE vendor (
+    vendor_id     INT AUTO_INCREMENT PRIMARY KEY,
+    name          VARCHAR(150) NOT NULL UNIQUE,
+    contact_email VARCHAR(255),
+    contact_phone VARCHAR(50),
+    address       VARCHAR(255),
+    vendor_type   VARCHAR(50) DEFAULT 'TIER_1',
+    status        VARCHAR(20) DEFAULT 'ACTIVE',
+    created_at    TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
+    updated_at    TIMESTAMP   DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- ==========================================
+-- 7. BẢNG MỤC CẤU HÌNH (CMDB)
 -- managed_by    NULL → tùy chọn (chưa gán người quản lý)
 -- department_id NULL → tùy chọn (chưa gán phòng ban)
 -- ==========================================
@@ -114,15 +128,17 @@ CREATE TABLE configuration_item (
     description   TEXT,
     managed_by    INT NULL,
     department_id INT NULL,
+    vendor_id     INT NOT NULL,
     status        VARCHAR(20) DEFAULT 'ACTIVE',
     created_at    TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
     updated_at    TIMESTAMP   DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (managed_by)    REFERENCES `user`(user_id)           ON DELETE SET NULL,
-    FOREIGN KEY (department_id) REFERENCES department(department_id) ON DELETE SET NULL
+    FOREIGN KEY (department_id) REFERENCES department(department_id) ON DELETE SET NULL,
+    FOREIGN KEY (vendor_id)     REFERENCES vendor(vendor_id)
 );
 
 -- ==========================================
--- 7. BẢNG QUAN HỆ MỤC CẤU HÌNH (CI Relationship)
+-- 8. BẢNG QUAN HỆ MỤC CẤU HÌNH (CI Relationship)
 -- Mô tả sự phụ thuộc / liên kết giữa các CI trong CMDB.
 -- parent_ci_id → CI cung cấp tài nguyên / hạ tầng
 -- child_ci_id  → CI phụ thuộc / sử dụng CI cha
@@ -284,85 +300,46 @@ INSERT INTO article (article_number, article_type, title, content, summary, cate
  '1. Luôn dừng Prometheus bằng: sudo systemctl stop prometheus (gửi SIGTERM để tắt an toàn).\n2. Cấu hình remote_write tới Thanos hoặc VictoriaMetrics để lưu trữ chỉ số bên ngoài.\n3. Bật --storage.tsdb.wal-compression=true để giảm kích thước WAL.'
 );
 
+-- ── Dữ liệu khởi tạo bảng Vendor ─────────────────────────────
+INSERT INTO vendor (name, contact_email, contact_phone, address, vendor_type, status) VALUES
+('Dell Technologies', 'support.vn@dell.com', '1800 545455', 'TP. Hồ Chí Minh, Việt Nam', 'TIER_1', 'ACTIVE'),
+('FPT Information System', 'fis.support@fpt.com', '1900 6600', 'Quận Cầu Giấy, Hà Nội', 'TIER_1', 'ACTIVE'),
+('Cisco Vietnam', 'vietnam_support@cisco.com', '+84 28 3824 0200', 'Quận 1, TP. Hồ Chí Minh', 'TIER_1', 'ACTIVE'),
+('Microsoft Vietnam', 'contact@microsoft.vn', '1900 1234', 'Quận 1, TP. Hồ Chí Minh', 'TIER_2', 'ACTIVE'),
+('Oracle Asia', 'support@oracle.com', '+65 6333 1234', 'Singapore', 'TIER_2', 'ACTIVE'),
+('VMware Corp', 'info@vmware.com', '+1 800 555 1234', 'California, USA', 'TIER_3', 'ACTIVE');
+
+
 -- ── Mục cấu hình (CMDB) — managed_by = 9 (Bùi Tài Sản) ──────
-INSERT INTO configuration_item (name, type, version, description, managed_by, department_id, status) VALUES
--- Máy chủ (ci_id 1–8)
-('Máy chủ Web Ứng dụng 01',        'Hardware', 'Ubuntu 22.04 LTS',     'Máy chủ web chính chạy giao diện hệ thống ITSM',              9, 5, 'ACTIVE'),
-('Máy chủ Web Ứng dụng 02',        'Hardware', 'Ubuntu 22.04 LTS',     'Máy chủ web dự phòng cho tính sẵn sàng cao',                  9, 5, 'ACTIVE'),
-('Máy chủ Cơ sở dữ liệu chính',    'Hardware', 'Ubuntu 20.04 LTS',     'Máy chủ MySQL chính phục vụ nền tảng ITSM',                   9, 5, 'ACTIVE'),
-('Máy chủ Email (Exchange)',        'Hardware', 'Windows Server 2019',  'Máy chủ Microsoft Exchange nội bộ',                           9, 1, 'ACTIVE'),
-('Máy chủ Giám sát',               'Hardware', 'CentOS 8',             'Chạy Prometheus, Grafana và hệ thống cảnh báo',               9, 5, 'ACTIVE'),
-('Máy chủ Phát triển / Kiểm thử',  'Hardware', 'Ubuntu 20.04 LTS',     'Môi trường sandbox dùng chung cho phát triển và QA',          9, 3, 'ACTIVE'),
-('Thiết bị lưu trữ Sao lưu NAS',   'Hardware', 'Synology DSM 7.2',     'Thiết bị NAS 40TB dùng cho sao lưu tự động hàng ngày',        9, 5, 'ACTIVE'),
-('Máy chủ Staging cũ',             'Hardware', 'CentOS 6',             'Máy chủ staging đã ngưng hoạt động, chờ thu hồi phần cứng',  9, 5, 'RETIRED'),
--- Thiết bị mạng (ci_id 9–16)
-('Switch Lõi - Tầng 1',            'Network',  'Cisco IOS 15.2',       'Switch 48 cổng quản lý cho máy trạm tầng 1',                  9, 2, 'ACTIVE'),
-('Switch Lõi - Tầng 2',            'Network',  'Cisco IOS 15.2',       'Switch 48 cổng quản lý cho máy trạm tầng 2',                  9, 2, 'ACTIVE'),
-('Tường lửa (Vành đai)',            'Network',  'Fortinet FortiOS 7.4', 'Tường lửa vành đai bảo vệ DMZ và mạng nội bộ',               9, 2, 'ACTIVE'),
-('Điểm truy cập WiFi - Hội nghị',  'Network',  'Cisco Aironet 2800',   'Access point riêng cho phòng họp',                            9, 2, 'ACTIVE'),
-('Điểm truy cập WiFi - Văn phòng', 'Network',  'Cisco Aironet 2800',   'Access point phủ sóng toàn bộ khu vực văn phòng mở',         9, 2, 'ACTIVE'),
-('Cổng VPN',                       'Network',  'Cisco ASA 5506-X',     'Cổng VPN công ty hỗ trợ Cisco AnyConnect',                    9, 2, 'ACTIVE'),
-('Router Khu A',                   'Network',  'Cisco IOS V2',         'Thiết bị định tuyến chính cho khu vực văn phòng A',           9, 2, 'ACTIVE'),
-('Modem ADSL cũ',                  'Network',  'TP-Link TD-8817',      'Kết nối internet dự phòng cũ, không còn là kết nối chính',   9, 2, 'INACTIVE'),
--- Phần mềm / Dịch vụ (ci_id 17–26)
-('Ứng dụng Web ITSM',              'Software', 'v2.4.1',               'Nền tảng Quản lý Dịch vụ IT (hệ thống này)',                  9, 1, 'ACTIVE'),
-('Jira Software',                  'Software', 'v9.12.0',              'Theo dõi dự án và vấn đề cho đội phát triển',                 9, 3, 'ACTIVE'),
-('MySQL Database (Chính)',          'Software', '8.0.36',               'Cơ sở dữ liệu quan hệ chính cho ứng dụng ITSM',               9, 5, 'ACTIVE'),
-('MySQL Database (Bản sao đọc)',    'Software', '8.0.36',               'Bản sao đọc phục vụ báo cáo và dự phòng',                    9, 5, 'ACTIVE'),
-('Prometheus',                     'Software', 'v2.51.0',              'Hệ thống thu thập chỉ số và giám sát chuỗi thời gian',        9, 5, 'ACTIVE'),
-('Grafana',                        'Software', 'v10.4.0',              'Giao diện trực quan hóa chỉ số từ Prometheus',                9, 5, 'ACTIVE'),
-('Nginx (Reverse Proxy)',           'Software', 'v1.26.0',              'Reverse proxy và kết thúc SSL cho các dịch vụ web',           9, 5, 'ACTIVE'),
-('GitLab CE',                      'Software', 'v16.11',               'Máy chủ Git nội bộ và pipeline CI/CD',                       9, 3, 'ACTIVE'),
-('Cisco AnyConnect Client',        'Software', 'v4.10.08029',          'Phần mềm VPN của công ty cài trên máy tính nhân viên',        9, 1, 'ACTIVE'),
-('Microsoft 365 (Exchange Online)', 'Service', 'N/A',                  'Bộ công cụ email và cộng tác đám mây cho toàn bộ nhân viên',  9, 1, 'ACTIVE'),
--- Đã ngưng / Loại bỏ (ci_id 27–29)
-('Máy in Văn phòng cũ',            'Hardware', 'HP LaserJet 2005',     'Máy in đã ngưng hoạt động, không còn được sử dụng',          9, 1, 'INACTIVE'),
-('Cổng VPN cũ (OpenVPN)',           'Software', 'v2.4.9',               'Đã được thay thế bởi Cisco AnyConnect, không còn dùng',      9, 2, 'RETIRED'),
-('Domain Controller 2008 R2',      'Hardware', 'Windows Server 2008 R2','Máy chủ domain đã ngưng hoạt động, đã tháo phần cứng',      9, 5, 'RETIRED');
+INSERT INTO configuration_item (name, type, version, description, managed_by, department_id, vendor_id, status) VALUES
+-- Máy chủ & Tường lửa (ci_id 1–3)
+('Máy chủ Web Ứng dụng 01',        'Hardware', 'Ubuntu 22.04 LTS',     'Máy chủ web chính chạy hệ thống ITSM',  9, 5, 1, 'ACTIVE'),
+('Máy chủ Cơ sở dữ liệu chính',    'Hardware', 'Ubuntu 20.04 LTS',     'Máy chủ MySQL chính',                   9, 5, 5, 'ACTIVE'),
+('Tường lửa (Vành đai)',            'Hardware', 'Fortinet FortiOS',     'Tường lửa bảo vệ hệ thống',             9, 2, 3, 'ACTIVE'),
+-- Thiết bị mạng (ci_id 4–5)
+('Switch Lõi - Tầng 1',            'Network',  'Cisco IOS 15.2',       'Switch 48 cổng quản lý',                9, 2, 3, 'ACTIVE'),
+('Điểm truy cập WiFi - Văn phòng', 'Network',  'Cisco Aironet 2800',   'Access point phủ sóng',                 9, 2, 3, 'ACTIVE'),
+-- Phần mềm / Dịch vụ (ci_id 6–8)
+('Ứng dụng Web ITSM',              'Software', 'v2.4.1',               'Nền tảng quản lý',                      9, 1, 2, 'ACTIVE'),
+('MySQL Database (Chính)',          'Software', '8.0.36',               'Cơ sở dữ liệu chính',                   9, 5, 5, 'ACTIVE'),
+('Microsoft 365 (Exchange)',        'Service',  'N/A',                  'Dịch vụ mail đám mây',                  9, 1, 4, 'ACTIVE'),
+-- Đã ngưng / Loại bỏ (ci_id 9)
+('Cổng VPN cũ (OpenVPN)',           'Software', 'v2.4.9',               'Đã được thay thế',                      9, 2, 6, 'RETIRED');
 
 -- ── Quan hệ CI (ci_relationship) ─────────────────────────────
 -- Mô tả sơ đồ phụ thuộc hạ tầng thực tế
--- Quy ước: parent_ci_id = CI cung cấp, child_ci_id = CI phụ thuộc
-
 INSERT INTO ci_relationship (parent_ci_id, child_ci_id, relationship_type, description) VALUES
 
 -- Ứng dụng Web chạy TRÊN máy chủ vật lý
-(1,  17, 'RUNS_ON',      'Ứng dụng Web ITSM chạy trên Máy chủ Web 01'),
-(2,  17, 'RUNS_ON',      'Ứng dụng Web ITSM cũng chạy trên Máy chủ Web 02 (HA)'),
+(1,  6, 'RUNS_ON',      'Ứng dụng Web ITSM chạy trên Máy chủ Web 01'),
+
+-- Database chính và phần mềm
+(2,  7, 'RUNS_ON',      'MySQL Database chạy trên Máy chủ CSDL vật lý'),
 
 -- Web app PHỤ THUỘC vào database
-(19, 17, 'DEPENDS_ON',   'Ứng dụng ITSM phụ thuộc vào MySQL Database chính'),
-
--- Database chính và bản sao đọc
-(3,  19, 'RUNS_ON',      'MySQL Database (Chính) chạy trên Máy chủ CSDL vật lý'),
-(19, 20, 'CONNECTED_TO', 'Bản sao đọc được đồng bộ từ MySQL chính qua replication'),
-
--- Nginx là cổng vào trước khi đến ứng dụng
-(23, 17, 'DEPENDS_ON',   'Nginx làm reverse proxy cho Ứng dụng Web ITSM'),
-
--- Hệ thống giám sát chạy trên máy chủ giám sát
-(5,  21, 'RUNS_ON',      'Prometheus chạy trên Máy chủ Giám sát'),
-(5,  22, 'RUNS_ON',      'Grafana chạy trên Máy chủ Giám sát'),
-(21, 22, 'DEPENDS_ON',   'Grafana phụ thuộc vào Prometheus để lấy dữ liệu chỉ số'),
+(7,  6, 'DEPENDS_ON',   'Ứng dụng ITSM phụ thuộc vào MySQL Database'),
 
 -- Mạng: máy chủ và thiết bị kết nối đến switch
-(9,  1,  'CONNECTED_TO', 'Máy chủ Web 01 kết nối qua Switch Tầng 1'),
-(9,  2,  'CONNECTED_TO', 'Máy chủ Web 02 kết nối qua Switch Tầng 1'),
-(9,  3,  'CONNECTED_TO', 'Máy chủ CSDL kết nối qua Switch Tầng 1'),
-(10, 4,  'CONNECTED_TO', 'Máy chủ Email kết nối qua Switch Tầng 2'),
-(10, 5,  'CONNECTED_TO', 'Máy chủ Giám sát kết nối qua Switch Tầng 2'),
-
--- Tường lửa bảo vệ toàn bộ mạng nội bộ
-(11, 9,  'CONNECTED_TO', 'Tường lửa kiểm soát lưu lượng vào Switch Tầng 1'),
-(11, 10, 'CONNECTED_TO', 'Tường lửa kiểm soát lưu lượng vào Switch Tầng 2'),
-(15, 11, 'CONNECTED_TO', 'Router Khu A kết nối ra ngoài qua Tường lửa'),
-
--- VPN và client
-(14, 25, 'DEPENDS_ON',   'Cisco AnyConnect Client phụ thuộc vào Cổng VPN để hoạt động'),
-
--- NAS sao lưu cho các máy chủ quan trọng
-(7,  1,  'PART_OF',      'NAS Sao lưu lưu trữ backup định kỳ từ Máy chủ Web 01'),
-(7,  3,  'PART_OF',      'NAS Sao lưu lưu trữ backup định kỳ từ Máy chủ CSDL chính'),
-
--- GitLab chạy trên máy chủ phát triển
-(6,  24, 'RUNS_ON',      'GitLab CE chạy trên Máy chủ Phát triển / Kiểm thử');
+(4,  1, 'CONNECTED_TO', 'Máy chủ Web 01 kết nối qua Switch Tầng 1'),
+(4,  2, 'CONNECTED_TO', 'Máy chủ CSDL kết nối qua Switch Tầng 1'),
+(3,  4, 'CONNECTED_TO', 'Tường lửa kiểm soát lưu lượng vào Switch');

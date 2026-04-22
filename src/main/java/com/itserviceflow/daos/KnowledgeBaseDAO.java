@@ -50,13 +50,28 @@ public class KnowledgeBaseDAO {
 
         return a;
     }
+    public int countNewArticles() {
+        String sql = "SELECT COUNT(*) FROM article "
+                + "WHERE article_type = 'KNOWLEDGE_BASE' "
+                + "AND status = 'PUBLISHED' "
+                + "AND updated_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            ResultSet rs = st.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
 
     public List<Article> listArticles(String keyword, String status, String type, int offset, int limit) {
         List<Article> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder("SELECT * FROM article WHERE article_type = 'KNOWLEDGE_BASE'");
 
         if (keyword != null && !keyword.isEmpty()) {
-            sql.append(" AND (title LIKE ? OR article_number LIKE ?)");
+            sql.append(" AND (title LIKE ? OR article_id LIKE ?)");
         }
         if (status != null && !status.isEmpty() && !"ALL".equals(status)) {
             sql.append(" AND status = ?");

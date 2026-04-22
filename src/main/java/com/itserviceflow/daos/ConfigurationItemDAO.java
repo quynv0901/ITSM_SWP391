@@ -17,7 +17,7 @@ public class ConfigurationItemDAO {
         boolean hasStatus = status != null && !status.trim().isEmpty();
 
         if (hasKeyword) {
-            sql.append(" AND (name LIKE ? OR type LIKE ? OR description LIKE ?)");
+            sql.append(" AND (name LIKE ? OR type LIKE ? OR description LIKE ? OR version LIKE ?)");
         }
         if (hasStatus) {
             sql.append(" AND status = ?");
@@ -28,6 +28,7 @@ public class ConfigurationItemDAO {
             
             if (hasKeyword) {
                 String searchParam = "%" + keyword.trim() + "%";
+                ps.setString(paramIndex++, searchParam);
                 ps.setString(paramIndex++, searchParam);
                 ps.setString(paramIndex++, searchParam);
                 ps.setString(paramIndex++, searchParam);
@@ -57,7 +58,7 @@ public class ConfigurationItemDAO {
     }
 
     public ConfigurationItem getConfigurationItemById(int id) {
-        String sql = "SELECT * FROM configuration_item WHERE ci_id = ?";
+        String sql = "SELECT c.*, v.name AS vendor_name FROM configuration_item c LEFT JOIN vendor v ON c.vendor_id = v.vendor_id WHERE c.ci_id = ?";
         try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
@@ -71,6 +72,10 @@ public class ConfigurationItemDAO {
                 ci.setStatus(rs.getString("status"));
                 ci.setCreatedAt(rs.getTimestamp("created_at"));
                 ci.setUpdatedAt(rs.getTimestamp("updated_at"));
+                if (rs.getObject("vendor_id") != null) {
+                    ci.setVendorId(rs.getInt("vendor_id"));
+                }
+                ci.setVendorName(rs.getString("vendor_name"));
                 return ci;
             }
         } catch (SQLException e) {
@@ -80,13 +85,18 @@ public class ConfigurationItemDAO {
     }
 
     public boolean createConfigurationItem(ConfigurationItem ci) {
-        String sql = "INSERT INTO configuration_item (name, type, version, description, status) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO configuration_item (name, type, version, description, status, vendor_id) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, ci.getName());
             ps.setString(2, ci.getType());
             ps.setString(3, ci.getVersion());
             ps.setString(4, ci.getDescription());
             ps.setString(5, ci.getStatus() != null ? ci.getStatus() : "ACTIVE");
+            if (ci.getVendorId() != null && ci.getVendorId() > 0) {
+                ps.setInt(6, ci.getVendorId());
+            } else {
+                ps.setNull(6, Types.INTEGER);
+            }
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -95,14 +105,19 @@ public class ConfigurationItemDAO {
     }
 
     public boolean updateConfigurationItem(ConfigurationItem ci) {
-        String sql = "UPDATE configuration_item SET name = ?, type = ?, version = ?, description = ?, status = ? WHERE ci_id = ?";
+        String sql = "UPDATE configuration_item SET name = ?, type = ?, version = ?, description = ?, status = ?, vendor_id = ? WHERE ci_id = ?";
         try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, ci.getName());
             ps.setString(2, ci.getType());
             ps.setString(3, ci.getVersion());
             ps.setString(4, ci.getDescription());
             ps.setString(5, ci.getStatus());
-            ps.setInt(6, ci.getCiId());
+            if (ci.getVendorId() != null && ci.getVendorId() > 0) {
+                ps.setInt(6, ci.getVendorId());
+            } else {
+                ps.setNull(6, Types.INTEGER);
+            }
+            ps.setInt(7, ci.getCiId());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -151,14 +166,14 @@ public class ConfigurationItemDAO {
         StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM configuration_item WHERE 1=1");
         boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
         boolean hasStatus  = status  != null && !status.trim().isEmpty();
-        if (hasKeyword) sql.append(" AND (name LIKE ? OR type LIKE ? OR description LIKE ?)");
+        if (hasKeyword) sql.append(" AND (name LIKE ? OR type LIKE ? OR description LIKE ? OR version LIKE ?)");
         if (hasStatus)  sql.append(" AND status = ?");
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
             int idx = 1;
             if (hasKeyword) {
                 String p = "%" + keyword.trim() + "%";
-                ps.setString(idx++, p); ps.setString(idx++, p); ps.setString(idx++, p);
+                ps.setString(idx++, p); ps.setString(idx++, p); ps.setString(idx++, p); ps.setString(idx++, p);
             }
             if (hasStatus) ps.setString(idx, status.trim());
             ResultSet rs = ps.executeQuery();
@@ -173,7 +188,7 @@ public class ConfigurationItemDAO {
         StringBuilder sql = new StringBuilder("SELECT * FROM configuration_item WHERE 1=1");
         boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
         boolean hasStatus  = status  != null && !status.trim().isEmpty();
-        if (hasKeyword) sql.append(" AND (name LIKE ? OR type LIKE ? OR description LIKE ?)");
+        if (hasKeyword) sql.append(" AND (name LIKE ? OR type LIKE ? OR description LIKE ? OR version LIKE ?)");
         if (hasStatus)  sql.append(" AND status = ?");
         sql.append(" ORDER BY ci_id ASC LIMIT ? OFFSET ?");
         try (Connection conn = getConnection();
@@ -181,7 +196,7 @@ public class ConfigurationItemDAO {
             int idx = 1;
             if (hasKeyword) {
                 String p = "%" + keyword.trim() + "%";
-                ps.setString(idx++, p); ps.setString(idx++, p); ps.setString(idx++, p);
+                ps.setString(idx++, p); ps.setString(idx++, p); ps.setString(idx++, p); ps.setString(idx++, p);
             }
             if (hasStatus) ps.setString(idx++, status.trim());
             ps.setInt(idx++, pageSize);
@@ -202,6 +217,32 @@ public class ConfigurationItemDAO {
         } catch (SQLException e) { e.printStackTrace(); }
         return list;
     }
+
+    public List<ConfigurationItem> getCIsByVendorId(int vendorId) {
+        List<ConfigurationItem> list = new ArrayList<>();
+        String sql = "SELECT * FROM configuration_item WHERE vendor_id = ? ORDER BY type, name";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, vendorId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ConfigurationItem ci = new ConfigurationItem();
+                    ci.setCiId(rs.getInt("ci_id"));
+                    ci.setName(rs.getString("name"));
+                    ci.setType(rs.getString("type"));
+                    ci.setVersion(rs.getString("version"));
+                    ci.setDescription(rs.getString("description"));
+                    ci.setStatus(rs.getString("status"));
+                    ci.setVendorId(vendorId);
+                    ci.setCreatedAt(rs.getTimestamp("created_at"));
+                    ci.setUpdatedAt(rs.getTimestamp("updated_at"));
+                    list.add(ci);
+                }
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return list;
+    }
+
     // ─────────────────────────────────────────────────────────────────
     //  CI RELATIONSHIP methods
     // ─────────────────────────────────────────────────────────────────
