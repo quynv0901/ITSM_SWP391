@@ -5,6 +5,7 @@ import com.itserviceflow.dtos.ServiceRequestDetailDTO;
 import com.itserviceflow.dtos.ServiceRequestFilterDTO;
 import com.itserviceflow.dtos.ServiceRequestListDTO;
 import com.itserviceflow.dtos.CategoryOptionDTO;
+import com.itserviceflow.dtos.DepartmentOptionDTO;
 import com.itserviceflow.dtos.ServiceOptionDTO;
 import com.itserviceflow.dtos.UserOptionDTO;
 import com.itserviceflow.utils.DBConnection;
@@ -359,6 +360,14 @@ public class ServiceRequestDAO {
         dto.setCategoryName(rs.getString("category_name"));
         dto.setCategoryCode(rs.getString("category_code"));
 
+        return dto;
+    }
+
+    private DepartmentOptionDTO mapDepartmentOptionDTO(ResultSet rs) throws SQLException {
+        DepartmentOptionDTO dto = new DepartmentOptionDTO();
+        dto.setDepartmentId(rs.getInt("department_id"));
+        dto.setDepartmentName(rs.getString("department_name"));
+        dto.setDepartmentCode(rs.getString("department_code"));
         return dto;
     }
 
@@ -825,6 +834,25 @@ public class ServiceRequestDAO {
         }
 
         return categories;
+    }
+
+    public List<DepartmentOptionDTO> getActiveDepartments() {
+        List<DepartmentOptionDTO> departments = new ArrayList<>();
+
+        String sql = "SELECT department_id, department_name, department_code "
+                + "FROM department "
+                + "WHERE status = 'ACTIVE' "
+                + "ORDER BY department_name ASC";
+
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                departments.add(mapDepartmentOptionDTO(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return departments;
     }
 
     public List<UserOptionDTO> getSupportAgents() {

@@ -30,6 +30,10 @@ public class ServiceRequestManageServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html; charset=UTF-8");
+        response.setCharacterEncoding("UTF-8");
+
         User loginUser = getLoggedInUser(request);
         if (loginUser == null) {
             response.sendRedirect(request.getContextPath() + "/login");
@@ -57,13 +61,15 @@ public class ServiceRequestManageServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html; charset=UTF-8");
+        response.setCharacterEncoding("UTF-8");
+
         User loginUser = getLoggedInUser(request);
         if (loginUser == null) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
-
-        request.setCharacterEncoding("UTF-8");
 
         String action = request.getParameter("action");
         if (action == null || action.trim().isEmpty()) {
@@ -103,7 +109,7 @@ public class ServiceRequestManageServlet extends HttpServlet {
             throws ServletException, IOException {
 
         if (!isSupportOrManager(loginUser)) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied.");
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập.");
             return;
         }
 
@@ -123,7 +129,7 @@ public class ServiceRequestManageServlet extends HttpServlet {
             }
 
             if (!canManage(loginUser, dto)) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied.");
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập.");
                 return;
             }
 
@@ -148,7 +154,7 @@ public class ServiceRequestManageServlet extends HttpServlet {
             throws IOException {
 
         if (!isSupportOrManager(loginUser)) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied.");
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập.");
             return;
         }
 
@@ -169,7 +175,12 @@ public class ServiceRequestManageServlet extends HttpServlet {
             ServiceRequestDetailDTO current = serviceRequestDAO.getServiceRequestById(ticketId);
 
             if (current == null || !canManage(loginUser, current)) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied.");
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập.");
+                return;
+            }
+
+            if (loginUser.getRoleId() == ROLE_SUPPORT_AGENT && !isValidAgentStatus(status)) {
+                response.sendRedirect(request.getContextPath() + "/service-request-manage?action=edit&id=" + ticketId + "&msg=invalid_status");
                 return;
             }
 
@@ -201,7 +212,7 @@ public class ServiceRequestManageServlet extends HttpServlet {
             throws IOException {
 
         if (loginUser.getRoleId() != ROLE_MANAGER) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only manager can assign service request.");
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Chỉ quản lý mới được phân công yêu cầu dịch vụ.");
             return;
         }
 
@@ -220,7 +231,7 @@ public class ServiceRequestManageServlet extends HttpServlet {
 
             ServiceRequestDetailDTO current = serviceRequestDAO.getServiceRequestById(ticketId);
             if (current == null || !canManage(loginUser, current)) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied.");
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập.");
                 return;
             }
 
@@ -241,7 +252,7 @@ public class ServiceRequestManageServlet extends HttpServlet {
             throws IOException {
 
         if (loginUser.getRoleId() != ROLE_MANAGER) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only manager can approve.");
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Chỉ quản lý mới được duyệt.");
             return;
         }
 
@@ -256,7 +267,7 @@ public class ServiceRequestManageServlet extends HttpServlet {
             ServiceRequestDetailDTO current = serviceRequestDAO.getServiceRequestById(ticketId);
 
             if (current == null || !canManage(loginUser, current)) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied.");
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập.");
                 return;
             }
 
@@ -277,7 +288,7 @@ public class ServiceRequestManageServlet extends HttpServlet {
             throws IOException {
 
         if (loginUser.getRoleId() != ROLE_MANAGER) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only manager can reject.");
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Chỉ quản lý mới được từ chối.");
             return;
         }
 
@@ -294,7 +305,7 @@ public class ServiceRequestManageServlet extends HttpServlet {
             ServiceRequestDetailDTO current = serviceRequestDAO.getServiceRequestById(ticketId);
 
             if (current == null || !canManage(loginUser, current)) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied.");
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập.");
                 return;
             }
 
@@ -315,7 +326,7 @@ public class ServiceRequestManageServlet extends HttpServlet {
             throws IOException {
 
         if (loginUser.getRoleId() != ROLE_MANAGER) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only manager can bulk approve.");
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Chỉ quản lý mới được duyệt hàng loạt.");
             return;
         }
 
@@ -329,7 +340,7 @@ public class ServiceRequestManageServlet extends HttpServlet {
             throws IOException {
 
         if (loginUser.getRoleId() != ROLE_MANAGER) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only manager can bulk reject.");
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Chỉ quản lý mới được từ chối hàng loạt.");
             return;
         }
 
@@ -345,7 +356,7 @@ public class ServiceRequestManageServlet extends HttpServlet {
             throws IOException {
 
         if (!isSupportOrManager(loginUser)) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied.");
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập.");
             return;
         }
 
@@ -362,7 +373,7 @@ public class ServiceRequestManageServlet extends HttpServlet {
             ServiceRequestDetailDTO current = serviceRequestDAO.getServiceRequestById(ticketId);
 
             if (current == null || !canManage(loginUser, current)) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied.");
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập.");
                 return;
             }
 
@@ -387,11 +398,18 @@ public class ServiceRequestManageServlet extends HttpServlet {
         if (loginUser.getRoleId() == ROLE_MANAGER) {
             return true;
         }
+
         if (loginUser.getRoleId() == ROLE_SUPPORT_AGENT) {
-            return dto.getAssignedTo() != null
-                    && dto.getAssignedTo().equals(loginUser.getUserId());
+            return true;
         }
+
         return false;
+    }
+
+    private boolean isValidAgentStatus(String status) {
+        return "IN_PROGRESS".equals(status)
+                || "PENDING".equals(status)
+                || "RESOLVED".equals(status);
     }
 
     private String trim(String s) {
