@@ -109,6 +109,7 @@ CREATE TABLE vendor (
     contact_email VARCHAR(255),
     contact_phone VARCHAR(50),
     address       VARCHAR(255),
+    vendor_type   VARCHAR(50) DEFAULT 'TIER_1',
     status        VARCHAR(20) DEFAULT 'ACTIVE',
     created_at    TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
     updated_at    TIMESTAMP   DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -300,27 +301,30 @@ INSERT INTO article (article_number, article_type, title, content, summary, cate
 );
 
 -- ── Dữ liệu khởi tạo bảng Vendor ─────────────────────────────
-INSERT INTO vendor (name, contact_email, contact_phone, address, status) VALUES
-('Dell Technologies', 'support.vn@dell.com', '1800 545455', 'TP. Hồ Chí Minh, Việt Nam', 'ACTIVE'),
-('FPT Information System', 'fis.support@fpt.com', '1900 6600', 'Quận Cầu Giấy, Hà Nội', 'ACTIVE'),
-('Cisco Vietnam', 'vietnam_support@cisco.com', '+84 28 3824 0200', 'Quận 1, TP. Hồ Chí Minh', 'ACTIVE');
+INSERT INTO vendor (name, contact_email, contact_phone, address, vendor_type, status) VALUES
+('Dell Technologies', 'support.vn@dell.com', '1800 545455', 'TP. Hồ Chí Minh, Việt Nam', 'TIER_1', 'ACTIVE'),
+('FPT Information System', 'fis.support@fpt.com', '1900 6600', 'Quận Cầu Giấy, Hà Nội', 'TIER_1', 'ACTIVE'),
+('Cisco Vietnam', 'vietnam_support@cisco.com', '+84 28 3824 0200', 'Quận 1, TP. Hồ Chí Minh', 'TIER_1', 'ACTIVE'),
+('Microsoft Vietnam', 'contact@microsoft.vn', '1900 1234', 'Quận 1, TP. Hồ Chí Minh', 'TIER_2', 'ACTIVE'),
+('Oracle Asia', 'support@oracle.com', '+65 6333 1234', 'Singapore', 'TIER_2', 'ACTIVE'),
+('VMware Corp', 'info@vmware.com', '+1 800 555 1234', 'California, USA', 'TIER_3', 'ACTIVE');
 
 
 -- ── Mục cấu hình (CMDB) — managed_by = 9 (Bùi Tài Sản) ──────
 INSERT INTO configuration_item (name, type, version, description, managed_by, department_id, vendor_id, status) VALUES
 -- Máy chủ & Tường lửa (ci_id 1–3)
 ('Máy chủ Web Ứng dụng 01',        'Hardware', 'Ubuntu 22.04 LTS',     'Máy chủ web chính chạy hệ thống ITSM',  9, 5, 1, 'ACTIVE'),
-('Máy chủ Cơ sở dữ liệu chính',    'Hardware', 'Ubuntu 20.04 LTS',     'Máy chủ MySQL chính',                   9, 5, 1, 'ACTIVE'),
+('Máy chủ Cơ sở dữ liệu chính',    'Hardware', 'Ubuntu 20.04 LTS',     'Máy chủ MySQL chính',                   9, 5, 5, 'ACTIVE'),
 ('Tường lửa (Vành đai)',            'Hardware', 'Fortinet FortiOS',     'Tường lửa bảo vệ hệ thống',             9, 2, 3, 'ACTIVE'),
 -- Thiết bị mạng (ci_id 4–5)
 ('Switch Lõi - Tầng 1',            'Network',  'Cisco IOS 15.2',       'Switch 48 cổng quản lý',                9, 2, 3, 'ACTIVE'),
 ('Điểm truy cập WiFi - Văn phòng', 'Network',  'Cisco Aironet 2800',   'Access point phủ sóng',                 9, 2, 3, 'ACTIVE'),
 -- Phần mềm / Dịch vụ (ci_id 6–8)
 ('Ứng dụng Web ITSM',              'Software', 'v2.4.1',               'Nền tảng quản lý',                      9, 1, 2, 'ACTIVE'),
-('MySQL Database (Chính)',          'Software', '8.0.36',               'Cơ sở dữ liệu chính',                   9, 5, 2, 'ACTIVE'),
-('Microsoft 365 (Exchange)',        'Service',  'N/A',                  'Dịch vụ mail đám mây',                  9, 1, 1, 'ACTIVE'),
+('MySQL Database (Chính)',          'Software', '8.0.36',               'Cơ sở dữ liệu chính',                   9, 5, 5, 'ACTIVE'),
+('Microsoft 365 (Exchange)',        'Service',  'N/A',                  'Dịch vụ mail đám mây',                  9, 1, 4, 'ACTIVE'),
 -- Đã ngưng / Loại bỏ (ci_id 9)
-('Cổng VPN cũ (OpenVPN)',           'Software', 'v2.4.9',               'Đã được thay thế',                      9, 2, 3, 'RETIRED');
+('Cổng VPN cũ (OpenVPN)',           'Software', 'v2.4.9',               'Đã được thay thế',                      9, 2, 6, 'RETIRED');
 
 -- ── Quan hệ CI (ci_relationship) ─────────────────────────────
 -- Mô tả sơ đồ phụ thuộc hạ tầng thực tế

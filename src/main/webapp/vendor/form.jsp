@@ -79,12 +79,22 @@
                             </div>
                         </div>
                         
-                        <div class="mb-4">
-                            <label for="status" class="form-label fw-semibold">Trạng thái (Tùy chọn)</label>
-                            <select class="form-select" id="status" name="status">
-                                <option value="ACTIVE" ${vendor != null && vendor.status == 'ACTIVE' ? 'selected' : ''}>Hoạt động (Active)</option>
-                                <option value="INACTIVE" ${vendor != null && vendor.status == 'INACTIVE' ? 'selected' : ''}>Ngừng hoạt động (Inactive)</option>
-                            </select>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="vendorType" class="form-label fw-semibold">Phân loại <span class="text-danger">*</span></label>
+                                <select class="form-select" id="vendorType" name="vendorType" required>
+                                    <option value="TIER_1" ${vendor != null && vendor.vendorType == 'TIER_1' ? 'selected' : ''}>Đối tác chiến lược (Strategic Partner)</option>
+                                    <option value="TIER_2" ${vendor != null && vendor.vendorType == 'TIER_2' ? 'selected' : ''}>Đại lý ủy quyền (Authorized Distributor)</option>
+                                    <option value="TIER_3" ${vendor != null && vendor.vendorType == 'TIER_3' ? 'selected' : ''}>Nhà bán lẻ (Retailer)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="status" class="form-label fw-semibold">Trạng thái (Tùy chọn)</label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="ACTIVE" ${vendor != null && vendor.status == 'ACTIVE' ? 'selected' : ''}>Hoạt động (Active)</option>
+                                    <option value="INACTIVE" ${vendor != null && vendor.status == 'INACTIVE' ? 'selected' : ''}>Ngừng hoạt động (Inactive)</option>
+                                </select>
+                            </div>
                         </div>
 
                     </form>

@@ -69,6 +69,7 @@
                         <tr>
                             <th class="ps-4">ID</th>
                             <th>Tên nhà cung cấp</th>
+                            <th>Phân loại</th>
                             <th>Liên hệ</th>
                             <th>Địa chỉ</th>
                             <th>Trạng thái</th>
@@ -79,7 +80,7 @@
                         <c:choose>
                             <c:when test="${empty vendors}">
                                 <tr>
-                                    <td colspan="6" class="text-center py-5 text-muted">
+                                    <td colspan="7" class="text-center py-5 text-muted">
                                         <i class="bi bi-inbox fs-1 d-block mb-3"></i>
                                         Không tìm thấy nhà cung cấp nào.
                                     </td>
@@ -91,6 +92,14 @@
                                         <td class="ps-4 fw-bold text-muted">#${v.vendorId}</td>
                                         <td>
                                             <span class="fw-semibold text-dark">${v.name}</span>
+                                        </td>
+                                        <td>
+                                            <c:choose>
+                                                <c:when test="${v.vendorType == 'TIER_1'}"><span class="badge bg-primary">Đối tác chiến lược</span></c:when>
+                                                <c:when test="${v.vendorType == 'TIER_2'}"><span class="badge bg-info">Đại lý ủy quyền</span></c:when>
+                                                <c:when test="${v.vendorType == 'TIER_3'}"><span class="badge bg-secondary">Nhà bán lẻ</span></c:when>
+                                                <c:otherwise><span class="badge bg-dark">${v.vendorType}</span></c:otherwise>
+                                            </c:choose>
                                         </td>
                                         <td>
                                             <div class="small">
@@ -137,6 +146,58 @@
                     </tbody>
                 </table>
             </div>
+            </div>
+            
+            <%-- Phân trang --%>
+            <c:if test="${totalPages > 1}">
+                <nav aria-label="Phân trang" class="mt-4">
+                    <ul class="pagination justify-content-center">
+
+                        <%-- Nút Trước --%>
+                        <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
+                            <a class="page-link"
+                               href="?keyword=${keyword}&status=${status}&page=${currentPage - 1}">
+                                <i class="bi bi-chevron-left"></i> Trước
+                            </a>
+                        </li>
+
+                        <%-- Số trang --%>
+                        <c:forEach begin="1" end="${totalPages}" var="i">
+                            <c:choose>
+                                <c:when test="${i == currentPage}">
+                                    <li class="page-item active">
+                                        <span class="page-link">${i}</span>
+                                    </li>
+                                </c:when>
+                                <c:when test="${i == 1 || i == totalPages || (i >= currentPage - 2 && i <= currentPage + 2)}">
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                           href="?keyword=${keyword}&status=${status}&page=${i}">${i}</a>
+                                    </li>
+                                </c:when>
+                                <c:when test="${i == currentPage - 3 || i == currentPage + 3}">
+                                    <li class="page-item disabled">
+                                        <span class="page-link">&hellip;</span>
+                                    </li>
+                                </c:when>
+                            </c:choose>
+                        </c:forEach>
+
+                        <%-- Nút Sau --%>
+                        <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
+                            <a class="page-link"
+                               href="?keyword=${keyword}&status=${status}&page=${currentPage + 1}">
+                                Sau <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+
+                    </ul>
+                </nav>
+                <div class="text-center text-muted small mt-2">
+                    Hiển thị trang ${currentPage} / ${totalPages} &mdash; Tổng ${totalRecords} mục
+                </div>
+            </c:if>
+            
         </div>
     </div>
 </div>
