@@ -17,7 +17,7 @@ public class ConfigurationItemDAO {
         boolean hasStatus = status != null && !status.trim().isEmpty();
 
         if (hasKeyword) {
-            sql.append(" AND (name LIKE ? OR type LIKE ? OR description LIKE ?)");
+            sql.append(" AND (name LIKE ? OR type LIKE ? OR description LIKE ? OR version LIKE ?)");
         }
         if (hasStatus) {
             sql.append(" AND status = ?");
@@ -28,6 +28,7 @@ public class ConfigurationItemDAO {
             
             if (hasKeyword) {
                 String searchParam = "%" + keyword.trim() + "%";
+                ps.setString(paramIndex++, searchParam);
                 ps.setString(paramIndex++, searchParam);
                 ps.setString(paramIndex++, searchParam);
                 ps.setString(paramIndex++, searchParam);
@@ -165,14 +166,14 @@ public class ConfigurationItemDAO {
         StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM configuration_item WHERE 1=1");
         boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
         boolean hasStatus  = status  != null && !status.trim().isEmpty();
-        if (hasKeyword) sql.append(" AND (name LIKE ? OR type LIKE ? OR description LIKE ?)");
+        if (hasKeyword) sql.append(" AND (name LIKE ? OR type LIKE ? OR description LIKE ? OR version LIKE ?)");
         if (hasStatus)  sql.append(" AND status = ?");
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
             int idx = 1;
             if (hasKeyword) {
                 String p = "%" + keyword.trim() + "%";
-                ps.setString(idx++, p); ps.setString(idx++, p); ps.setString(idx++, p);
+                ps.setString(idx++, p); ps.setString(idx++, p); ps.setString(idx++, p); ps.setString(idx++, p);
             }
             if (hasStatus) ps.setString(idx, status.trim());
             ResultSet rs = ps.executeQuery();
@@ -187,7 +188,7 @@ public class ConfigurationItemDAO {
         StringBuilder sql = new StringBuilder("SELECT * FROM configuration_item WHERE 1=1");
         boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
         boolean hasStatus  = status  != null && !status.trim().isEmpty();
-        if (hasKeyword) sql.append(" AND (name LIKE ? OR type LIKE ? OR description LIKE ?)");
+        if (hasKeyword) sql.append(" AND (name LIKE ? OR type LIKE ? OR description LIKE ? OR version LIKE ?)");
         if (hasStatus)  sql.append(" AND status = ?");
         sql.append(" ORDER BY ci_id ASC LIMIT ? OFFSET ?");
         try (Connection conn = getConnection();
@@ -195,7 +196,7 @@ public class ConfigurationItemDAO {
             int idx = 1;
             if (hasKeyword) {
                 String p = "%" + keyword.trim() + "%";
-                ps.setString(idx++, p); ps.setString(idx++, p); ps.setString(idx++, p);
+                ps.setString(idx++, p); ps.setString(idx++, p); ps.setString(idx++, p); ps.setString(idx++, p);
             }
             if (hasStatus) ps.setString(idx++, status.trim());
             ps.setInt(idx++, pageSize);
