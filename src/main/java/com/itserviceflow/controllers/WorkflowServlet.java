@@ -233,7 +233,7 @@ public class WorkflowServlet extends HttpServlet {
     private void addReferenceData(HttpServletRequest req) {
         req.setAttribute("categories", categoryDAO.getActiveCategories());
         req.setAttribute("ticketTypes", TICKET_TYPES);
-        req.setAttribute("priorities", List.of("LOW", "MEDIUM", "HIGH", "CRITICAL"));
+        req.setAttribute("priorities", List.of("LOW", "MEDIUM", "HIGH"));
     }
 
     /**
