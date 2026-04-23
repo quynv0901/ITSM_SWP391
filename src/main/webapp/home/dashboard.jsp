@@ -349,7 +349,6 @@
         <p>Xem và cập nhật thông tin cá nhân, đổi mật khẩu tài khoản.</p>
         <i class="bi bi-arrow-right card-arrow"></i>
     </a>
-
     <a href="${pageContext.request.contextPath}/knowledge-base?action=list" 
        class="action-card" style="position: relative;">
         <c:if test="${newArticleCount > 0}">
