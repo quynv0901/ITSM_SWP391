@@ -288,8 +288,8 @@
                     <div class="breadcrumb-custom">
                         <i class="bi bi-house-door me-1"></i> Trang chủ &gt;
                         <a href="${pageContext.request.contextPath}/workflows"
-                            class="text-decoration-none text-secondary">Quản lý Workflow</a>
-                        &gt;
+                            class="text-decoration-none text-secondary">Tự động điều hướng Ticket</a>
+                        <i class="fa fa-chevron-right text-muted mx-2" style="font-size:0.8rem;"></i>
                         <c:choose>
                             <c:when test="${formAction == 'create'}">Tạo mới</c:when>
                             <c:otherwise>
@@ -301,9 +301,9 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0 fw-bold">
                             <c:choose>
-                                <c:when test="${formAction == 'create'}"><i
-                                        class="bi bi-plus-circle me-2 text-primary"></i>Tạo Workflow mới</c:when>
-                                <c:otherwise><i class="bi bi-pencil-square me-2 text-warning"></i>Chỉnh sửa Workflow
+                                <c:when test="${empty workflow.workflowId}"><i
+                                        class="bi bi-plus-circle me-2 text-primary"></i>Tạo quy tắc mới</c:when>
+                                <c:otherwise><i class="bi bi-pencil-square me-2 text-warning"></i>Chỉnh sửa Hệ thống tự động
                                 </c:otherwise>
                             </c:choose>
                         </h5>
@@ -347,8 +347,8 @@
                             </div>
                             <div class="p-4">
                                 <div class="row g-4">
-                                    <div class="col-12">
-                                        <label class="form-label" for="workflowName">Tên Workflow <span
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label" for="workflowName">Tên Quy tắc <span
                                                 class="text-danger">*</span></label>
                                         <input type="text" id="workflowName" name="workflowName" class="form-control"
                                             placeholder="VD: Quy trình phê duyệt mua sắm IT"
@@ -498,7 +498,7 @@ out.print(gson.toJson(_tt));
     %></script>
                         <script type="application/json" id="metaPriorities"><%
 List<?> _pr = (List<?>) request.getAttribute("priorities");
-if (_pr == null) _pr = List.of("LOW","MEDIUM","HIGH","CRITICAL");
+if (_pr == null) _pr = List.of("LOW","MEDIUM","HIGH");
 out.print(gson.toJson(_pr));
     %></script>
                         <script type="application/json" id="metaCategories"><%
@@ -556,7 +556,7 @@ out.print(gson.toJson(_pr));
                                         if (Array.isArray(cfg.steps)) {
                                             cfg.steps.forEach(s => {
                                                 // If action is NOTIFY, SLA should always be 0 and not editable
-                                                const actionVal = s.action || 'APPROVE_REJECT';
+                                                const actionVal = s.action || 'EXECUTE';
                                                 const slaVal = (actionVal === 'NOTIFY') ? 0 : (s.sla_hours || 24);
                                                 // Prefer explicit users array in config; fall back to legacy role
                                                 const usersArr = Array.isArray(s.users) ? s.users.map(u => ({ userId: u.userId, fullName: u.fullName, role: u.roleName || u.role || '', departmentName: u.departmentName || u.department || '' })) : [];
@@ -611,7 +611,7 @@ out.print(gson.toJson(_pr));
 
                             function addCondition() {
                                 conditionIdCounter++;
-                                const nextField = conditions.length === 0 ? 'ticket_type' : (conditions.length === 1 ? 'priority' : 'category_id');
+                                const nextField = conditions.length === 0 ? 'priority' : 'category_id';
                                 conditions.push({ id: conditionIdCounter, field: nextField, operator: 'EQUALS', value: '' });
                                 renderConditions();
                                 updateJsonPreview();
@@ -664,9 +664,8 @@ out.print(gson.toJson(_pr));
 
                             function renderConditionRow(c) {
                                 var fieldList = [
-                                    { value: 'ticket_type', label: 'Ticket Type' },
-                                    { value: 'priority', label: 'Priority' },
-                                    { value: 'category_id', label: 'Category' }
+                                    { value: 'priority', label: 'Mức độ ưu tiên' },
+                                    { value: 'category_id', label: 'Danh mục' }
                                 ];
                                 var fieldOptions = fieldList.map(function (f) {
                                     return '<option value="' + f.value + '" ' + (c.field === f.value ? 'selected' : '') + '>' + f.label + '</option>';
@@ -687,9 +686,10 @@ out.print(gson.toJson(_pr));
                                         + (TICKET_TYPES.map(function (t) { return '<option value="' + t + '"' + (c.value === t ? ' selected' : '') + '>' + t + '</option>'; }).join(''))
                                         + '</select>';
                                 } else if (c.field === 'priority') {
+                                    var priorityMap = {'LOW':'Thấp', 'MEDIUM':'Trung bình', 'HIGH':'Cao', 'CRITICAL':'Nghiêm trọng'};
                                     valueInput = '<select class="form-select form-select-sm" onchange="updateCondition(' + c.id + ', \'value\', this.value)">'
-                                        + '<option value="">-- Priority --</option>'
-                                        + (PRIORITIES.map(function (p) { return '<option value="' + p + '"' + (c.value === p ? ' selected' : '') + '>' + p + '</option>'; }).join(''))
+                                        + '<option value="">-- Mức độ ưu tiên --</option>'
+                                        + (PRIORITIES.map(function (p) { var lbl = priorityMap[p] || p; return '<option value="' + p + '"' + (c.value === p ? ' selected' : '') + '>' + lbl + '</option>'; }).join(''))
                                         + '</select>';
                                 } else if (c.field === 'category_id') {
                                     valueInput = '<select class="form-select form-select-sm" onchange="updateCondition(' + c.id + ', \'value\', this.value)">'
@@ -716,7 +716,7 @@ out.print(gson.toJson(_pr));
 
                             function addStep() {
                                 stepIdCounter++;
-                                steps.push({ id: stepIdCounter, name: '', description: '', users: [], legacyRole: null, action: 'APPROVE_REJECT', sla_hours: 24 });
+                                steps.push({ id: stepIdCounter, name: '', description: '', users: [], legacyRole: null, action: 'EXECUTE', sla_hours: 24 });
                                 renderSteps();
                                 updateJsonPreview();
                             }
