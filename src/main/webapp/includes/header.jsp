@@ -191,62 +191,110 @@
             ITSM
         </div>
         <ul class="sidebar-menu">
-            <!-- Dashboard placed at top for quick access -->
-            <a href="${pageContext.request.contextPath}/dashboard"
-               class="menu-item ${pageContext.request.requestURI.contains('/dashboard') ? 'active' : ''}">
-                <i class="bi bi-speedometer2"></i> Bảng điều khiển
-            </a>
-            <li class="menu-header">Hệ thống</li>
-            <a href="${pageContext.request.contextPath}/admin/users"
-               class="menu-item ${pageContext.request.requestURI.endsWith('/admin/users.jsp') ? 'active' : ''}">
-                <i class="bi bi-person-gear"></i> Quản lý người dùng
-            </a>
-                        <a href="${pageContext.request.contextPath}/admin/knowledge-base"
-               class="menu-item ${pageContext.request.requestURI.endsWith('/admin/knowledge-base.jsp') ? 'active' : ''}">
-                <i class="bi bi-journal-text"></i> Quản lý bài viết
-            </a>
-            <a href="#" class="menu-item"><i class="bi bi-shield-lock"></i> Danh sách Quyền</a>
-            <a href="#" class="menu-item"><i class="bi bi-gear"></i> Cấu hình hệ thống</a>
 
-            <li class="menu-header">Quản lý Ticket</li>
+            <%-- Bảng điều khiển — chỉ Admin (10) --%>
+            <c:if test="${sessionScope.user.roleId == 10}">
+                <a href="${pageContext.request.contextPath}/dashboard"
+                   class="menu-item ${pageContext.request.requestURI.contains('/dashboard') ? 'active' : ''}">
+                    <i class="bi bi-speedometer2"></i> Bảng điều khiển
+                </a>
+            </c:if>
+
+            <%-- Trang chủ — tất cả trừ Admin --%>
+            <c:if test="${sessionScope.user.roleId != 10}">
+                <a href="${pageContext.request.contextPath}/home"
+                   class="menu-item ${pageContext.request.requestURI.contains('/home/') ? 'active' : ''}">
+                    <i class="bi bi-house-door-fill"></i> Trang chủ
+                </a>
+            </c:if>
+
+            <%-- Hệ thống — chỉ Admin (10) --%>
+            <c:if test="${sessionScope.user.roleId == 10}">
+                <li class="menu-header">Hệ thống</li>
+                <a href="${pageContext.request.contextPath}/admin/users"
+                   class="menu-item ${pageContext.request.requestURI.contains('/admin/users') ? 'active' : ''}">
+                    <i class="bi bi-person-gear"></i> Quản lý người dùng
+                </a>
+                <a href="${pageContext.request.contextPath}/admin/departments"
+                   class="menu-item ${pageContext.request.requestURI.contains('/admin/departments') ? 'active' : ''}">
+                    <i class="bi bi-diagram-3"></i> Quản lý phòng ban
+                </a>
+                <a href="${pageContext.request.contextPath}/admin/knowledge-base"
+                   class="menu-item ${pageContext.request.requestURI.contains('/admin/knowledge-base') ? 'active' : ''}">
+                    <i class="bi bi-journal-text"></i> Quản lý bài viết
+                </a>
+                <a href="${pageContext.request.contextPath}/admin/knowledge-article"
+                   class="menu-item ${pageContext.request.requestURI.contains('/admin/knowledge-article') ? 'active' : ''}">
+                    <i class="bi bi-journal-text"></i> Quản lý cơ sở kiến thức
+                </a>
+                <a href="#" class="menu-item"><i class="bi bi-shield-lock"></i> Danh sách quyền</a>
+                <a href="#" class="menu-item"><i class="bi bi-gear"></i> Cấu hình hệ thống</a>
+                <a href="${pageContext.request.contextPath}/workflows"
+                   class="menu-item ${pageContext.request.requestURI.contains('/workflows') ? 'active' : ''}">
+                    <i class="bi bi-diagram-3"></i> Tự động điều hướng Ticket
+                </a>
+            </c:if>
+
+            <%-- Quản lý phiếu — tất cả mọi role --%>
+            <li class="menu-header">Quản lý phiếu</li>
             <a href="${pageContext.request.contextPath}/incident?action=list"
                class="menu-item ${pageContext.request.requestURI.contains('/incident/') ? 'active' : ''}">
                 <i class="bi bi-exclamation-circle"></i> Quản lý Sự cố
             </a>
-            <a href="${pageContext.request.contextPath}/problem?action=list"
-               class="menu-item ${pageContext.request.requestURI.contains('/problem/') ? 'active' : ''}">
-                <i class="bi bi-exclamation-octagon"></i> Quản lý Vấn đề
-            </a>
-            <a href="${pageContext.request.contextPath}/known-error?action=list"
-               class="menu-item ${pageContext.request.requestURI.contains('/known-error/') ? 'active' : ''}">
-                <i class="bi bi-bug"></i> Cơ sở Lỗi đã biết
-            </a>
 
-            <li class="menu-header">Cơ sở hạ tầng</li>
-            <a href="${pageContext.request.contextPath}/configuration-item"
-               class="menu-item ${pageContext.request.requestURI.contains('/configuration-item') ? 'active' : ''}">
-                <i class="bi bi-server"></i> CMDB
-            </a>
+            <%-- Problem, Known Error — chỉ role != End User (1) --%>
+            <c:if test="${sessionScope.user.roleId != 1}">
+                <a href="${pageContext.request.contextPath}/problem?action=list"
+                   class="menu-item ${pageContext.request.requestURI.contains('/problem/') ? 'active' : ''}">
+                    <i class="bi bi-exclamation-octagon"></i> Quản lý Vấn đề
+                </a>
+                <a href="${pageContext.request.contextPath}/known-error?action=list"
+                   class="menu-item ${pageContext.request.requestURI.contains('/known-error/') ? 'active' : ''}">
+                    <i class="bi bi-bug"></i> Lỗi đã biết
+                </a>
+                <a href="${pageContext.request.contextPath}/time-tracking"
+                   class="menu-item ${pageContext.request.requestURI.contains('/time-tracking') ? 'active' : ''}">
+                    <i class="bi bi-clock-history"></i> Theo dõi Thời gian
+                </a>
+            </c:if>
 
+            <%-- Danh mục phiếu — chỉ Admin (10) --%>
+            <c:if test="${sessionScope.user.roleId == 10}">
+                <a href="${pageContext.request.contextPath}/ticket-category"
+                   class="menu-item ${pageContext.request.requestURI.contains('/ticket-category') ? 'active' : ''}">
+                    <i class="bi bi-tags"></i> Danh mục phiếu
+                </a>
+            </c:if>
+
+            <%-- Hạ tầng & Tài sản — chỉ role != End User (1) --%>
+            <c:if test="${sessionScope.user.roleId != 1}">
+                <li class="menu-header">Hạ tầng &amp; Tài sản</li>
+                <a href="${pageContext.request.contextPath}/configuration-item"
+                   class="menu-item ${pageContext.request.requestURI.contains('/configuration-item') ? 'active' : ''}">
+                    <i class="bi bi-server"></i> Mục cấu hình
+                </a>
+                <c:if test="${sessionScope.user.roleId == 8 || sessionScope.user.roleId == 10}">
+                    <a href="${pageContext.request.contextPath}/vendor"
+                       class="menu-item ${pageContext.request.requestURI.contains('/vendor') ? 'active' : ''}">
+                        <i class="bi bi-building"></i> Nhà cung cấp
+                    </a>
+                </c:if>
+                <c:if test="${sessionScope.user.roleId == 6 || sessionScope.user.roleId == 8 || sessionScope.user.roleId == 10}">
+                    <a href="${pageContext.request.contextPath}/maintenance-log"
+                       class="menu-item ${pageContext.request.requestURI.contains('/maintenance-log') ? 'active' : ''}">
+                        <i class="bi bi-tools"></i> Nhật ký bảo trì
+                    </a>
+                </c:if>
+            </c:if>
+
+            <%-- Dịch vụ — tất cả --%>
             <li class="menu-header">Dịch vụ</li>
-            <a href="${pageContext.request.contextPath}/admin/service-management"
-               class="menu-item ${pageContext.request.requestURI.contains('/admin/service-management') ? 'active' : ''}">
-                <i class="bi bi-hdd-network"></i> Quản lý Dịch vụ
+            <a href="${pageContext.request.contextPath}/service"
+               class="menu-item ${pageContext.request.requestURI.contains('/service') ? 'active' : ''}">
+                <i class="bi bi-hdd-network"></i> Quản lý dịch vụ
             </a>
-            <li class="menu-header">Quản lý Ticket</li>
-            <a href="${pageContext.request.contextPath}/ticket-category"
-               class="menu-item ${pageContext.request.requestURI.contains('/ticket-category') ? 'active' : ''}">
-                <i class="bi bi-tags"></i> Danh mục Ticket
-            </a>
-            <a href="${pageContext.request.contextPath}/time-tracking"
-               class="menu-item ${pageContext.request.requestURI.contains('/time-tracking') ? 'active' : ''}">
-                <i class="bi bi-clock-history"></i> Theo dõi Thời gian
-            </a>
-            <a href="${pageContext.request.contextPath}/workflows"
-               class="menu-item ${pageContext.request.requestURI.contains('/workflows') ? 'active' : ''}">
-                <i class="bi bi-diagram-3"></i> Tự động điều hướng Ticket
-            </a>
-                    </ul>
+
+        </ul>
     </div>
 
     <div class="admin-main">
@@ -258,10 +306,13 @@
                     <c:choose>
                         <c:when test="${pageContext.request.requestURI.contains('/dashboard')}">Bảng điều khiển</c:when>
                         <c:when test="${pageContext.request.requestURI.contains('/admin/users')}">Quản lý người dùng</c:when>
+                        <c:when test="${pageContext.request.requestURI.contains('/admin/departments')}">Quản lý phòng ban</c:when>
+                        <c:when test="${pageContext.request.requestURI.contains('/admin/knowledge-base')}">Quản lý bài viết</c:when>
+                        <c:when test="${pageContext.request.requestURI.contains('/admin/knowledge-article')}">Quản lý cơ sở kiến thức</c:when>
                         <c:when test="${pageContext.request.requestURI.contains('/ticket-category')}">Danh mục Ticket</c:when>
                         <c:when test="${pageContext.request.requestURI.contains('/workflows')}">Tự động điều hướng Ticket</c:when>
                         <c:when test="${pageContext.request.requestURI.contains('/time-tracking')}">Theo dõi Thời gian</c:when>
-                        <c:otherwise>Hệ thống Quản lý CNTT</c:otherwise>
+                        <c:otherwise>IT Service Management</c:otherwise>
                     </c:choose>
                 </span>
             </div>

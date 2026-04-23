@@ -1,42 +1,36 @@
-<jsp:include page="/includes/header.jsp" />
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<jsp:include page="/includes/header.jsp" />
 
 <div class="container-fluid bg-light p-4 rounded shadow-sm mb-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="h4 text-primary m-0"><i class="bi bi-pencil-square me-2"></i>Update Request for Change (RFC)</h2>
-        <a href="${pageContext.request.contextPath}/change-request/detail?id=${ticket.ticketId}" class="btn btn-outline-secondary btn-sm shadow-sm">
-            <i class="bi bi-arrow-left"></i> Cancel
+        <h2 class="h4 text-primary m-0"><i class="bi bi-pencil-square me-2"></i>Cập nhật yêu cầu thay đổi</h2>
+        <a href="${pageContext.request.contextPath}/change-request-list/detail?id=${ticket.ticketId}" class="btn btn-outline-secondary btn-sm shadow-sm">
+            <i class="bi bi-arrow-left"></i> Quay lại
         </a>
     </div>
 
-    <c:if test="${not empty sessionScope.error}">
-        <div class="alert alert-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i> ${sessionScope.error}</div>
-        <c:remove var="error" scope="session"/>
-    </c:if>
-
-    <form action="${pageContext.request.contextPath}/change-request/edit" method="post">
+    <form action="${pageContext.request.contextPath}/change-request-list/edit" method="post" accept-charset="UTF-8" onsubmit="return validateChangeDateTime();">
         <input type="hidden" name="ticketId" value="${ticket.ticketId}">
-        
+
         <div class="row g-4">
-            <%-- CỘT TRÁI --%>
             <div class="col-md-8">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-header bg-white border-bottom py-3">
-                        <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-info-circle me-2"></i>General Information</h6>
+                        <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-info-circle me-2"></i>Thông tin chung</h6>
                     </div>
                     <div class="card-body p-4">
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Change Title <span class="text-danger">*</span></label>
+                            <label class="form-label fw-bold">Tiêu đề thay đổi <span class="text-danger">*</span></label>
                             <input type="text" name="title" class="form-control border-secondary" value="${ticket.title}" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Reason & Description <span class="text-danger">*</span></label>
+                            <label class="form-label fw-bold">Lý do và mô tả <span class="text-danger">*</span></label>
                             <textarea name="description" class="form-control border-secondary" rows="3" required>${ticket.description}</textarea>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold text-warning"><i class="bi bi-shield-exclamation me-1"></i>Impact & Risk Assessment <span class="text-danger">*</span></label>
+                            <label class="form-label fw-bold text-warning"><i class="bi bi-shield-exclamation me-1"></i>Đánh giá tác động và rủi ro <span class="text-danger">*</span></label>
                             <textarea name="impactAssessment" class="form-control border-warning" rows="2" required>${ticket.impactAssessment}</textarea>
                         </div>
                     </div>
@@ -44,55 +38,53 @@
 
                 <div class="card shadow-sm border-0">
                     <div class="card-header bg-white border-bottom py-3">
-                        <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-clipboard-check me-2"></i>Action Plans</h6>
+                        <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-clipboard-check me-2"></i>Kế hoạch thực hiện</h6>
                     </div>
                     <div class="card-body p-4">
                         <div class="mb-4">
-                            <label class="form-label fw-bold text-primary"><i class="bi bi-tools me-1"></i>Implementation Plan <span class="text-danger">*</span></label>
+                            <label class="form-label fw-bold text-primary"><i class="bi bi-tools me-1"></i>Kế hoạch triển khai <span class="text-danger">*</span></label>
                             <textarea name="implementationPlan" class="form-control border-primary" rows="3" required>${ticket.implementationPlan}</textarea>
                         </div>
                         <div class="mb-4">
-                            <label class="form-label fw-bold text-danger"><i class="bi bi-arrow-counterclockwise me-1"></i>Rollback Plan <span class="text-danger">*</span></label>
+                            <label class="form-label fw-bold text-danger"><i class="bi bi-arrow-counterclockwise me-1"></i>Kế hoạch hoàn tác <span class="text-danger">*</span></label>
                             <textarea name="rollbackPlan" class="form-control border-danger" rows="3" required>${ticket.rollbackPlan}</textarea>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold text-success"><i class="bi bi-check2-square me-1"></i>Test Plan</label>
+                            <label class="form-label fw-bold text-success"><i class="bi bi-check2-square me-1"></i>Kế hoạch kiểm thử</label>
                             <textarea name="testPlan" class="form-control border-success" rows="2">${ticket.testPlan}</textarea>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <%-- CỘT PHẢI --%>
             <div class="col-md-4">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body p-4">
-                        <h6 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="bi bi-tags me-2"></i>Classification</h6>
-                        
+                        <h6 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="bi bi-tags me-2"></i>Phân loại</h6>
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Change Type</label>
+                            <label class="form-label fw-bold">Loại thay đổi</label>
                             <select name="changeType" class="form-select border-secondary">
-                                <option value="STANDARD" ${ticket.changeType == 'STANDARD' ? 'selected' : ''}>Standard</option>
-                                <option value="NORMAL" ${ticket.changeType == 'NORMAL' ? 'selected' : ''}>Normal</option>
-                                <option value="EMERGENCY" ${ticket.changeType == 'EMERGENCY' ? 'selected' : ''}>Emergency</option>
+                                <option value="STANDARD" ${ticket.changeType eq 'STANDARD' ? 'selected' : ''}>Chuẩn</option>
+                                <option value="NORMAL" ${ticket.changeType eq 'NORMAL' ? 'selected' : ''}>Thông thường</option>
+                                <option value="EMERGENCY" ${ticket.changeType eq 'EMERGENCY' ? 'selected' : ''}>Khẩn cấp</option>
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Risk Level</label>
+                            <label class="form-label fw-bold">Mức độ rủi ro</label>
                             <select name="riskLevel" class="form-select border-secondary">
-                                <option value="LOW" ${ticket.riskLevel == 'LOW' ? 'selected' : ''}>Low</option>
-                                <option value="MEDIUM" ${ticket.riskLevel == 'MEDIUM' ? 'selected' : ''}>Medium</option>
-                                <option value="HIGH" ${ticket.riskLevel == 'HIGH' ? 'selected' : ''}>High</option>
-                                <option value="CRITICAL" ${ticket.riskLevel == 'CRITICAL' ? 'selected' : ''}>Critical</option>
+                                <option value="LOW" ${ticket.riskLevel eq 'LOW' ? 'selected' : ''}>Thấp</option>
+                                <option value="MEDIUM" ${ticket.riskLevel eq 'MEDIUM' ? 'selected' : ''}>Trung bình</option>
+                                <option value="HIGH" ${ticket.riskLevel eq 'HIGH' ? 'selected' : ''}>Cao</option>
+                                <option value="CRITICAL" ${ticket.riskLevel eq 'CRITICAL' ? 'selected' : ''}>Rất cao</option>
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Priority</label>
+                            <label class="form-label fw-bold">Mức độ ưu tiên</label>
                             <select name="priority" class="form-select border-secondary">
-                                <option value="LOW" ${ticket.priority == 'LOW' ? 'selected' : ''}>Low</option>
-                                <option value="MEDIUM" ${ticket.priority == 'MEDIUM' ? 'selected' : ''}>Medium</option>
-                                <option value="HIGH" ${ticket.priority == 'HIGH' ? 'selected' : ''}>High</option>
-                                <option value="CRITICAL" ${ticket.priority == 'CRITICAL' ? 'selected' : ''}>Critical</option>
+                                <option value="LOW" ${ticket.priority eq 'LOW' ? 'selected' : ''}>Thấp</option>
+                                <option value="MEDIUM" ${ticket.priority eq 'MEDIUM' ? 'selected' : ''}>Trung bình</option>
+                                <option value="HIGH" ${ticket.priority eq 'HIGH' ? 'selected' : ''}>Cao</option>
+                                <option value="CRITICAL" ${ticket.priority eq 'CRITICAL' ? 'selected' : ''}>Khẩn cấp</option>
                             </select>
                         </div>
                     </div>
@@ -100,42 +92,89 @@
 
                 <div class="card shadow-sm border-0 mb-4 border-top border-4 border-info">
                     <div class="card-body p-4">
-                        <h6 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="bi bi-calendar-event me-2"></i>Schedule</h6>
-                        
+                        <h6 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="bi bi-calendar-event me-2"></i>Lịch thực hiện</h6>
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Scheduled Start</label>
-                            <%-- Xử lý Format Date cho ô Input Local --%>
-                            <input type="datetime-local" name="scheduledStart" class="form-control border-secondary" required 
-                                   value="<fmt:formatDate value='${ticket.scheduledStart}' pattern='yyyy-MM-dd\'T\'HH:mm' />">
+                            <label class="form-label fw-bold">Thời gian bắt đầu dự kiến</label>
+                            <input type="datetime-local" id="scheduledStart" name="scheduledStart" class="form-control border-secondary" required
+                                   value="<fmt:formatDate value='${ticket.scheduledStart}' pattern="yyyy-MM-dd'T'HH:mm" />">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Scheduled End</label>
-                            <input type="datetime-local" name="scheduledEnd" class="form-control border-secondary" required
-                                   value="<fmt:formatDate value='${ticket.scheduledEnd}' pattern='yyyy-MM-dd\'T\'HH:mm' />">
-                        </div>
-                        
-                        <hr>
-                        
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Downtime Required?</label>
-                            <select name="downtimeRequired" class="form-select border-secondary">
-                                <option value="false" ${!ticket.downtimeRequired ? 'selected' : ''}>No</option>
-                                <option value="true" ${ticket.downtimeRequired ? 'selected' : ''}>Yes</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Est. Downtime (Hours)</label>
-                            <input type="number" step="0.1" name="estimatedDowntimeHour" class="form-control border-secondary" value="${ticket.estimatedDowntimeHour}">
+                            <label class="form-label fw-bold">Thời gian kết thúc dự kiến</label>
+                            <input type="datetime-local" id="scheduledEnd" name="scheduledEnd" class="form-control border-secondary" required
+                                   value="<fmt:formatDate value='${ticket.scheduledEnd}' pattern="yyyy-MM-dd'T'HH:mm" />">
                         </div>
                     </div>
                 </div>
-
-                <button type="submit" class="btn btn-primary w-100 shadow-sm py-2 fw-bold fs-5">
-                    <i class="bi bi-save me-2"></i> Save Changes
-                </button>
             </div>
+        </div>
+
+        <div id="dateTimeErrorMessage" class="alert alert-danger d-none mt-4 mb-0"></div>
+
+        <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn btn-warning text-white"><i class="bi bi-save me-1"></i>Lưu cập nhật</button>
+            <a href="${pageContext.request.contextPath}/change-request-list/detail?id=${ticket.ticketId}" class="btn btn-outline-secondary">Hủy</a>
         </div>
     </form>
 </div>
 
+
+<script>
+function validateChangeDateTime() {
+    const startInput = document.getElementById('scheduledStart');
+    const endInput = document.getElementById('scheduledEnd');
+    const errorBox = document.getElementById('dateTimeErrorMessage');
+
+    if (!startInput || !endInput || !errorBox) {
+        return true;
+    }
+
+    errorBox.classList.add('d-none');
+    errorBox.textContent = '';
+
+    const startValue = startInput.value ? startInput.value.trim() : '';
+    const endValue = endInput.value ? endInput.value.trim() : '';
+
+    if (startValue === '' || endValue === '') {
+        errorBox.textContent = 'Vui lòng nhập đầy đủ thời gian bắt đầu dự kiến và thời gian kết thúc dự kiến.';
+        errorBox.classList.remove('d-none');
+        return false;
+    }
+
+    const start = new Date(startValue);
+    const end = new Date(endValue);
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+        errorBox.textContent = 'Định dạng ngày giờ không hợp lệ.';
+        errorBox.classList.remove('d-none');
+        return false;
+    }
+
+    const startDateOnly = startValue.split('T')[0];
+    const endDateOnly = endValue.split('T')[0];
+    const startTimeOnly = startValue.split('T')[1];
+    const endTimeOnly = endValue.split('T')[1];
+
+    if (endDateOnly < startDateOnly) {
+        errorBox.textContent = 'Ngày kết thúc dự kiến không được nhỏ hơn ngày bắt đầu dự kiến.';
+        errorBox.classList.remove('d-none');
+        return false;
+    }
+
+    if (endDateOnly === startDateOnly && endTimeOnly < startTimeOnly) {
+        errorBox.textContent = 'Nếu cùng một ngày, thời gian kết thúc dự kiến phải lớn hơn hoặc bằng thời gian bắt đầu dự kiến.';
+        errorBox.classList.remove('d-none');
+        return false;
+    }
+
+    if (end.getTime() < start.getTime()) {
+        errorBox.textContent = 'Thời gian kết thúc dự kiến phải lớn hơn hoặc bằng thời gian bắt đầu dự kiến.';
+        errorBox.classList.remove('d-none');
+        return false;
+    }
+
+    return true;
+}
+</script>
+
 <jsp:include page="/includes/footer.jsp" />
+

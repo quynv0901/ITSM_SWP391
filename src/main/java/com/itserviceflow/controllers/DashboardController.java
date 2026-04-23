@@ -1,7 +1,7 @@
 package com.itserviceflow.controllers;
 
 import com.itserviceflow.daos.TimeLogDAO;
-
+import com.itserviceflow.utils.AuthUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -30,6 +30,9 @@ public class DashboardController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        if (!AuthUtils.isLoggedIn(request, response)) return;
+        request.setAttribute("currentUser", AuthUtils.getCurrentUser(request));
 
         // --- KPI summary numbers ---
         double[] kpis = timeLogDAO.getDashboardKpis();
