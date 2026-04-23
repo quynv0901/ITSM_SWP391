@@ -33,7 +33,6 @@ public class MaintenanceLogDAO {
         return 0;
     }
 
-    // Overload để tương thích với code cũ
     public int countLogs(String keyword, Integer ciId, String type) {
         return countLogs(keyword, ciId, type, null);
     }
@@ -68,7 +67,6 @@ public class MaintenanceLogDAO {
         return list;
     }
 
-    // Overload để tương thích
     public List<MaintenanceLog> getLogsPaged(String keyword, Integer ciId, String type, int page, int pageSize) {
         return getLogsPaged(keyword, ciId, type, null, page, pageSize);
     }
@@ -93,7 +91,7 @@ public class MaintenanceLogDAO {
     }
 
     /**
-     * Trả về danh sách CI đang INACTIVE nhưng chưa có bản ghi bảo trì đang mở.
+     * Trả về danh sách CI đang INACTIVE.
      * Dùng để hiện cảnh báo trên trang danh sách.
      */
     public List<String> getInactiveCIsWithoutOpenLog() {
