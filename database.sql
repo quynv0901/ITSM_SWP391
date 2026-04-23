@@ -625,4 +625,6 @@ INSERT INTO ticket (ticket_number, ticket_type, title, description, status, prio
 ('PRB-20261006', 'PROBLEM',
  'Job backup hàng đêm thất bại không nhất quán',
  'Job backup lúc 02:00 thất bại 2-3 lần/tuần mà không có cảnh báo rõ ràng. Chỉ phát hiện khi kiểm tra thủ công.',
+
  'ASSIGNED', 'HIGH', 8, 3, 3, 2, NULL, NULL);
+
