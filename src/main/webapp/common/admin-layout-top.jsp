@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<html lang="vi">
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
@@ -121,6 +123,65 @@
             padding: 30px;
             flex: 1;
         }
+
+        /* Notifications Dropdown */
+        .notification-dropdown {
+            width: 320px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .notification-item {
+            border-bottom: 1px solid #eee;
+            padding: 10px 15px;
+            transition: background 0.2s;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .notification-content {
+            flex: 1;
+            text-decoration: none;
+            color: inherit;
+        }
+        .notification-content.unread-text {
+            color: #000;
+        }
+        .notification-content:hover {
+            color: var(--primary-blue);
+        }
+        .btn-mark-done {
+            background: none;
+            border: none;
+            color: #adb5bd;
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+            transition: color 0.2s, transform 0.1s;
+        }
+        .btn-mark-done:hover {
+            color: #198754;
+            transform: scale(1.1);
+        }
+        .notification-item:hover {
+            background-color: #f8f9fa;
+        }
+        .notification-item.unread {
+            background-color: #eef2ff;
+        }
+        .badge-notification {
+            position: relative;
+            cursor: pointer;
+        }
+        .badge-notification .badge {
+            position: absolute;
+            top: -5px;
+            right: -10px;
+            font-size: 0.6rem;
+            padding: 3px 5px;
+            border-radius: 50%;
+        }
     </style>
 </head>
 
@@ -183,7 +244,7 @@
             </a>
             <a href="${pageContext.request.contextPath}/workflows"
                class="menu-item ${pageContext.request.requestURI.contains('/workflows') ? 'active' : ''}">
-                <i class="bi bi-diagram-3"></i> Quản lý Workflow
+                <i class="bi bi-diagram-3"></i> Tự động điều hướng Ticket
             </a>
                     </ul>
     </div>
@@ -198,14 +259,28 @@
                         <c:when test="${pageContext.request.requestURI.contains('/dashboard')}">Bảng điều khiển</c:when>
                         <c:when test="${pageContext.request.requestURI.contains('/admin/users')}">Quản lý người dùng</c:when>
                         <c:when test="${pageContext.request.requestURI.contains('/ticket-category')}">Danh mục Ticket</c:when>
-                        <c:when test="${pageContext.request.requestURI.contains('/workflows')}">Quản lý Workflow</c:when>
+                        <c:when test="${pageContext.request.requestURI.contains('/workflows')}">Tự động điều hướng Ticket</c:when>
                         <c:when test="${pageContext.request.requestURI.contains('/time-tracking')}">Theo dõi Thời gian</c:when>
                         <c:otherwise>Hệ thống Quản lý CNTT</c:otherwise>
                     </c:choose>
                 </span>
             </div>
             <div class="topbar-right">
-                <i class="bi bi-bell badge-notification"></i>
+                <div class="dropdown me-3">
+                    <div class="badge-notification" id="notificationDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-bell fs-5"></i>
+                        <span class="badge bg-danger d-none" id="notificationCount">0</span>
+                    </div>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 notification-dropdown pt-0" aria-labelledby="notificationDropdown">
+                        <li class="dropdown-header d-flex justify-content-between align-items-center bg-light border-bottom">
+                            <span class="fw-bold text-dark">Thông báo</span>
+                            <a href="#" class="text-decoration-none small text-primary" onclick="markAllNotificationsAsRead(event)">Đánh dấu tất cả đã đọc</a>
+                        </li>
+                        <div id="notificationList">
+                            <!-- Notifications will be loaded here via JS -->
+                        </div>
+                    </ul>
+                </div>
                 <div class="user-info dropdown">
                     <a class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
                        href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
@@ -229,3 +304,94 @@
         </div>
 
         <div class="content-area">
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        fetchNotifications();
+        // Poll every 30 seconds
+        setInterval(fetchNotifications, 30000);
+    });
+
+    function fetchNotifications() {
+        fetch('${pageContext.request.contextPath}/notifications?action=api-get-unread&limit=5')
+            .then(res => res.json())
+            .then(data => {
+                const countBadge = document.getElementById("notificationCount");
+                if (data.count > 0) {
+                    countBadge.innerText = data.count > 99 ? '99+' : data.count;
+                    countBadge.classList.remove("d-none");
+                } else {
+                    countBadge.classList.add("d-none");
+                }
+
+                const notifList = document.getElementById("notificationList");
+                notifList.innerHTML = "";
+                
+                if (!data.notifications || data.notifications.length === 0) {
+                    notifList.innerHTML = '<li class="text-center p-3 text-muted small">Không có thông báo mới</li>';
+                    return;
+                }
+
+                data.notifications.forEach(noti => {
+                    const li = document.createElement("li");
+                    li.className = "notification-item unread";
+                    
+                    let link = "#";
+                    if (noti.relatedTicketId) {
+                        link = '${pageContext.request.contextPath}/incident?action=view&id=' + noti.relatedTicketId;
+                    }
+                    
+                    li.innerHTML = `
+                        <a href="\${link}" class="notification-content unread-text d-block">
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <div class="fw-bold small">\${noti.title}</div>
+                                <span class="badge bg-primary rounded-pill ms-1" style="font-size:0.65rem; padding: 0.25rem 0.4rem;">Mới</span>
+                            </div>
+                            <div class="small text-muted">\${noti.message}</div>
+                        </a>
+                        <button class="btn-mark-done mt-1" onclick="markNotificationAsDone(\${noti.notificationId}, event)" title="Đánh dấu đã xong (Xóa)">
+                            <i class="bi bi-check-circle"></i>
+                        </button>
+                    `;
+                    notifList.appendChild(li);
+                });
+            })
+            .catch(err => console.error("Error fetching notifications:", err));
+    }
+
+    function markNotificationAsDone(id, event) {
+        if(event) {
+            event.stopPropagation();
+            event.preventDefault();
+        }
+        // Thêm hiệu ứng chớp tắt nhỏ trước khi xóa
+        if(event && event.target) {
+            const btn = event.target.closest('button');
+            if(btn) btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="width:1rem;height:1rem;border-width:0.15em"></span>';
+        }
+
+        fetch('${pageContext.request.contextPath}/notifications?action=api-mark-seen', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'id=' + id
+        })
+        .then(() => {
+            fetchNotifications();
+        });
+    }
+
+    function markAllNotificationsAsRead(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        fetch('${pageContext.request.contextPath}/notifications?action=api-mark-seen', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'id=all'
+        })
+        .then(() => fetchNotifications());
+    }
+</script>
