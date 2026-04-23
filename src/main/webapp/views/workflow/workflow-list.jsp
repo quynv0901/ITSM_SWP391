@@ -248,7 +248,7 @@
 <%@ include file="/common/admin-layout-top.jsp" %>
 
 <div class="breadcrumb-custom">
-    <i class="bi bi-house-door me-1"></i> Trang chủ &gt; Quản lý Workflow
+    <i class="bi bi-house-door me-1"></i> Trang chủ &gt; Tự động điều hướng Ticket
 </div>
 
 <%-- Flash messages --%>
@@ -313,7 +313,7 @@
     </div>
     <a href="${pageContext.request.contextPath}/workflows?action=create"
        class="btn-add-workflow flex-shrink-0">
-        <i class="bi bi-plus-lg"></i> Thêm Workflow
+        <i class="bi bi-plus-lg"></i> Thêm Quy tắc
     </a>
 </div>
 
@@ -340,7 +340,7 @@
     <div class="ms-auto" style="max-width:280px; width:100%;">
         <div class="input-group input-group-sm">
             <input type="text" id="searchInput" class="form-control"
-                   placeholder="Tìm workflow…" value="${search}"
+                   placeholder="Tìm quy tắc tự động..." value="${search}"
                                             onkeydown="if(event.key==='Enter') filterTable()" />
                                         <button class="btn btn-primary" type="button" onclick="filterTable()">
                                             <i class="bi bi-search"></i>
@@ -355,7 +355,7 @@
         <thead>
             <tr>
                 <th>#</th>
-                <th>Tên Workflow</th>
+                <th>Tên Quy tắc</th>
                 <th>Mô tả</th>
                 <th>Trạng thái</th>
                 <th>Người tạo</th>
@@ -370,12 +370,12 @@
                         <td colspan="7">
                             <div class="empty-state">
                                 <i class="bi bi-diagram-3"></i>
-                                <h5 class="mt-3">Chưa có workflow nào</h5>
-                                <p class="mb-4">Bắt đầu bằng cách tạo workflow đầu tiên.
+                                <h5 class="mt-3">Chưa có hệ thống tự động nào</h5>
+                                <p class="mb-4">Bắt đầu bằng cách tạo quy tắc tự động hóa đầu tiên.
                                 </p>
                                 <a href="${pageContext.request.contextPath}/workflows?action=create"
                                    class="btn btn-primary">
-                                    <i class="bi bi-plus-lg me-1"></i> Tạo Workflow
+                                    <i class="bi bi-plus-lg me-1"></i> Tạo Quy Tắc
                                 </a>
                             </div>
                         </td>
