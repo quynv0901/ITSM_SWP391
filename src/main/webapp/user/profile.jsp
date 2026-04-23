@@ -136,7 +136,7 @@
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <label class="form-label small fw-bold text-muted">MẬT KHẨU MỚI</label>
-                                        <input type="password" name="newPassword" class="form-control py-2 shadow-none border-0 bg-light" placeholder="Ít nhất 6 ký tự" required>
+                                        <input type="password" name="newPassword" class="form-control py-2 shadow-none border-0 bg-light" placeholder="Ít nhất 8 ký tự" required>
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label small fw-bold text-muted">XÁC NHẬN MẬT KHẨU MỚI</label>
@@ -158,6 +158,37 @@
 <jsp:include page="/common/footer.jsp" />
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    // ===================== VALIDATE ĐỔI MẬT KHẨU =====================
+    document.querySelector('#change-pass form').addEventListener('submit', function (e) {
+        const newPass    = this.querySelector('[name="newPassword"]');
+        const confirmPass = this.querySelector('[name="confirmPassword"]');
+
+        // Xóa lỗi cũ
+        this.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        this.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+
+        const errors = [];
+
+        if (newPass.value.length < 8) {
+            errors.push({ el: newPass, msg: 'Mật khẩu mới phải có ít nhất 8 ký tự' });
+        }
+
+        if (newPass.value !== confirmPass.value) {
+            errors.push({ el: confirmPass, msg: 'Mật khẩu xác nhận không khớp' });
+        }
+
+        if (errors.length > 0) {
+            e.preventDefault();
+            errors.forEach(({ el, msg }) => {
+                el.classList.add('is-invalid');
+                const fb = document.createElement('div');
+                fb.className = 'invalid-feedback';
+                fb.textContent = msg;
+                el.insertAdjacentElement('afterend', fb);
+            });
+            errors[0].el.focus();
+        }
+    });
     document.addEventListener("DOMContentLoaded", function() {
         // Auto-select tab from hash
         let hash = window.location.hash;
