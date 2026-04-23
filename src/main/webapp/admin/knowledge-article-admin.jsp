@@ -157,7 +157,6 @@
                     <th>ID</th>
                     <th>Số bài viết</th>
                     <th>Tiêu đề</th>
-                    <th>Tác giả</th>
                     <th>Trạng thái</th>
                     <th>Ngày cập nhật</th>
                     <th style="width:240px;">Thao tác</th>
@@ -170,7 +169,6 @@
                         <td>${art.articleId}</td>
                         <td><code>${art.articleNumber}</code></td>
                         <td class="title-cell" title="${art.title}">${art.title}</td>
-                        <td>${not empty art.authorName ? art.authorName : art.authorId}</td>
                         <td>
                             <c:choose>
                                 <c:when test="${art.status eq 'PENDING'}">

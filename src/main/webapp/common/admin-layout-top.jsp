@@ -158,6 +158,10 @@
                    class="menu-item ${pageContext.request.requestURI.contains('/admin/knowledge-base') ? 'active' : ''}">
                     <i class="bi bi-journal-text"></i> Quản lý bài viết
                 </a>
+                <a href="${pageContext.request.contextPath}/admin/knowledge-article"
+                   class="menu-item ${pageContext.request.requestURI.contains('/admin/knowledge-article') ? 'active' : ''}">
+                    <i class="bi bi-journal-text"></i> Quản lý cơ sở kiến thức
+                </a>
                 <a href="#" class="menu-item"><i class="bi bi-shield-lock"></i> Danh sách quyền</a>
                 <a href="#" class="menu-item"><i class="bi bi-gear"></i> Cấu hình hệ thống</a>
             </c:if>
