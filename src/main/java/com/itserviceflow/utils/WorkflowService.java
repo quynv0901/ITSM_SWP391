@@ -4,9 +4,11 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.itserviceflow.daos.NotificationDAO;
 import com.itserviceflow.daos.TicketDAO;
 import com.itserviceflow.daos.UserDAO;
 import com.itserviceflow.daos.WorkflowDAO;
+import com.itserviceflow.models.Notification;
 import com.itserviceflow.models.Ticket;
 import com.itserviceflow.models.User;
 import com.itserviceflow.models.Workflow;
@@ -58,6 +60,7 @@ public class WorkflowService {
     private final TicketDAO   ticketDAO   = new TicketDAO();
     private final UserDAO     userDAO     = new UserDAO();
     private final EmailService emailService = new EmailService();
+    private final NotificationDAO notificationDAO = new NotificationDAO();
     private final Gson        gson        = new Gson();
 
     // -----------------------------------------------------------------------
@@ -279,11 +282,10 @@ public class WorkflowService {
 
             try {
                 switch (action.toUpperCase()) {
-                    case "ASSIGN_AGENT", "EXECUTE" -> executeAssignAgent(step, ticket);
+                    case "ASSIGN_AGENT", "EXECUTE", "APPROVE_REJECT" -> executeAssignAgent(step, ticket);
                     case "SET_PRIORITY"  -> executeSetPriority(step, ticket);
                     case "SET_STATUS"    -> executeSetStatus(step, ticket);
                     case "NOTIFY", "REVIEW" -> executeNotify(step, ticket);
-                    case "APPROVE_REJECT"-> LOGGER.info("WorkflowService: APPROVE_REJECT step logged for ticket " + ticket.getTicketId() + ", target users=" + extractTargetUsers(step));
                     default              -> LOGGER.warning("WorkflowService: unknown action: " + action);
                 }
             } catch (Exception e) {
@@ -348,19 +350,36 @@ public class WorkflowService {
                 
                 // Gửi notification cho người được xử lý luôn
                 User user = userDAO.findById(assigneeId);
-                if (user != null && user.getEmail() != null && !user.getEmail().isBlank()) {
-                    String subject = "ITServiceFlow - Ticket Assigned to You: #" + ticket.getTicketId();
-                    String body = "Hello " + user.getFullName() + ",\n\n" +
-                                  "Ticket #" + ticket.getTicketId() + " (" + ticket.getTicketType() + ") has been auto-assigned to you by the system.\n" +
-                                  "Title: " + ticket.getTitle() + "\n" +
-                                  "Priority: " + ticket.getPriority() + "\n\n" +
-                                  "Please log in to the system to begin processing this ticket.\n\n" +
-                                  "Best regards,\nIT Service Flow Engine";
+                if (user != null) {
+                    // 1. In-app notification
+                    Notification noti = new Notification();
+                    noti.setUserId(user.getUserId());
+                    noti.setNotificationType("TICKET");
+                    noti.setTitle("Nhiệm vụ mới: Ticket #" + ticket.getTicketId());
+                    noti.setMessage("Bạn vừa được tự động gán nhiệm vụ (Giao nhiệm vụ / Execute) cho Ticket #" + ticket.getTicketId() + " (" + ticket.getTicketType() + "). Vui lòng xử lý.");
+                    noti.setRelatedTicketId(ticket.getTicketId());
+                    noti.setSeen(false);
                     try {
-                        emailService.sendEmail(user.getEmail(), subject, body);
-                        LOGGER.info("WorkflowService: Assignment email sent to " + user.getEmail());
-                    } catch (Exception e) {
-                        LOGGER.log(Level.WARNING, "WorkflowService: Failed to send assignment email to " + user.getEmail(), e);
+                        notificationDAO.createNotification(noti);
+                    } catch (SQLException e) {
+                        LOGGER.log(Level.WARNING, "WorkflowService: Failed to insert in-app notification", e);
+                    }
+
+                    // 2. Email notification
+                    if (user.getEmail() != null && !user.getEmail().isBlank()) {
+                        String subject = "ITServiceFlow - Ticket Assigned to You: #" + ticket.getTicketId();
+                        String body = "Hello " + user.getFullName() + ",\n\n" +
+                                      "Ticket #" + ticket.getTicketId() + " (" + ticket.getTicketType() + ") has been auto-assigned to you by the system.\n" +
+                                      "Title: " + ticket.getTitle() + "\n" +
+                                      "Priority: " + ticket.getPriority() + "\n\n" +
+                                      "Please log in to the system to begin processing this ticket.\n\n" +
+                                      "Best regards,\nIT Service Flow Engine";
+                        try {
+                            emailService.sendEmail(user.getEmail(), subject, body);
+                            LOGGER.info("WorkflowService: Assignment email sent to " + user.getEmail());
+                        } catch (Exception e) {
+                            LOGGER.log(Level.WARNING, "WorkflowService: Failed to send assignment email to " + user.getEmail(), e);
+                        }
                     }
                 }
             } else {
@@ -422,12 +441,29 @@ public class WorkflowService {
                 if (u.has("userId") && !u.get("userId").isJsonNull()) {
                     int userId = u.get("userId").getAsInt();
                     User user = userDAO.findById(userId);
-                    if (user != null && user.getEmail() != null && !user.getEmail().isBlank()) {
+                    if (user != null) {
+                        // 1. In-app notification
+                        Notification noti = new Notification();
+                        noti.setUserId(user.getUserId());
+                        noti.setNotificationType("TICKET");
+                        noti.setTitle("Thông báo theo dõi: Ticket #" + ticket.getTicketId());
+                        noti.setMessage("Bạn được cấp quyền theo dõi (Chỉ xem / Review) tiến trình của Ticket #" + ticket.getTicketId() + " (Loại: " + ticket.getTicketType() + "). Không đặc tả yêu cầu thao tác.");
+                        noti.setRelatedTicketId(ticket.getTicketId());
+                        noti.setSeen(false);
                         try {
-                            emailService.sendEmail(user.getEmail(), subject, body);
-                            LOGGER.info("WorkflowService: Notification email sent to " + user.getEmail());
-                        } catch (Exception e) {
-                            LOGGER.log(Level.WARNING, "WorkflowService: Failed to send email to " + user.getEmail(), e);
+                            notificationDAO.createNotification(noti);
+                        } catch (SQLException e) {
+                            LOGGER.log(Level.WARNING, "WorkflowService: Failed to insert in-app notification", e);
+                        }
+
+                        // 2. Email notification
+                        if (user.getEmail() != null && !user.getEmail().isBlank()) {
+                            try {
+                                emailService.sendEmail(user.getEmail(), subject, body);
+                                LOGGER.info("WorkflowService: Notification email sent to " + user.getEmail());
+                            } catch (Exception e) {
+                                LOGGER.log(Level.WARNING, "WorkflowService: Failed to send email to " + user.getEmail(), e);
+                            }
                         }
                     }
                 }
