@@ -773,12 +773,19 @@
                                                                         if (node.field === 'category_id') {
                                                                             const cat = CATEGORIES.find(c => c.id == val);
                                                                             val = cat ? cat.name : ('Category #' + val);
+                                                                            fieldLabel = 'DANH MỤC';
                                                                         }
                                                                         let badgeClass = 'bg-info bg-opacity-25 border-info';
-                                                                        if (node.field === 'priority')
+                                                                        if (node.field === 'priority') {
                                                                             badgeClass = 'bg-warning bg-opacity-25 border-warning';
-                                                                        if (node.field === 'ticket_type')
+                                                                            fieldLabel = 'MỨC ĐỘ ƯU TIÊN';
+                                                                            const pMap = {'LOW':'Thấp', 'MEDIUM':'Trung bình', 'HIGH':'Cao', 'CRITICAL':'Nghiêm trọng'};
+                                                                            val = pMap[val] || val;
+                                                                        }
+                                                                        if (node.field === 'ticket_type') {
                                                                             badgeClass = 'bg-primary bg-opacity-25 border-primary';
+                                                                            fieldLabel = 'LOẠI TICKET';
+                                                                        }
                                                                         return `<span class="badge border ${badgeClass} fw-semibold p-2 px-3 rounded-pill my-1" style="color:#212529">
                                             <span class="opacity-75 fw-normal">\${fieldLabel}</span>
                                             <span class="mx-1">\${node.operator === 'NOT_EQUALS' ? 'không phải' : 'là'}</span>
@@ -823,6 +830,10 @@
                                                                         assignees = `<span class="text-muted fst-italic">Chưa phân công</span>`;
                                                                     }
 
+                                                                    let actionName = s.action || 'Khác';
+                                                                    if (actionName === 'APPROVE_REJECT' || actionName === 'EXECUTE' || actionName === 'ASSIGN_AGENT') actionName = 'Giao nhiệm vụ';
+                                                                    if (actionName === 'REVIEW' || actionName === 'NOTIFY') actionName = 'Chỉ xem / Thông báo';
+
                                                                     html += `<div class="step-item">
                                         <div class="step-num">\${idx + 1}</div>
                                         <div class="flex-grow-1">
@@ -830,8 +841,6 @@
                                             \${s.description ? '<div class="small text-muted mb-1">' + s.description + '</div>' : ''}
                                             <div class="small text-muted mt-2 d-flex flex-wrap align-items-center gap-2">
                                                 <span>Phụ trách:</span> \${assignees}
-                                                <span class="text-muted mx-1">&bull;</span>
-                                                <span>Hành động: <span class="text-primary fw-semibold">\${s.action}</span></span>
                                             </div>
                                         </div>
                                     </div>`;
