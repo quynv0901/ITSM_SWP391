@@ -297,22 +297,22 @@
     </div>
     <a href="${pageContext.request.contextPath}/time-tracking"
        class="btn btn-sm btn-outline-secondary">
-        <i class="bi bi-clock-history me-1"></i>Time Tracking
+        <i class="bi bi-clock-history me-1"></i>Theo dõi Thời gian
     </a>
 </div>
 
 <%-- ── Quick navigation ───────────────────────────────────────── --%>
 <div class="quick-nav">
     <a href="${pageContext.request.contextPath}/incident?action=list" class="qn-btn qn-blue">
-        <i class="bi bi-lightning-fill"></i>Incidents</a>
+        <i class="bi bi-lightning-fill"></i>Sự cố</a>
     <a href="${pageContext.request.contextPath}/problem?action=list" class="qn-btn qn-orange">
-        <i class="bi bi-exclamation-octagon-fill"></i>Problems</a>
+        <i class="bi bi-exclamation-octagon-fill"></i>Vấn đề</a>
     <a href="${pageContext.request.contextPath}/known-error?action=list" class="qn-btn qn-red">
-        <i class="bi bi-bug-fill"></i>Known Errors</a>
+        <i class="bi bi-bug-fill"></i>Lỗi đã biết</a>
     <a href="${pageContext.request.contextPath}/cmdb?action=list" class="qn-btn qn-green">
         <i class="bi bi-server"></i>CMDB</a>
     <a href="${pageContext.request.contextPath}/time-tracking" class="qn-btn qn-purple">
-        <i class="bi bi-clock-fill"></i>Time Logs</a>
+        <i class="bi bi-clock-fill"></i>Nhật ký Thời gian</a>
 </div>
 
 <%-- ── KPI Hero Cards ─────────────────────────────────────────── --%>
@@ -403,8 +403,17 @@
             <c:forEach var="e" items="${byStatus}">
                 <c:set var="pct"
                        value="${maxStatus > 0 ? (e.value * 100 / maxStatus) : 0}" />
+                <c:set var="statusLabel"
+                       value="${e.key == 'NEW' ? 'Mới' :
+                                e.key == 'IN_PROGRESS' ? 'Đang xử lý' :
+                                e.key == 'RESOLVED' ? 'Đã giải quyết' :
+                                e.key == 'CLOSED' ? 'Đã đóng' :
+                                e.key == 'CANCELLED' ? 'Đã hủy' :
+                                e.key == 'INVESTIGATING' ? 'Đang điều tra' :
+                                e.key == 'ASSIGNED' ? 'Đã phân công' :
+                                e.key == 'PENDING' ? 'Đang chờ' : e.key}" />
                 <div class="bar-row">
-                    <div class="bar-label" title="${e.key}">${e.key}</div>
+                    <div class="bar-label" title="${statusLabel}">${statusLabel}</div>
                     <div class="bar-track">
                         <div class="bar-fill" style="width:${pct}%;
                              background:${e.key == 'RESOLVED' || e.key == 'CLOSED' ? '#27ae60' :
@@ -436,8 +445,13 @@
             <c:forEach var="e" items="${byType}">
                 <c:set var="pct"
                        value="${maxType > 0 ? (e.value * 100 / maxType) : 0}" />
+                <c:set var="typeLabel"
+                       value="${e.key == 'INCIDENT' ? 'Sự cố' :
+                                e.key == 'SERVICE_REQUEST' ? 'Yêu cầu dịch vụ' :
+                                e.key == 'PROBLEM' ? 'Vấn đề' :
+                                e.key == 'CHANGE' ? 'Thay đổi' : e.key}" />
                 <div class="bar-row">
-                    <div class="bar-label" title="${e.key}">${e.key}</div>
+                    <div class="bar-label" title="${typeLabel}">${typeLabel}</div>
                     <div class="bar-track">
                         <div class="bar-fill" style="width:${pct}%;
                              background:${e.key == 'INCIDENT' ? '#e74c3c' :

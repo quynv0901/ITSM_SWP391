@@ -106,14 +106,15 @@
                     <%-- Nhà cung cấp --%>
                     <div class="mb-3">
                         <label for="vendorId" class="form-label fw-semibold">
-                            Nhà cung cấp
+                            Nhà cung cấp <span class="required">*</span>
                         </label>
-                        <select class="form-select" id="vendorId" name="vendorId">
-                            <option value="">-- Không xác định --</option>
+                        <select class="form-select" id="vendorId" name="vendorId" required>
+                            <option value="" disabled ${empty ci.vendorId ? 'selected' : ''}>-- Chọn nhà cung cấp --</option>
                             <c:forEach var="v" items="${vendors}">
                                 <option value="${v.vendorId}" ${ci.vendorId == v.vendorId ? 'selected' : ''}>${v.name}</option>
                             </c:forEach>
                         </select>
+                        <div class="invalid-feedback" id="vendorId-error"></div>
                         <div class="form-text text-muted small">Đối tác quản lý hoặc cung cấp tài sản/dịch vụ này.</div>
                     </div>
 
@@ -174,8 +175,9 @@
 
         const name    = document.getElementById('name').value.trim();
         const type    = document.getElementById('type').value;
-        const version = document.getElementById('version').value.trim();
-        const desc    = document.getElementById('description').value.trim();
+        const version  = document.getElementById('version').value.trim();
+        const vendorId = document.getElementById('vendorId').value;
+        const desc     = document.getElementById('description').value.trim();
         const namePattern = /^[\p{L}0-9 .\-_()\/#]+$/u;
 
         if (name === '') {
@@ -191,6 +193,11 @@
 
         if (!type) {
             showError('type', 'Vui lòng chọn loại mục cấu hình.');
+            valid = false;
+        }
+
+        if (!vendorId) {
+            showError('vendorId', 'Vui lòng chọn Nhà cung cấp.');
             valid = false;
         }
 

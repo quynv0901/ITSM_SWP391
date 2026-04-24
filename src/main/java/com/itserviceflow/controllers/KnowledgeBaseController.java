@@ -85,7 +85,7 @@ public class KnowledgeBaseController extends HttpServlet {
         req.setAttribute("keyword", keyword);
         req.setAttribute("statusFilter", status);
         req.setAttribute("typeFilter", type);
-
+        req.setAttribute("newArticleCount", kbDAO.countNewArticles());
         req.getRequestDispatcher("/admin/knowledge-base.jsp").forward(req, resp);
     }
 
@@ -234,7 +234,8 @@ public class KnowledgeBaseController extends HttpServlet {
         a.setSolution(req.getParameter("solution"));
         return a;
     }
-private String checkProfanity(Article a) {
+
+    private String checkProfanity(Article a) {
         java.util.Map<String, String> fields = new java.util.LinkedHashMap<>();
         fields.put("Tiêu đề", a.getTitle());
         fields.put("Mô tả", a.getSummary());
@@ -251,6 +252,7 @@ private String checkProfanity(Article a) {
         }
         return null;
     }
+
     @Override
     public String getServletInfo() {
         return "KnowledgeBaseController - Handles knowledge base CRUD";

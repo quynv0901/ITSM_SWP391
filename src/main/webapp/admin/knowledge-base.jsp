@@ -38,7 +38,7 @@
         <input type="hidden" name="action" value="list">
 
         <input type="text" class="form-control" name="keyword"
-               placeholder="Tìm theo tiêu đề hoặc ID"
+               placeholder="Tìm theo tiêu đề"
                value="${keyword}" style="max-width: 280px;">
 
         <select class="form-select" name="status" style="max-width: 180px;">
@@ -59,7 +59,7 @@
         <table class="table table-hover table-bordered align-middle">
             <thead class="table-light">
                 <tr>
-                    <th>ID</th>
+                    <th>Stt</th>
                     <th>Tiêu đề</th>
                     <th>Trạng thái</th>
                     <th>Cập nhật</th>
@@ -67,9 +67,9 @@
                 </tr>
             </thead>
             <tbody>
-                <c:forEach var="a" items="${articles}">
+                <c:forEach var="a" items="${articles}" varStatus="loop">
                     <tr>
-                        <td class="text-muted">#${a.articleId}</td>
+                        <td class="text-muted">${(currentPage - 1) * 10 + loop.count}</td>
                         <td>
                             <a href="${pageContext.request.contextPath}/admin/knowledge-base?action=detail&id=${a.articleId}"
                                class="fw-bold text-decoration-none">
@@ -166,5 +166,5 @@
         </nav>
     </c:if>
 </div>
-    <%-- --%>
+<%-- --%>
 <jsp:include page="/includes/footer.jsp" />

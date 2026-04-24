@@ -20,8 +20,12 @@ public class KnowledgeArticleUserController extends HttpServlet {
         action = (action == null) ? "list" : action;
 
         switch (action) {
-            case "detail": detailView(req, resp); break;
-            default:       listView(req, resp);   break;
+            case "detail":
+                detailView(req, resp);
+                break;
+            default:
+                listView(req, resp);
+                break;
         }
     }
 
@@ -30,19 +34,19 @@ public class KnowledgeArticleUserController extends HttpServlet {
         String keyword = req.getParameter("keyword");
         String pageStr = req.getParameter("page");
 
-        int page   = (pageStr != null && !pageStr.isEmpty()) ? Integer.parseInt(pageStr) : 1;
-        int limit  = 10;
+        int page = (pageStr != null && !pageStr.isEmpty()) ? Integer.parseInt(pageStr) : 1;
+        int limit = 10;
         int offset = (page - 1) * limit;
 
         // Chỉ lấy bài PUBLISHED
-        List<Article> articles = kbDAO.listArticles(keyword, "PUBLISHED", "KNOWLEDGE_ARTICLE", offset, limit);
-        int total              = kbDAO.countArticles(keyword, "PUBLISHED", "KNOWLEDGE_ARTICLE");
-        int totalPages         = (int) Math.ceil((double) total / limit);
+        List<Article> articles = kbDAO.listArticles(keyword, "APPROVED", "KNOWLEDGE_ARTICLE", offset, limit);
+        int total = kbDAO.countArticles(keyword, "APPROVED", "KNOWLEDGE_ARTICLE");
+        int totalPages = (int) Math.ceil((double) total / limit);
 
-        req.setAttribute("articles",    articles);
+        req.setAttribute("articles", articles);
         req.setAttribute("currentPage", page);
-        req.setAttribute("totalPages",  totalPages);
-        req.setAttribute("keyword",     keyword);
+        req.setAttribute("totalPages", totalPages);
+        req.setAttribute("keyword", keyword);
 
         req.getRequestDispatcher("/knowledge/knowledge-article-list.jsp").forward(req, resp);
     }
@@ -55,7 +59,7 @@ public class KnowledgeArticleUserController extends HttpServlet {
             return;
         }
         Article article = kbDAO.findById(Integer.parseInt(idStr));
-        if (article == null || !"PUBLISHED".equals(article.getStatus())) {
+        if (article == null || !"APPROVED".equals(article.getStatus())) {
             resp.sendRedirect(req.getContextPath() + "/knowledge-article?error=Article not found");
             return;
         }

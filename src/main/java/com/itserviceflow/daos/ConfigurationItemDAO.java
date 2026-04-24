@@ -17,7 +17,7 @@ public class ConfigurationItemDAO {
         boolean hasStatus = status != null && !status.trim().isEmpty();
 
         if (hasKeyword) {
-            sql.append(" AND (name LIKE ? OR type LIKE ? OR description LIKE ?)");
+            sql.append(" AND (name LIKE ? OR type LIKE ? OR description LIKE ? OR version LIKE ?)");
         }
         if (hasStatus) {
             sql.append(" AND status = ?");
@@ -28,6 +28,7 @@ public class ConfigurationItemDAO {
             
             if (hasKeyword) {
                 String searchParam = "%" + keyword.trim() + "%";
+                ps.setString(paramIndex++, searchParam);
                 ps.setString(paramIndex++, searchParam);
                 ps.setString(paramIndex++, searchParam);
                 ps.setString(paramIndex++, searchParam);
@@ -54,6 +55,13 @@ public class ConfigurationItemDAO {
             e.printStackTrace();
         }
         return list;
+    }
+
+    /**
+     * Overload không tham số: lấy toàn bộ CI đang ACTIVE, dùng cho dropdown ở các module khác (Maintenance Log, ...).
+     */
+    public List<ConfigurationItem> getAllConfigurationItems() {
+        return getAllConfigurationItems(null, "ACTIVE");
     }
 
     public ConfigurationItem getConfigurationItemById(int id) {
@@ -165,14 +173,14 @@ public class ConfigurationItemDAO {
         StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM configuration_item WHERE 1=1");
         boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
         boolean hasStatus  = status  != null && !status.trim().isEmpty();
-        if (hasKeyword) sql.append(" AND (name LIKE ? OR type LIKE ? OR description LIKE ?)");
+        if (hasKeyword) sql.append(" AND (name LIKE ? OR type LIKE ? OR description LIKE ? OR version LIKE ?)");
         if (hasStatus)  sql.append(" AND status = ?");
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
             int idx = 1;
             if (hasKeyword) {
                 String p = "%" + keyword.trim() + "%";
-                ps.setString(idx++, p); ps.setString(idx++, p); ps.setString(idx++, p);
+                ps.setString(idx++, p); ps.setString(idx++, p); ps.setString(idx++, p); ps.setString(idx++, p);
             }
             if (hasStatus) ps.setString(idx, status.trim());
             ResultSet rs = ps.executeQuery();
@@ -187,7 +195,7 @@ public class ConfigurationItemDAO {
         StringBuilder sql = new StringBuilder("SELECT * FROM configuration_item WHERE 1=1");
         boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
         boolean hasStatus  = status  != null && !status.trim().isEmpty();
-        if (hasKeyword) sql.append(" AND (name LIKE ? OR type LIKE ? OR description LIKE ?)");
+        if (hasKeyword) sql.append(" AND (name LIKE ? OR type LIKE ? OR description LIKE ? OR version LIKE ?)");
         if (hasStatus)  sql.append(" AND status = ?");
         sql.append(" ORDER BY ci_id ASC LIMIT ? OFFSET ?");
         try (Connection conn = getConnection();
@@ -195,7 +203,7 @@ public class ConfigurationItemDAO {
             int idx = 1;
             if (hasKeyword) {
                 String p = "%" + keyword.trim() + "%";
-                ps.setString(idx++, p); ps.setString(idx++, p); ps.setString(idx++, p);
+                ps.setString(idx++, p); ps.setString(idx++, p); ps.setString(idx++, p); ps.setString(idx++, p);
             }
             if (hasStatus) ps.setString(idx++, status.trim());
             ps.setInt(idx++, pageSize);
@@ -216,6 +224,44 @@ public class ConfigurationItemDAO {
         } catch (SQLException e) { e.printStackTrace(); }
         return list;
     }
+
+    public List<ConfigurationItem> getCIsByVendorId(int vendorId) {
+        List<ConfigurationItem> list = new ArrayList<>();
+        String sql = "SELECT * FROM configuration_item WHERE vendor_id = ? ORDER BY type, name";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, vendorId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ConfigurationItem ci = new ConfigurationItem();
+                    ci.setCiId(rs.getInt("ci_id"));
+                    ci.setName(rs.getString("name"));
+                    ci.setType(rs.getString("type"));
+                    ci.setVersion(rs.getString("version"));
+                    ci.setDescription(rs.getString("description"));
+                    ci.setStatus(rs.getString("status"));
+                    ci.setVendorId(vendorId);
+                    ci.setCreatedAt(rs.getTimestamp("created_at"));
+                    ci.setUpdatedAt(rs.getTimestamp("updated_at"));
+                    list.add(ci);
+                }
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return list;
+    }
+
+    public boolean updateCiStatus(int ciId, String status) {
+        String sql = "UPDATE configuration_item SET status = ? WHERE ci_id = ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setInt(2, ciId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     // ─────────────────────────────────────────────────────────────────
     //  CI RELATIONSHIP methods
     // ─────────────────────────────────────────────────────────────────

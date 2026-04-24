@@ -1,306 +1,515 @@
-<jsp:include page="/includes/header.jsp" />
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<jsp:include page="/includes/header.jsp" />
+
+<style>
+    .info-label {
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .info-value {
+        color: #374151;
+    }
+
+    .content-box {
+        background: #f8fafc;
+        border-left: 4px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 14px 16px;
+        min-height: 56px;
+        color: #374151;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+    .content-box.warning {
+        border-left-color: #f59e0b;
+    }
+
+    .content-box.primary {
+        border-left-color: #2563eb;
+    }
+
+    .content-box.danger {
+        border-left-color: #ef4444;
+    }
+
+    .content-box.success {
+        border-left-color: #10b981;
+    }
+
+    .comment-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: #ffffff;
+        padding: 14px 16px;
+        margin-bottom: 12px;
+    }
+
+    .history-table th,
+    .history-table td {
+        vertical-align: middle;
+        font-size: 14px;
+    }
+
+    .history-table thead th {
+        white-space: nowrap;
+    }
+
+    .badge-soft {
+        display: inline-block;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .badge-status {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .badge-approval {
+        background: #fef3c7;
+        color: #b45309;
+    }
+
+    .badge-risk {
+        background: #ede9fe;
+        color: #6d28d9;
+    }
+</style>
 
 <div class="container-fluid bg-light p-4 rounded shadow-sm mb-5">
-
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb bg-transparent p-0 m-0">
-                <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/change-request/list">Change Management</a></li>
-                <li class="breadcrumb-item active" aria-current="page">#CR-${ticket.ticketId}</li>
+                <li class="breadcrumb-item">
+                    <a href="${pageContext.request.contextPath}/change-request-list/list">Quản lý thay đổi</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    #${ticket.ticketNumber}
+                </li>
             </ol>
         </nav>
 
-        <div class="d-flex gap-2">
-            <a href="${pageContext.request.contextPath}/change-request/list" class="btn btn-outline-secondary btn-sm shadow-sm">
-                <i class="bi bi-arrow-left"></i> Back to List
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="${pageContext.request.contextPath}/change-request-list/list"
+               class="btn btn-outline-secondary btn-sm shadow-sm">
+                <i class="bi bi-arrow-left"></i> Quay lại danh sách
             </a>
 
-            <%-- HIỂN THỊ NÚT EDIT NẾU NGƯỜI DÙNG CHÍNH LÀ NGƯỜI TẠO VÀ STATUS ĐANG LÀ NEW --%>
             <c:if test="${ticket.reportedBy == sessionScope.user.userId and ticket.status eq 'NEW'}">
-                <a href="${pageContext.request.contextPath}/change-request/edit?id=${ticket.ticketId}" class="btn btn-warning btn-sm shadow-sm fw-bold">
-                    <i class="bi bi-pencil-square"></i> Edit Request
+                <a href="${pageContext.request.contextPath}/change-request-list/edit?id=${ticket.ticketId}"
+                   class="btn btn-warning btn-sm shadow-sm fw-bold text-white">
+                    <i class="bi bi-pencil-square"></i> Sửa phiếu
                 </a>
-                <form action="${pageContext.request.contextPath}/change-request/delete" method="post" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn XÓA VĨNH VIỄN Change Request này không?');">
-                    <input type="hidden" name="actionType" value="single">
-                    <input type="hidden" name="ticketId" value="${ticket.ticketId}">
-                    <button type="submit" class="btn btn-danger btn-sm shadow-sm fw-bold">
-                        <i class="bi bi-trash"></i> Delete
-                    </button>
-                </form>
             </c:if>
-            <c:if test="${(sessionScope.user.roleId == 3 or sessionScope.user.roleId == 6) and ticket.status ne 'CANCELLED' and ticket.status ne 'CLOSED' and ticket.status ne 'RESOLVED'}">
-                <form action="${pageContext.request.contextPath}/change-request/cancel" method="post" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn HỦY Change Request này không? Mọi tiến trình sẽ dừng lại.');">
+
+            <c:if test="${(sessionScope.user.roleId == 3 || sessionScope.user.roleId == 6) and ticket.status ne 'CANCELLED'}">
+                <form action="${pageContext.request.contextPath}/change-request-list/cancel"
+                      method="post"
+                      style="display:inline;"
+                      onsubmit="return confirm('Bạn có chắc chắn muốn hủy yêu cầu này không?');">
                     <input type="hidden" name="ticketId" value="${ticket.ticketId}">
-                    <button type="submit" class="btn btn-dark btn-sm shadow-sm">
-                        <i class="bi bi-slash-circle"></i> Cancel Request
-                    </button>
-                </form>
-            </c:if>
-            <%-- NÚT TAKE REQUEST: Dành riêng cho System Engineer khi phiếu chưa có ai nhận --%>
-            <c:if test="${sessionScope.user.roleId == 6 and empty ticket.assignedToName and ticket.status ne 'CLOSED' and ticket.status ne 'CANCELLED'}">
-                <form action="${pageContext.request.contextPath}/change-request/assign" method="post" class="m-0">
-                    <input type="hidden" name="ticketId" value="${ticket.ticketId}">
-                    <%-- Gửi ngầm ID của chính user đang đăng nhập lên server --%>
-                    <input type="hidden" name="assignedTo" value="${sessionScope.user.userId}">
-                    <button type="submit" class="btn btn-info btn-sm shadow-sm fw-bold text-dark" onclick="return confirm('Bạn muốn nhận triển khai Change Request này?');">
-                        <i class="bi bi-person-raised-hand"></i> Take Request
+                    <button type="submit" class="btn btn-dark btn-sm shadow-sm fw-bold">
+                        <i class="bi bi-slash-circle"></i> Hủy yêu cầu
                     </button>
                 </form>
             </c:if>
         </div>
     </div>
 
+    <c:if test="${not empty param.msg}">
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <c:choose>
+                <c:when test="${param.msg eq 'updated'}">Cập nhật yêu cầu thay đổi thành công.</c:when>
+                <c:when test="${param.msg eq 'assigned'}">Phân công yêu cầu thay đổi thành công.</c:when>
+                <c:when test="${param.msg eq 'approved'}">CAB đã duyệt yêu cầu thay đổi.</c:when>
+                <c:when test="${param.msg eq 'rejected'}">CAB đã từ chối yêu cầu thay đổi.</c:when>
+                <c:when test="${param.msg eq 'assessed'}">Đánh giá rủi ro thành công.</c:when>
+                <c:when test="${param.msg eq 'cancelled'}">Đã hủy yêu cầu thay đổi.</c:when>
+                <c:when test="${param.msg eq 'comment_added'}">Đã thêm bình luận thành công.</c:when>
+                <c:otherwise>Thao tác đã được thực hiện.</c:otherwise>
+            </c:choose>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    </c:if>
+
     <div class="row g-4">
-        <%-- CỘT TRÁI: THÔNG TIN CHI TIẾT --%>
-        <div class="col-md-8">
+        <div class="col-lg-8">
             <div class="card shadow-sm border-0 mb-4">
                 <div class="card-header bg-white border-bottom py-3">
-                    <h4 class="mb-0 text-primary">${ticket.title}</h4>
+                    <h5 class="mb-0 fw-bold text-dark">
+                        <i class="bi bi-file-earmark-text me-2"></i>Thông tin yêu cầu thay đổi
+                    </h5>
                 </div>
-                <div class="card-body p-4">
-                    <h6 class="fw-bold text-dark mb-2"><i class="bi bi-card-text me-2"></i>Change Description</h6>
-                    <p class="text-secondary mb-4">${ticket.description}</p>
 
-                    <h6 class="fw-bold text-dark mb-2"><i class="bi bi-shield-exclamation me-2"></i>Impact & Risk Assessment</h6>
-                    <p class="text-muted bg-light p-3 rounded border-start border-4 border-warning mb-4">
-                        ${not empty ticket.impactAssessment ? ticket.impactAssessment : 'No impact assessment provided.'}
+                <div class="card-body p-4">
+                    <h3 class="fw-bold text-primary mb-2">${ticket.title}</h3>
+                    <p class="text-muted mb-4">
+                        Mã phiếu: <strong>${ticket.ticketNumber}</strong>
                     </p>
 
-                    <div class="row g-3">
-                        <div class="col-12">
-                            <h6 class="fw-bold text-dark mb-2"><i class="bi bi-tools me-2"></i>Implementation Plan</h6>
-                            <p class="text-secondary bg-white border p-3 rounded">${not empty ticket.implementationPlan ? ticket.implementationPlan : 'N/A'}</p>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <span class="info-label">Trạng thái:</span><br>
+                            <span class="badge-soft badge-status">${ticket.status}</span>
                         </div>
-                        <div class="col-12">
-                            <h6 class="fw-bold text-dark mb-2"><i class="bi bi-arrow-counterclockwise me-2"></i>Rollback Plan</h6>
-                            <p class="text-secondary bg-white border p-3 rounded">${not empty ticket.rollbackPlan ? ticket.rollbackPlan : 'N/A'}</p>
+                        <div class="col-md-4">
+                            <span class="info-label">Trạng thái duyệt:</span><br>
+                            <span class="badge-soft badge-approval">${ticket.approvalStatus}</span>
                         </div>
-                        <div class="col-12">
-                            <h6 class="fw-bold text-dark mb-2"><i class="bi bi-check2-square me-2"></i>Test Plan</h6>
-                            <p class="text-secondary bg-white border p-3 rounded">${not empty ticket.testPlan ? ticket.testPlan : 'N/A'}</p>
+                        <div class="col-md-4">
+                            <span class="info-label">Mức rủi ro:</span><br>
+                            <span class="badge-soft badge-risk">${ticket.riskLevel}</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-dark mb-2">
+                            <i class="bi bi-card-text me-2"></i>Mô tả thay đổi
+                        </h6>
+                        <div class="content-box">
+                            ${empty ticket.description ? 'Chưa có mô tả.' : ticket.description}
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-dark mb-2">
+                            <i class="bi bi-shield-exclamation me-2"></i>Đánh giá tác động & rủi ro
+                        </h6>
+                        <div class="content-box warning">
+                            ${empty ticket.impactAssessment ? 'Chưa có đánh giá tác động.' : ticket.impactAssessment}
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-dark mb-2">
+                            <i class="bi bi-tools me-2"></i>Kế hoạch triển khai
+                        </h6>
+                        <div class="content-box primary">
+                            ${empty ticket.implementationPlan ? 'Chưa có dữ liệu.' : ticket.implementationPlan}
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-dark mb-2">
+                            <i class="bi bi-arrow-counterclockwise me-2"></i>Kế hoạch hoàn tác
+                        </h6>
+                        <div class="content-box danger">
+                            ${empty ticket.rollbackPlan ? 'Chưa có dữ liệu.' : ticket.rollbackPlan}
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-dark mb-2">
+                            <i class="bi bi-check2-square me-2"></i>Kế hoạch kiểm thử
+                        </h6>
+                        <div class="content-box success">
+                            ${empty ticket.testPlan ? 'Chưa có dữ liệu.' : ticket.testPlan}
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-dark mb-2">
+                            <i class="bi bi-journal-text me-2"></i>Nhận định rủi ro của CAB
+                        </h6>
+                        <div class="content-box">
+                            ${empty ticket.cabRiskAssessment ? 'Chưa có đánh giá của CAB.' : ticket.cabRiskAssessment}
+                        </div>
+                    </div>
+
+                    <div class="mb-0">
+                        <h6 class="fw-bold text-dark mb-2">
+                            <i class="bi bi-chat-left-text me-2"></i>Ghi chú CAB
+                        </h6>
+                        <div class="content-box">
+                            ${empty ticket.cabComment ? 'Chưa có ghi chú của CAB.' : ticket.cabComment}
                         </div>
                     </div>
                 </div>
             </div>
-            <%-- UC73: PHẦN THẢO LUẬN (DISCUSSION BOARD) --%>
-            <div class="card shadow-sm border-0 mb-4 mt-4 border-top border-4 border-primary">
-                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-chat-dots me-2 text-primary"></i>Discussion Board</h6>
-                    <span class="badge bg-primary rounded-pill">${comments.size()} Comments</span>
+
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h6 class="mb-0 fw-bold text-dark">
+                        <i class="bi bi-chat-dots me-2"></i>Bình luận
+                    </h6>
                 </div>
-                <div class="card-body p-4 bg-light">
 
-                    <%-- Khung nhập bình luận --%>
-                    <form action="${pageContext.request.contextPath}/ticket/add-comment" method="post" class="mb-4 bg-white p-3 rounded shadow-sm border">
+                <div class="card-body p-4">
+                    <form action="${pageContext.request.contextPath}/change-request-list/comment"
+                          method="post"
+                          class="mb-4">
                         <input type="hidden" name="ticketId" value="${ticket.ticketId}">
-                        <%-- Biến này để báo cho Servlet biết đây là Change Request --%>
-                        <input type="hidden" name="ticketType" value="CHANGE">
-
                         <div class="mb-2">
-                            <textarea class="form-control border-0" name="commentText" placeholder="Nhập nội dung thảo luận, ý kiến đánh giá hoặc ghi chú tại đây..." rows="3" required style="box-shadow: none; resize: none;"></textarea>
+                            <textarea name="commentText"
+                                      class="form-control"
+                                      rows="3"
+                                      placeholder="Nhập nội dung bình luận..."
+                                      required></textarea>
                         </div>
-                        <div class="d-flex justify-content-end border-top pt-2">
-                            <button type="submit" class="btn btn-primary btn-sm fw-bold px-4">
-                                <i class="bi bi-send-fill me-1"></i> Send Message
-                            </button>
-                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="bi bi-send"></i> Gửi bình luận
+                        </button>
                     </form>
 
-                    <%-- Danh sách các bình luận cũ --%>
-                    <div class="comment-list">
-                        <c:forEach var="cmt" items="${comments}">
-                            <div class="d-flex mb-3 bg-white p-3 rounded shadow-sm border-start border-3 border-secondary">
-                                <div class="flex-shrink-0">
-                                    <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 45px; height: 45px; font-size: 1.2rem; text-transform: uppercase;">
-                                        ${cmt.userName.substring(0,1)}
+                    <c:if test="${empty comments}">
+                        <div class="text-muted">Chưa có bình luận nào.</div>
+                    </c:if>
+
+                    <c:forEach var="cmt" items="${comments}">
+                        <div class="comment-card">
+                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                                <div>
+                                    <div class="fw-bold">${cmt.userName}</div>
+                                    <div class="small text-muted">
+                                        <fmt:formatDate value="${cmt.createdAt}" pattern="dd/MM/yyyy HH:mm" />
                                     </div>
-                                </div>
-                                <div class="flex-grow-1 ms-3">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <h6 class="mb-0 fw-bold text-dark">${cmt.userName} 
-                                            <span class="badge bg-info text-dark ms-2 fw-normal" style="font-size: 0.7rem;">
-                                                <c:choose>
-                                                    <c:when test="${cmt.userRoleId == 3}">Manager</c:when>
-                                                    <c:when test="${cmt.userRoleId == 6}">System Engineer</c:when>
-                                                    <c:when test="${cmt.userRoleId == 7}">CAB Member</c:when>
-                                                    <c:otherwise>Staff</c:otherwise>
-                                                </c:choose>
-                                            </span>
-                                        </h6>
-                                        <small class="text-muted"><i class="bi bi-clock me-1"></i><fmt:formatDate value="${cmt.createdAt}" pattern="dd/MM/yyyy HH:mm" /></small>
-                                    </div>
-                                    <p class="mb-0 text-secondary mt-2" style="white-space: pre-wrap;">${cmt.commentText}</p>
                                 </div>
                             </div>
-                        </c:forEach>
+                            <div class="mt-2">
+                                ${cmt.commentText}
+                            </div>
+                        </div>
+                    </c:forEach>
+                </div>
+            </div>
 
-                        <c:if test="${empty comments}">
-                            <div class="text-center text-muted py-4 fst-italic">
-                                <i class="bi bi-chat-square-text fs-1 d-block mb-2 text-light"></i>
-                                Chưa có cuộc thảo luận nào.
+            <c:if test="${sessionScope.user.roleId == 3 || sessionScope.user.roleId == 6 || sessionScope.user.roleId == 7}">
+                <div class="card shadow-sm border-0 mt-4" id="history-section">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h6 class="mb-0 fw-bold text-primary">
+                            <i class="bi bi-clock-history me-2"></i>Lịch sử thay đổi trạng thái
+                        </h6>
+                    </div>
+
+                    <div class="card-body">
+                        <c:if test="${empty historyList}">
+                            <div class="text-muted">Chưa có lịch sử thay đổi nào.</div>
+                        </c:if>
+
+                        <c:if test="${not empty historyList}">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover align-middle history-table">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 160px;">Thời gian</th>
+                                            <th style="width: 170px;">Người thực hiện</th>
+                                            <th style="width: 160px;">Trường thay đổi</th>
+                                            <th style="width: 180px;">Giá trị cũ</th>
+                                            <th style="width: 180px;">Giá trị mới</th>
+                                            <th>Diễn giải</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <c:forEach var="h" items="${historyList}">
+                                            <tr>
+                                                <td>
+                                                    <fmt:formatDate value="${h.changedAt}" pattern="dd/MM/yyyy HH:mm" />
+                                                </td>
+                                                <td>
+                                                    ${empty h.changedByName ? '---' : h.changedByName}
+                                                </td>
+                                                <td>
+                                                    <c:choose>
+                                                        <c:when test="${h.fieldName eq 'status'}">Trạng thái</c:when>
+                                                        <c:when test="${h.fieldName eq 'approval_status'}">Trạng thái duyệt</c:when>
+                                                        <c:when test="${h.fieldName eq 'assigned_to'}">Người xử lý</c:when>
+                                                        <c:when test="${h.fieldName eq 'risk_level'}">Mức rủi ro</c:when>
+                                                        <c:when test="${h.fieldName eq 'scheduled_start'}">Bắt đầu dự kiến</c:when>
+                                                        <c:when test="${h.fieldName eq 'scheduled_end'}">Kết thúc dự kiến</c:when>
+                                                        <c:when test="${h.fieldName eq 'title'}">Tiêu đề</c:when>
+                                                        <c:when test="${h.fieldName eq 'description'}">Mô tả</c:when>
+                                                        <c:otherwise>${h.fieldName}</c:otherwise>
+                                                    </c:choose>
+                                                </td>
+                                                <td>${empty h.oldValue ? '---' : h.oldValue}</td>
+                                                <td>${empty h.newValue ? '---' : h.newValue}</td>
+                                                <td>
+                                                    ${empty h.changedByName ? 'Người dùng' : h.changedByName}
+                                                    thay đổi
+                                                    <strong>
+                                                        <c:choose>
+                                                            <c:when test="${h.fieldName eq 'status'}">trạng thái</c:when>
+                                                            <c:when test="${h.fieldName eq 'approval_status'}">trạng thái duyệt</c:when>
+                                                            <c:when test="${h.fieldName eq 'assigned_to'}">người xử lý</c:when>
+                                                            <c:when test="${h.fieldName eq 'risk_level'}">mức rủi ro</c:when>
+                                                            <c:when test="${h.fieldName eq 'scheduled_start'}">bắt đầu dự kiến</c:when>
+                                                            <c:when test="${h.fieldName eq 'scheduled_end'}">kết thúc dự kiến</c:when>
+                                                            <c:when test="${h.fieldName eq 'title'}">tiêu đề</c:when>
+                                                            <c:when test="${h.fieldName eq 'description'}">mô tả</c:when>
+                                                            <c:otherwise>${h.fieldName}</c:otherwise>
+                                                        </c:choose>
+                                                    </strong>
+                                                    từ
+                                                    <strong>${empty h.oldValue ? '---' : h.oldValue}</strong>
+                                                    sang
+                                                    <strong>${empty h.newValue ? '---' : h.newValue}</strong>
+                                                </td>
+                                            </tr>
+                                        </c:forEach>
+                                    </tbody>
+                                </table>
                             </div>
                         </c:if>
                     </div>
                 </div>
-            </div>
+            </c:if>
         </div>
 
-        <%-- CỘT PHẢI: THUỘC TÍNH VÀ LỊCH TRÌNH --%>
-        <div class="col-md-4">
+        <div class="col-lg-4">
             <div class="card shadow-sm border-0 mb-4">
-                <div class="card-body p-4">
-                    <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">Change Details</h6>
-                    <ul class="list-unstyled mb-0">
-                        <li class="mb-3"><small class="text-muted d-block">Status</small>
-                            <span class="badge bg-secondary fs-6 ${ticket.status == 'NEW' ? 'bg-primary' : (ticket.status == 'APPROVED' ? 'bg-success' : 'bg-secondary')}">${ticket.status}</span>
-                        </li>
-                        <li class="mb-3"><small class="text-muted d-block">Change Type</small>
-                            <span class="badge bg-info text-dark">${not empty ticket.changeType ? ticket.changeType : 'NORMAL'}</span>
-                        </li>
-                        <li class="mb-3"><small class="text-muted d-block">Risk Level</small>
-                            <span class="badge ${ticket.riskLevel == 'HIGH' or ticket.riskLevel == 'CRITICAL' ? 'bg-danger' : 'bg-warning text-dark'}">${not empty ticket.riskLevel ? ticket.riskLevel : 'MEDIUM'}</span>
-                        </li>
-                        <li class="mb-3"><small class="text-muted d-block">Requester</small><strong><i class="bi bi-person me-1"></i> ${ticket.reportedByName}</strong></li>
-                        <li class="mb-3"><small class="text-muted d-block">Assigned To</small>
-                            <strong><i class="bi bi-headset me-1"></i> ${not empty ticket.assignedToName ? ticket.assignedToName : '<span class="text-warning">Chưa phân công</span>'}</strong>
-                        </li>
-                    </ul>
+                <div class="card-header bg-white border-bottom py-3">
+                    <h6 class="mb-0 fw-bold text-dark">
+                        <i class="bi bi-person-lines-fill me-2"></i>Thông tin xử lý
+                    </h6>
+                </div>
+
+                <div class="card-body">
+                    <p><span class="info-label">Người tạo:</span> <span class="info-value">${ticket.reportedByName}</span></p>
+                    <p><span class="info-label">Người xử lý:</span> <span class="info-value">${ticket.assignedToName}</span></p>
+                    <p><span class="info-label">CAB phụ trách:</span> <span class="info-value">${ticket.cabMemberName}</span></p>
+                    <p><span class="info-label">Bắt đầu dự kiến:</span>
+                        <span class="info-value">
+                            <fmt:formatDate value="${ticket.scheduledStart}" pattern="dd/MM/yyyy HH:mm" />
+                        </span>
+                    </p>
+                    <p><span class="info-label">Kết thúc dự kiến:</span>
+                        <span class="info-value">
+                            <fmt:formatDate value="${ticket.scheduledEnd}" pattern="dd/MM/yyyy HH:mm" />
+                        </span>
+                    </p>
+                    <p><span class="info-label">Bắt đầu thực tế:</span>
+                        <span class="info-value">
+                            <fmt:formatDate value="${ticket.actualStart}" pattern="dd/MM/yyyy HH:mm" />
+                        </span>
+                    </p>
+                    <p class="mb-0"><span class="info-label">Kết thúc thực tế:</span>
+                        <span class="info-value">
+                            <fmt:formatDate value="${ticket.actualEnd}" pattern="dd/MM/yyyy HH:mm" />
+                        </span>
+                    </p>
                 </div>
             </div>
 
-            <div class="card shadow-sm border-0 mb-4 border-top border-4 border-info">
-                <div class="card-body p-4">
-                    <h6 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="bi bi-calendar-event me-2"></i>Schedule Info</h6>
-                    <ul class="list-unstyled mb-0">
-                        <li class="mb-3"><small class="text-muted d-block">Scheduled Start</small>
-                            <span class="fw-bold text-primary">
-                                <c:choose>
-                                    <c:when test="${not empty ticket.scheduledStart}">
-                                        <fmt:formatDate value="${ticket.scheduledStart}" pattern="dd/MM/yyyy HH:mm" />
-                                    </c:when>
-                                    <c:otherwise>TBD</c:otherwise>
-                                </c:choose>
-                            </span>
-                        </li>
-                        <li class="mb-3"><small class="text-muted d-block">Scheduled End</small>
-                            <span class="fw-bold text-primary">
-                                <c:choose>
-                                    <c:when test="${not empty ticket.scheduledEnd}">
-                                        <fmt:formatDate value="${ticket.scheduledEnd}" pattern="dd/MM/yyyy HH:mm" />
-                                    </c:when>
-                                    <c:otherwise>TBD</c:otherwise>
-                                </c:choose>
-                            </span>
-                        </li>
-                        <li class="mb-3"><small class="text-muted d-block">Downtime Required?</small>
-                            <span class="badge ${ticket.downtimeRequired ? 'bg-danger' : 'bg-success'}">${ticket.downtimeRequired ? 'YES' : 'NO'}</span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+            <c:if test="${sessionScope.user.roleId == 3}">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h6 class="mb-0 fw-bold text-dark">
+                            <i class="bi bi-person-check me-2"></i>Phân công yêu cầu thay đổi
+                        </h6>
+                    </div>
 
-            <%-- UC70: FORM ASSIGN CHANGE REQUEST (CHỈ DÀNH CHO MANAGER - ROLE 3) --%>
-            <c:if test="${sessionScope.user.roleId == 3 and ticket.status ne 'CLOSED' and ticket.status ne 'CANCELLED'}">
-                <div class="card shadow-sm border-0 mb-4 bg-white border-top border-4 border-warning">
-                    <div class="card-body p-4">
-                        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-person-plus me-2"></i>Assign Request</h6>
-                        <form action="${pageContext.request.contextPath}/change-request/assign" method="post" class="row g-2 align-items-center">
+                    <div class="card-body">
+                        <form action="${pageContext.request.contextPath}/change-request-list/assign" method="post">
                             <input type="hidden" name="ticketId" value="${ticket.ticketId}">
-
-                            <div class="col-md-12 mb-2">
-                                <select name="assignedTo" class="form-select border-primary" required>
-                                    <option value="">-- Select System Engineer --</option>
-                                    <c:forEach var="eng" items="${engineerList}">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Chọn System Engineer</label>
+                                <select name="assignedTo" class="form-select" required>
+                                    <option value="">-- Chọn người xử lý --</option>
+                                    <c:forEach var="eng" items="${engineers}">
                                         <option value="${eng.userId}" ${ticket.assignedTo == eng.userId ? 'selected' : ''}>
-                                            ${eng.fullName} (ID: ${eng.userId})
+                                            ${eng.fullName}
                                         </option>
                                     </c:forEach>
                                 </select>
                             </div>
-                            <div class="col-md-12">
-                                <button type="submit" class="btn btn-primary w-100 shadow-sm fw-bold">
-                                    <i class="bi bi-send-check me-1"></i> Confirm Assign
-                                </button>
-                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Phân công</button>
                         </form>
                     </div>
                 </div>
             </c:if>
 
-            <%-- CAB DECISION INFO --%>
-            <%-- HIỂN THỊ KẾT QUẢ ĐÁNH GIÁ & QUYẾT ĐỊNH CỦA CAB (Ai cũng xem được) --%>
-            <div class="card shadow-sm border-0 bg-dark text-white mb-4">
-                <div class="card-body p-4">
-                    <h6 class="fw-bold border-bottom border-secondary pb-2 mb-3"><i class="bi bi-bank me-2"></i>CAB Assessment & Decision</h6>
-
-                    <div class="mb-3">
-                        <small class="text-secondary d-block fw-bold">Risk & Schedule Assessment:</small>
-                        <p class="text-light mb-2 fst-italic border-start border-3 border-secondary ps-2">
-                            ${not empty ticket.cabRiskAssessment ? ticket.cabRiskAssessment : 'Đang chờ hội đồng đánh giá rủi ro...'}
-                        </p>
-                    </div>
-                    <div class="mb-3">
-                        <small class="text-secondary d-block fw-bold">CAB Comments:</small>
-                        <p class="text-light mb-0">${not empty ticket.cabComment ? ticket.cabComment : 'Chưa có bình luận.'}</p>
+            <c:if test="${sessionScope.user.roleId == 7}">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h6 class="mb-0 fw-bold text-dark">
+                            <i class="bi bi-shield-check me-2"></i>Đánh giá rủi ro / Duyệt CAB
+                        </h6>
                     </div>
 
-                    <div class="d-flex align-items-center justify-content-between mt-4 pt-3 border-top border-secondary">
-                        <div class="d-flex align-items-center">
-                            <h4 class="m-0 me-2 ${ticket.cabDecision == 'APPROVED' ? 'text-success' : (ticket.cabDecision == 'REJECTED' ? 'text-danger' : 'text-warning')}">
-                                <i class="bi ${ticket.cabDecision == 'APPROVED' ? 'bi-check-circle-fill' : (ticket.cabDecision == 'REJECTED' ? 'bi-x-circle-fill' : 'bi-hourglass-split')}"></i>
-                            </h4>
-                            <span class="fs-5 fw-bold">${not empty ticket.cabDecision ? ticket.cabDecision : 'PENDING'}</span>
-                        </div>
+                    <div class="card-body">
+                        <form action="${pageContext.request.contextPath}/change-request-list/assess"
+                              method="post"
+                              class="mb-4">
+                            <input type="hidden" name="ticketId" value="${ticket.ticketId}">
 
-                        <%-- HAI NÚT APPROVE/REJECT DÀNH CHO CAB MEMBER --%>
-                        <c:if test="${sessionScope.user.roleId == 7 and ticket.cabDecision ne 'APPROVED' and ticket.cabDecision ne 'REJECTED'}">
-                            <form action="${pageContext.request.contextPath}/change-request/review" method="post" class="m-0">
-                                <input type="hidden" name="actionType" value="single">
-                                <input type="hidden" name="ticketId" value="${ticket.ticketId}">
-                                <button type="submit" name="decision" value="APPROVED" class="btn btn-success btn-sm fw-bold me-2 shadow-sm" onclick="return confirm('Duyệt phiếu Change Request này?');">
-                                    <i class="bi bi-check-lg"></i> Approve
-                                </button>
-                                <button type="submit" name="decision" value="REJECTED" class="btn btn-outline-light btn-sm fw-bold shadow-sm" onclick="return confirm('Từ chối phiếu Change Request này?');">
-                                    <i class="bi bi-x-lg"></i> Reject
-                                </button>
-                            </form>
-                        </c:if>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Mức rủi ro</label>
+                                <select name="riskLevel" class="form-select">
+                                    <option value="LOW" ${ticket.riskLevel eq 'LOW' ? 'selected' : ''}>LOW</option>
+                                    <option value="MEDIUM" ${ticket.riskLevel eq 'MEDIUM' ? 'selected' : ''}>MEDIUM</option>
+                                    <option value="HIGH" ${ticket.riskLevel eq 'HIGH' ? 'selected' : ''}>HIGH</option>
+                                    <option value="CRITICAL" ${ticket.riskLevel eq 'CRITICAL' ? 'selected' : ''}>CRITICAL</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Đánh giá tác động</label>
+                                <textarea name="impactAssessment" class="form-control" rows="2">${ticket.impactAssessment}</textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Nhận định rủi ro của CAB</label>
+                                <textarea name="cabRiskAssessment" class="form-control" rows="2">${ticket.cabRiskAssessment}</textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Bắt đầu dự kiến</label>
+                                <input type="datetime-local"
+                                       name="scheduledStart"
+                                       class="form-control"
+                                       value="<fmt:formatDate value='${ticket.scheduledStart}' pattern="dd/MM/yyyy HH:mm" />">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Kết thúc dự kiến</label>
+                                <input type="datetime-local"
+                                       name="scheduledEnd"
+                                       class="form-control"
+                                       value="<fmt:formatDate value='${ticket.scheduledEnd}' pattern="dd/MM/yyyy HH:mm" />">
+                            </div>
+
+                            <button type="submit" class="btn btn-outline-primary w-100">
+                                Lưu đánh giá
+                            </button>
+                        </form>
+
+                        <form action="${pageContext.request.contextPath}/change-request-list/review"
+                              method="post"
+                              class="mb-2">
+                            <input type="hidden" name="ticketId" value="${ticket.ticketId}">
+                            <input type="hidden" name="decision" value="APPROVE">
+                            <textarea name="cabComment"
+                                      class="form-control mb-2"
+                                      rows="2"
+                                      placeholder="Nhập ghi chú duyệt..."></textarea>
+                            <button type="submit" class="btn btn-success w-100">
+                                Duyệt yêu cầu
+                            </button>
+                        </form>
+
+                        <form action="${pageContext.request.contextPath}/change-request-list/review"
+                              method="post">
+                            <input type="hidden" name="ticketId" value="${ticket.ticketId}">
+                            <input type="hidden" name="decision" value="REJECT">
+                            <textarea name="cabComment"
+                                      class="form-control mb-2"
+                                      rows="2"
+                                      placeholder="Nhập lý do từ chối..."></textarea>
+                            <button type="submit" class="btn btn-danger w-100">
+                                Từ chối yêu cầu
+                            </button>
+                        </form>
                     </div>
                 </div>
-            </div>
+            </c:if>
         </div>
     </div>
-
-    <%-- FORM ĐÁNH GIÁ (CHỈ DÀNH CHO CAB MEMBER - ROLE 7) --%>
-    <%-- CAB được quyền sửa đánh giá nếu chưa chốt Approved/Rejected --%>
-    <c:if test="${sessionScope.user.roleId == 7 and ticket.cabDecision ne 'APPROVED' and ticket.cabDecision ne 'REJECTED'}">
-        <div class="card shadow-sm border-0 mb-4 border-top border-4 border-danger">
-            <div class="card-body p-4">
-                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-clipboard2-pulse me-2"></i>Assess Change Risk</h6>
-                <form action="${pageContext.request.contextPath}/change-request/assess" method="post">
-                    <input type="hidden" name="ticketId" value="${ticket.ticketId}">
-
-                    <div class="mb-3">
-                        <label class="form-label fw-bold text-danger small">Risk & Schedule Assessment <span class="text-danger">*</span></label>
-                        <textarea name="cabRiskAssessment" class="form-control border-danger" rows="3" required placeholder="Đánh giá mức độ rủi ro, thời gian downtime có hợp lý không?">${ticket.cabRiskAssessment}</textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold text-secondary small">Additional Comments</label>
-                        <textarea name="cabComment" class="form-control border-secondary" rows="2" placeholder="Góp ý hoặc yêu cầu điều chỉnh...">${ticket.cabComment}</textarea>
-                    </div>
-
-                    <button type="submit" class="btn btn-danger w-100 fw-bold shadow-sm">
-                        <i class="bi bi-save me-1"></i> Save Assessment
-                    </button>
-                </form>
-            </div>
-        </div>
-    </c:if>
-</div>
-</div>
 </div>
 
 <jsp:include page="/includes/footer.jsp" />

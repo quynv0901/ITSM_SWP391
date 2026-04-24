@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
 <jsp:include page="/includes/header.jsp">
     <jsp:param name="pageTitle" value="Cơ sở dữ liệu lỗi đã biết" />
@@ -161,24 +161,24 @@
         </table>
 
         <c:if test="${totalPages > 1}">
-            <nav aria-label="Phân trang" class="mt-3">
-                <ul class="pagination justify-content-center">
-                    <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
-                        <a class="page-link"
-                           href="?action=list&searchQuery=${searchQuery}&statusFilter=${statusFilter}&page=${currentPage - 1}">Trước</a>
-                    </li>
-                    <c:forEach begin="1" end="${totalPages}" var="i">
-                        <li class="page-item ${currentPage == i ? 'active' : ''}">
-                            <a class="page-link"
-                               href="?action=list&searchQuery=${searchQuery}&statusFilter=${statusFilter}&page=${i}">${i}</a>
+            <div class="card-footer bg-white border-top-0 py-3 d-flex justify-content-between align-items-center px-4">
+                <span class="text-muted small">Tổng <strong>${totalRecords}</strong> mục</span>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
+                            <a class="page-link" href="?action=list&page=${currentPage - 1}&searchQuery=${searchQuery}&statusFilter=${statusFilter}">‹</a>
                         </li>
-                    </c:forEach>
-                    <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
-                        <a class="page-link"
-                           href="?action=list&searchQuery=${searchQuery}&statusFilter=${statusFilter}&page=${currentPage + 1}">Sau</a>
-                    </li>
-                </ul>
-            </nav>
+                        <c:forEach begin="1" end="${totalPages}" var="i">
+                            <li class="page-item ${currentPage == i ? 'active' : ''}">
+                                <a class="page-link" href="?action=list&page=${i}&searchQuery=${searchQuery}&statusFilter=${statusFilter}">${i}</a>
+                            </li>
+                        </c:forEach>
+                        <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
+                            <a class="page-link" href="?action=list&page=${currentPage + 1}&searchQuery=${searchQuery}&statusFilter=${statusFilter}">›</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
         </c:if>
     </div>
 </div>
