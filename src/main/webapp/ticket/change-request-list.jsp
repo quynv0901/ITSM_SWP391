@@ -241,7 +241,17 @@
                                             <div><fmt:formatDate value="${cr.scheduledEnd}" pattern="dd/MM/yyyy HH:mm" /></div>
                                         </td>
                                         <td class="text-center">
-                                            <a href="${pageContext.request.contextPath}/change-request-list/detail?id=${cr.ticketId}" class="btn btn-info btn-sm text-white">Xem</a>
+                                            <div class="d-flex justify-content-center gap-1 flex-wrap">
+                                                <a href="${pageContext.request.contextPath}/change-request-list/detail?id=${cr.ticketId}"
+                                                   class="btn btn-info btn-sm text-white">
+                                                    Xem
+                                                </a>
+
+                                                <a href="${pageContext.request.contextPath}/change-request-list/detail?id=${cr.ticketId}#history-section"
+                                                   class="btn btn-outline-primary btn-sm">
+                                                    Lịch sử thay đổi
+                                                </a>
+                                            </div>
                                         </td>
                                     </tr>
                                 </c:forEach>
@@ -316,8 +326,43 @@
                 <div id="changeCalendar"></div>
             </div>
         </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-2">
+            <div class="text-muted">
+                Tổng số: ${totalItems} bản ghi
+            </div>
+
+            <nav>
+                <ul class="pagination mb-0">
+                    <li class="page-item ${currentPage <= 1 ? 'disabled' : ''}">
+                        <a class="page-link"
+                           href="${pageContext.request.contextPath}/change-request-list/list?page=${currentPage - 1}&search=${search}&statusFilter=${statusFilter}">
+                            Trước
+                        </a>
+                    </li>
+
+                    <c:forEach begin="1" end="${totalPages}" var="p">
+                        <li class="page-item ${p == currentPage ? 'active' : ''}">
+                            <a class="page-link"
+                               href="${pageContext.request.contextPath}/change-request-list/list?page=${p}&search=${search}&statusFilter=${statusFilter}">
+                                ${p}
+                            </a>
+                        </li>
+                    </c:forEach>
+
+                    <li class="page-item ${currentPage >= totalPages ? 'disabled' : ''}">
+                        <a class="page-link"
+                           href="${pageContext.request.contextPath}/change-request-list/list?page=${currentPage + 1}&search=${search}&statusFilter=${statusFilter}">
+                            Sau
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
     </div>
 </div>
+
+
 
 <script>
     function toggleAll(source) {
@@ -357,86 +402,86 @@
         }
 
         const events = [
-            <c:forEach var="cr" items="${changeRequests}" varStatus="loop">
-            {
-                title: '${cr.ticketNumber} - ${cr.title}',
-                start: '<fmt:formatDate value="${cr.scheduledStart}" pattern="yyyy-MM-dd'T'HH:mm:ss" />',
-                end: '<fmt:formatDate value="${cr.scheduledEnd}" pattern="yyyy-MM-dd'T'HH:mm:ss" />',
-                url: '${pageContext.request.contextPath}/change-request-list/detail?id=${cr.ticketId}',
-                backgroundColor: getEventColorByStatus('${cr.status}'),
-                borderColor: getEventColorByStatus('${cr.status}'),
-                extendedProps: {
-                    status: '${cr.status}',
-                    ticketNumber: '${cr.ticketNumber}'
-                }
-            }<c:if test="${not loop.last}">,</c:if>
-            </c:forEach>
-        ];
+    <c:forEach var="cr" items="${changeRequests}" varStatus="loop">
+        {
+        title: '${cr.ticketNumber} - ${cr.title}',
+                        start: '<fmt:formatDate value="${cr.scheduledStart}" pattern="yyyy-MM-dd'T'HH:mm:ss" />',
+                        end: '<fmt:formatDate value="${cr.scheduledEnd}" pattern="yyyy-MM-dd'T'HH:mm:ss" />',
+                        url: '${pageContext.request.contextPath}/change-request-list/detail?id=${cr.ticketId}',
+                                        backgroundColor: getEventColorByStatus('${cr.status}'),
+                                        borderColor: getEventColorByStatus('${cr.status}'),
+                                        extendedProps: {
+                                        status: '${cr.status}',
+                                                ticketNumber: '${cr.ticketNumber}'
+                                        }
+                                }<c:if test="${not loop.last}">,</c:if>
+    </c:forEach>
+                                ];
 
-        changeCalendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            height: 'auto',
-            expandRows: true,
-            locale: 'vi',
-            firstDay: 1,
-            dayMaxEvents: 3,
-            navLinks: true,
-            displayEventTime: true,
-            eventTimeFormat: {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false
-            },
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,listWeek'
-            },
-            buttonText: {
-                today: 'Hôm nay',
-                month: 'Tháng',
-                week: 'Tuần',
-                list: 'Danh sách'
-            },
-            noEventsContent: 'Không có lịch thay đổi trong khoảng thời gian này.',
-            events: events,
-            eventDisplay: 'block',
-            eventContent: function(arg) {
-                const timeText = arg.timeText ? '<div class="fc-event-time-custom">' + arg.timeText + '</div>' : '';
-                const titleText = '<div class="fc-event-title-custom">' + arg.event.title + '</div>';
-                return {
-                    html: '<div class="fc-event-main-custom">' + timeText + titleText + '</div>'
-                };
-            },
-            eventDidMount: function(info) {
-                const status = info.event.extendedProps.status || '';
-                info.el.setAttribute('title', info.event.title + (status ? ' - ' + status : ''));
-            }
-        });
+                                changeCalendar = new FullCalendar.Calendar(calendarEl, {
+                                    initialView: 'dayGridMonth',
+                                    height: 'auto',
+                                    expandRows: true,
+                                    locale: 'vi',
+                                    firstDay: 1,
+                                    dayMaxEvents: 3,
+                                    navLinks: true,
+                                    displayEventTime: true,
+                                    eventTimeFormat: {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                        hour12: false
+                                    },
+                                    headerToolbar: {
+                                        left: 'prev,next today',
+                                        center: 'title',
+                                        right: 'dayGridMonth,timeGridWeek,listWeek'
+                                    },
+                                    buttonText: {
+                                        today: 'Hôm nay',
+                                        month: 'Tháng',
+                                        week: 'Tuần',
+                                        list: 'Danh sách'
+                                    },
+                                    noEventsContent: 'Không có lịch thay đổi trong khoảng thời gian này.',
+                                    events: events,
+                                    eventDisplay: 'block',
+                                    eventContent: function (arg) {
+                                        const timeText = arg.timeText ? '<div class="fc-event-time-custom">' + arg.timeText + '</div>' : '';
+                                        const titleText = '<div class="fc-event-title-custom">' + arg.event.title + '</div>';
+                                        return {
+                                            html: '<div class="fc-event-main-custom">' + timeText + titleText + '</div>'
+                                        };
+                                    },
+                                    eventDidMount: function (info) {
+                                        const status = info.event.extendedProps.status || '';
+                                        info.el.setAttribute('title', info.event.title + (status ? ' - ' + status : ''));
+                                    }
+                                });
 
-        changeCalendar.render();
-        calendarInitialized = true;
-    }
+                                changeCalendar.render();
+                                calendarInitialized = true;
+                            }
 
-    document.addEventListener('DOMContentLoaded', function () {
-        const calendarTab = document.getElementById('calendar-tab');
-        const calendarView = document.getElementById('calendar-view');
+                            document.addEventListener('DOMContentLoaded', function () {
+                                const calendarTab = document.getElementById('calendar-tab');
+                                const calendarView = document.getElementById('calendar-view');
 
-        if (calendarView.classList.contains('show') || calendarView.classList.contains('active')) {
-            initChangeCalendar();
-        }
+                                if (calendarView.classList.contains('show') || calendarView.classList.contains('active')) {
+                                    initChangeCalendar();
+                                }
 
-        if (calendarTab) {
-            calendarTab.addEventListener('shown.bs.tab', function () {
-                if (!calendarInitialized) {
-                    initChangeCalendar();
-                } else if (changeCalendar) {
-                    changeCalendar.updateSize();
-                    changeCalendar.render();
-                }
-            });
-        }
-    });
+                                if (calendarTab) {
+                                    calendarTab.addEventListener('shown.bs.tab', function () {
+                                        if (!calendarInitialized) {
+                                            initChangeCalendar();
+                                        } else if (changeCalendar) {
+                                            changeCalendar.updateSize();
+                                            changeCalendar.render();
+                                        }
+                                    });
+                                }
+                            });
 </script>
 
 <jsp:include page="/includes/footer.jsp" />
