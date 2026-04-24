@@ -2,7 +2,6 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
  */
-
 package com.itserviceflow.controllers;
 
 import com.itserviceflow.daos.ChangeRequestDAO;
@@ -17,6 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,6 +29,7 @@ public class ChangeRequestListServlet extends HttpServlet {
     private static final int ROLE_MANAGER = 3;
     private static final int ROLE_SYSTEM_ENGINEER = 6;
     private static final int ROLE_CAB_MEMBER = 7;
+    private static final int PAGE_SIZE = 8;
 
     private ChangeRequestDAO changeRequestDAO;
 
@@ -109,10 +110,43 @@ public class ChangeRequestListServlet extends HttpServlet {
             filter.setRequesterId(loginUser.getUserId());
         }
 
-        List<ChangeRequestListDTO> list = changeRequestDAO.getChangeRequestList(filter);
-        request.setAttribute("changeRequests", list);
+        List<ChangeRequestListDTO> fullList = changeRequestDAO.getChangeRequestList(filter);
+
+        int currentPage = 1;
+        try {
+            currentPage = Integer.parseInt(request.getParameter("page"));
+            if (currentPage < 1) {
+                currentPage = 1;
+            }
+        } catch (Exception e) {
+            currentPage = 1;
+        }
+
+        int totalItems = fullList.size();
+        int totalPages = (int) Math.ceil((double) totalItems / PAGE_SIZE);
+        if (totalPages == 0) {
+            totalPages = 1;
+        }
+
+        if (currentPage > totalPages) {
+            currentPage = totalPages;
+        }
+
+        int fromIndex = (currentPage - 1) * PAGE_SIZE;
+        int toIndex = Math.min(fromIndex + PAGE_SIZE, totalItems);
+
+        List<ChangeRequestListDTO> pagedList = new ArrayList<>();
+        if (totalItems > 0) {
+            pagedList = fullList.subList(fromIndex, toIndex);
+        }
+
+        request.setAttribute("changeRequests", pagedList);
         request.setAttribute("search", filter.getSearch());
         request.setAttribute("statusFilter", filter.getStatusFilter());
+        request.setAttribute("currentPage", currentPage);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalItems", totalItems);
+
         request.getRequestDispatcher("/ticket/change-request-list.jsp").forward(request, response);
     }
 
@@ -137,6 +171,8 @@ public class ChangeRequestListServlet extends HttpServlet {
         request.setAttribute("ticket", ticket);
         request.setAttribute("comments", ticket.getComments());
         request.setAttribute("engineers", changeRequestDAO.getSystemEngineers());
+        request.setAttribute("historyList", changeRequestDAO.getTicketHistoryByTicketId(ticketId));
+
         request.getRequestDispatcher("/ticket/change-request-detail.jsp").forward(request, response);
     }
 
@@ -165,6 +201,19 @@ public class ChangeRequestListServlet extends HttpServlet {
         request.getRequestDispatcher("/ticket/update-change-request.jsp").forward(request, response);
     }
 
+    private void logIfChanged(int ticketId, int userId,
+            String field, Object oldVal, Object newVal, String type) {
+
+        String oldStr = oldVal == null ? null : oldVal.toString();
+        String newStr = newVal == null ? null : newVal.toString();
+
+        if ((oldStr == null && newStr != null)
+                || (oldStr != null && !oldStr.equals(newStr))) {
+
+            changeRequestDAO.addHistory(ticketId, userId, field, oldStr, newStr, type);
+        }
+    }
+
     private void createChangeRequest(HttpServletRequest request, HttpServletResponse response, User loginUser) throws IOException {
         if (loginUser.getRoleId() != ROLE_SYSTEM_ENGINEER) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Chỉ System Engineer mới được tạo yêu cầu thay đổi.");
@@ -176,7 +225,20 @@ public class ChangeRequestListServlet extends HttpServlet {
         dto.setReportedBy(loginUser.getUserId());
         dto.setAssignedTo(loginUser.getDepartmentId());
 
-        boolean created = changeRequestDAO.createChangeRequest(dto);
+        int ticketId = changeRequestDAO.createChangeRequest(dto);
+
+        boolean created = ticketId > 0;
+
+        if (created) {
+            changeRequestDAO.addHistory(ticketId, loginUser.getUserId(),
+                    "CREATE", null, "Tạo mới yêu cầu", "CREATE");
+
+            changeRequestDAO.addHistory(ticketId, loginUser.getUserId(),
+                    "status", null, "NEW", "CREATE");
+
+            changeRequestDAO.addHistory(ticketId, loginUser.getUserId(),
+                    "approval_status", null, "PENDING", "CREATE");
+        }
         response.sendRedirect(request.getContextPath() + "/change-request-list/list" + (created ? "?msg=created" : "?msg=create_failed"));
     }
 
@@ -197,6 +259,15 @@ public class ChangeRequestListServlet extends HttpServlet {
         dto.setTicketId(ticketId);
 
         boolean updated = changeRequestDAO.updateChangeRequest(dto);
+
+        if (updated) {
+            logIfChanged(ticketId, loginUser.getUserId(), "title", current.getTitle(), dto.getTitle(), "UPDATE");
+            logIfChanged(ticketId, loginUser.getUserId(), "description", current.getDescription(), dto.getDescription(), "UPDATE");
+            logIfChanged(ticketId, loginUser.getUserId(), "priority", current.getPriority(), dto.getPriority(), "UPDATE");
+            logIfChanged(ticketId, loginUser.getUserId(), "risk_level", current.getRiskLevel(), dto.getRiskLevel(), "UPDATE");
+            logIfChanged(ticketId, loginUser.getUserId(), "scheduled_start", current.getScheduledStart(), dto.getScheduledStart(), "UPDATE");
+            logIfChanged(ticketId, loginUser.getUserId(), "scheduled_end", current.getScheduledEnd(), dto.getScheduledEnd(), "UPDATE");
+        }
         response.sendRedirect(request.getContextPath() + "/change-request-list/detail?id=" + ticketId + (updated ? "&msg=updated" : "&msg=update_failed"));
     }
 
@@ -210,6 +281,10 @@ public class ChangeRequestListServlet extends HttpServlet {
         if ("single".equals(actionType)) {
             int ticketId = parseInt(request.getParameter("ticketId"));
             boolean deleted = changeRequestDAO.deleteChangeRequest(ticketId);
+            if (deleted) {
+                changeRequestDAO.addHistory(ticketId, loginUser.getUserId(),
+                        "DELETE", "ACTIVE", "DELETED", "DELETE");
+            }
             response.sendRedirect(request.getContextPath() + "/change-request-list/list" + (deleted ? "?msg=deleted" : "?msg=delete_failed"));
         } else {
             String[] ticketIds = request.getParameterValues("ticketIds");
@@ -224,7 +299,12 @@ public class ChangeRequestListServlet extends HttpServlet {
             return;
         }
         int ticketId = parseInt(request.getParameter("ticketId"));
+        ChangeRequestDetailDTO old = changeRequestDAO.getChangeRequestDetail(ticketId);
         boolean cancelled = changeRequestDAO.cancelChangeRequest(ticketId);
+        if (cancelled) {
+            changeRequestDAO.addHistory(ticketId, loginUser.getUserId(),
+                    "status", old.getStatus(), "CANCELLED", "CANCEL");
+        }
         response.sendRedirect(request.getContextPath() + "/change-request-list/detail?id=" + ticketId + (cancelled ? "&msg=cancelled" : "&msg=cancel_failed"));
     }
 
@@ -235,7 +315,19 @@ public class ChangeRequestListServlet extends HttpServlet {
         }
         int ticketId = parseInt(request.getParameter("ticketId"));
         int engineerId = parseInt(request.getParameter("assignedTo"));
+        ChangeRequestDetailDTO old = changeRequestDAO.getChangeRequestDetail(ticketId);
+
         boolean assigned = changeRequestDAO.assignChangeRequest(ticketId, engineerId);
+
+        if (assigned) {
+            changeRequestDAO.addHistory(ticketId, loginUser.getUserId(),
+                    "assigned_to", old.getAssignedToName(), String.valueOf(engineerId), "ASSIGN");
+
+            if ("NEW".equals(old.getStatus())) {
+                changeRequestDAO.addHistory(ticketId, loginUser.getUserId(),
+                        "status", "NEW", "ASSIGNED", "ASSIGN");
+            }
+        }
         response.sendRedirect(request.getContextPath() + "/change-request-list/detail?id=" + ticketId + (assigned ? "&msg=assigned" : "&msg=assign_failed"));
     }
 
@@ -245,6 +337,7 @@ public class ChangeRequestListServlet extends HttpServlet {
             return;
         }
         int ticketId = parseInt(request.getParameter("ticketId"));
+        ChangeRequestDetailDTO old = changeRequestDAO.getChangeRequestDetail(ticketId);
         boolean ok = changeRequestDAO.assessRisk(
                 ticketId,
                 loginUser.getUserId(),
@@ -254,6 +347,12 @@ public class ChangeRequestListServlet extends HttpServlet {
                 parseTimestamp(request.getParameter("scheduledStart")),
                 parseTimestamp(request.getParameter("scheduledEnd"))
         );
+
+        if (ok) {
+            logIfChanged(ticketId, loginUser.getUserId(), "risk_level", old.getRiskLevel(), request.getParameter("riskLevel"), "ASSESS");
+            logIfChanged(ticketId, loginUser.getUserId(), "scheduled_start", old.getScheduledStart(), parseTimestamp(request.getParameter("scheduledStart")), "ASSESS");
+            logIfChanged(ticketId, loginUser.getUserId(), "scheduled_end", old.getScheduledEnd(), parseTimestamp(request.getParameter("scheduledEnd")), "ASSESS");
+        }
         response.sendRedirect(request.getContextPath() + "/change-request-list/detail?id=" + ticketId + (ok ? "&msg=assessed" : "&msg=assess_failed"));
     }
 
@@ -265,7 +364,18 @@ public class ChangeRequestListServlet extends HttpServlet {
         int ticketId = parseInt(request.getParameter("ticketId"));
         String decision = trim(request.getParameter("decision"));
         boolean approve = "APPROVE".equalsIgnoreCase(decision);
+        ChangeRequestDetailDTO old = changeRequestDAO.getChangeRequestDetail(ticketId);
         boolean ok = changeRequestDAO.reviewChangeRequest(ticketId, loginUser.getUserId(), approve, trim(request.getParameter("cabComment")));
+        if (ok) {
+            String newApproval = approve ? "APPROVED" : "REJECTED";
+            String newStatus = approve ? "ASSIGNED" : "CANCELLED";
+
+            changeRequestDAO.addHistory(ticketId, loginUser.getUserId(),
+                    "approval_status", old.getApprovalStatus(), newApproval, "REVIEW");
+
+            changeRequestDAO.addHistory(ticketId, loginUser.getUserId(),
+                    "status", old.getStatus(), newStatus, "REVIEW");
+        }
         response.sendRedirect(request.getContextPath() + "/change-request-list/detail?id=" + ticketId + (ok ? (approve ? "&msg=approved" : "&msg=rejected") : "&msg=review_failed"));
     }
 
@@ -300,7 +410,9 @@ public class ChangeRequestListServlet extends HttpServlet {
 
     private Timestamp parseTimestamp(String value) {
         try {
-            if (value == null || value.trim().isEmpty()) return null;
+            if (value == null || value.trim().isEmpty()) {
+                return null;
+            }
             return Timestamp.valueOf(value.replace("T", " ") + ":00");
         } catch (Exception e) {
             return null;
@@ -313,7 +425,9 @@ public class ChangeRequestListServlet extends HttpServlet {
 
     private User getLoggedInUser(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
-        if (session == null) return null;
+        if (session == null) {
+            return null;
+        }
         return (User) session.getAttribute("user");
     }
 }

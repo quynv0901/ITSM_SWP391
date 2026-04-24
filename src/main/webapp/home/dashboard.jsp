@@ -315,7 +315,7 @@
         <i class="bi bi-arrow-right card-arrow"></i>
     </a>
 
-    <a href="${pageContext.request.contextPath}/create-request" class="action-card">
+    <a href="${pageContext.request.contextPath}/service-request?action=createForm" class="action-card">
         <div class="card-icon green"><i class="bi bi-clipboard2-plus-fill"></i></div>
         <h3>Tạo Service Request</h3>
         <p>Yêu cầu dịch vụ IT mới như cấp tài khoản, cài phần mềm, hỗ trợ thiết bị.</p>
@@ -337,7 +337,7 @@
         <p>Xem danh mục các dịch vụ IT đang cung cấp trong tổ chức.</p>
         <i class="bi bi-arrow-right card-arrow"></i>
     </a>
-    <a href="${pageContext.request.contextPath}/change-request/list" class="action-card">
+    <a href="${pageContext.request.contextPath}/change-request-list/list" class="action-card">
         <div class="card-icon orange"><i class="bi bi-arrow-repeat me-2"></i></div>
         <h3>Change Request</h3>
         <p>Hiển thị danh sách yêu cầu thay đổi dưới dạng lịch cho các thay đổi đã lên lịch.</p>
