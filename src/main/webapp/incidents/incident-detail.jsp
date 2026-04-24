@@ -2,24 +2,18 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
-<!DOCTYPE html>
-<html lang="en">
-
-    <head>
-        <meta charset="UTF-8">
-        <title>Chi tiết Sự cố - ${incident.ticketNumber}</title>
-        <style>
+<jsp:include page="/includes/header.jsp" />
+<style>
             * {
                 box-sizing: border-box;
                 margin: 0;
                 padding: 0;
             }
 
-            body {
+            .incident-detail-page {
                 font-family: 'Segoe UI', sans-serif;
                 background: #f0f4f8;
                 color: #2d3748;
-                padding: 24px;
             }
 
             .page-header {
@@ -612,9 +606,8 @@
             .feedback-textarea { width: 100%; min-height: 90px; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-family: inherit; resize: vertical; }
             .feedback-textarea:focus { outline: none; border-color: #4299e1; box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15); }
         </style>
-    </head>
 
-    <body>
+        <div class="incident-detail-page container-fluid bg-white p-4 rounded shadow-sm">
 
         <div class="page-header">
             <a href="${pageContext.request.contextPath}/incident?action=list" class="back-btn">&#8592; Quay lại
@@ -1260,6 +1253,6 @@
             });
 
         </script>
-    </body>
+</div>
 
-</html>
+<jsp:include page="/includes/footer.jsp" />

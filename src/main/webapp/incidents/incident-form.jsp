@@ -1,12 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${not empty incident ? 'Chỉnh sửa Sự cố' : 'Tạo Sự cố'}</title>
-    <style>
+<jsp:include page="/includes/header.jsp" />
+<style>
         :root {
             --primary-color: #3b82f6;
             --primary-hover: #2563eb;
@@ -29,12 +24,11 @@
             padding: 0;
         }
 
-        body {
+        .incident-form-page {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-primary);
             line-height: 1.6;
-            padding: 20px;
         }
 
         .container {
@@ -429,8 +423,8 @@
             }
         }
     </style>
-</head>
-<body>
+
+    <div class="incident-form-page container-fluid bg-white p-4 rounded shadow-sm">
     <div class="container">
         <div class="header">
             <h1>${not empty incident ? '✏️ Chỉnh sửa Sự cố' : '➕ Tạo Sự cố mới'}</h1>
@@ -769,5 +763,6 @@
         </script>
     </c:if>
 
-</body>
-</html>
+</div>
+
+<jsp:include page="/includes/footer.jsp" />

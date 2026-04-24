@@ -287,66 +287,52 @@
                 </c:if>
             </c:if>
 
-                    <li class="menu-header">Báo cáo &amp; Phân tích</li>
-                    <a href="${pageContext.request.contextPath}/dashboard"
-                       class="menu-item ${pageContext.request.requestURI.contains('/dashboard') ? 'active' : ''}">
-                        <i class="bi bi-speedometer2"></i> Bảng điều khiển
-                    </a>
-                    <c:if test="${sessionScope.user != null && (sessionScope.user.roleId == 3 || sessionScope.user.roleId == 10)}">
-                        <a href="${pageContext.request.contextPath}/sla-dashboard"
-                           class="menu-item ${pageContext.request.requestURI.contains('/sla-dashboard') ? 'active' : ''}">
-                            <i class="bi bi-graph-up-arrow"></i> SLA &amp; Năng suất
-                        </a>
-                    </c:if>
-                </ul>
-            </div>
+            <%-- Báo cáo & Phân tích --%>
+            <li class="menu-header">Báo cáo &amp; Phân tích</li>
+            <a href="${pageContext.request.contextPath}/dashboard"
+               class="menu-item ${pageContext.request.requestURI.contains('/dashboard') and !pageContext.request.requestURI.contains('/sla-dashboard') ? 'active' : ''}">
+                <i class="bi bi-speedometer2"></i> Bảng điều khiển
+            </a>
+            <c:if test="${sessionScope.user != null && sessionScope.user.roleId != 1}">
+                <a href="${pageContext.request.contextPath}/sla-dashboard"
+                   class="menu-item ${pageContext.request.requestURI.contains('/sla-dashboard') ? 'active' : ''}">
+                    <i class="bi bi-graph-up-arrow"></i> SLA &amp; Năng suất
+                </a>
+            </c:if>
 
-            <!-- Main Content -->
-            <div class="admin-main">
-                <!-- Topbar -->
-                <div class="topbar">
-                    <div class="topbar-left">
-                        <i class="bi bi-list fs-4 cursor-pointer"></i>
-                        <span class="fw-bold">
-                            <c:choose>
-                                <c:when test="${pageContext.request.requestURI.contains('/problem/')}">Quản lý Vấn đề</c:when>
-                                <c:when test="${pageContext.request.requestURI.contains('/known-error/')}">Danh sách lỗi đã xác định</c:when>
-                                <c:when test="${pageContext.request.requestURI.contains('/configuration-item')}">Danh mục cấu hình</c:when>
-                                <c:when test="${pageContext.request.requestURI.contains('/vendor')}">Quản lý Nhà cung cấp</c:when>
-                                <c:when test="${pageContext.request.requestURI.contains('/ticket-category')}">Danh mục Phiếu</c:when>
-                                <c:when test="${pageContext.request.requestURI.contains('/incident/')}">Quản lý Sự cố</c:when>
-                                <c:when test="${pageContext.request.requestURI.contains('/sla-dashboard')}">SLA &amp; Năng suất</c:when>
-                                <c:when test="${pageContext.request.requestURI.contains('/dashboard')}">Bảng điều khiển</c:when>
-                                <c:when test="${pageContext.request.requestURI.contains('/home/')}">Trang chủ</c:when>
-                                <c:otherwise>Hệ thống Quản lý Dịch vụ IT</c:otherwise>
-                            </c:choose>
-                        </span>
             <%-- Dịch vụ — tất cả --%>
             <li class="menu-header">Dịch vụ</li>
             <a href="${pageContext.request.contextPath}/service"
                class="menu-item ${pageContext.request.requestURI.contains('/service') ? 'active' : ''}">
                 <i class="bi bi-hdd-network"></i> Quản lý dịch vụ
             </a>
-
         </ul>
     </div>
 
     <div class="admin-main">
-        <!-- Topbar -->
         <div class="topbar">
             <div class="topbar-left">
                 <i class="bi bi-list fs-4 cursor-pointer"></i>
                 <span class="fw-bold">
                     <c:choose>
-                        <c:when test="${pageContext.request.requestURI.contains('/dashboard')}">Bảng điều khiển</c:when>
+                        <c:when test="${pageContext.request.requestURI.contains('/sla-dashboard')}">SLA &amp; Năng suất</c:when>
+                        <c:when test="${pageContext.request.requestURI.contains('/incident')}">Quản lý Sự cố</c:when>
+                        <c:when test="${pageContext.request.requestURI.contains('/problem')}">Quản lý Vấn đề</c:when>
+                        <c:when test="${pageContext.request.requestURI.contains('/known-error')}">Lỗi đã biết</c:when>
+                        <c:when test="${pageContext.request.requestURI.contains('/time-tracking')}">Theo dõi thời gian</c:when>
+                        <c:when test="${pageContext.request.requestURI.contains('/configuration-item')}">Mục cấu hình</c:when>
+                        <c:when test="${pageContext.request.requestURI.contains('/vendor')}">Nhà cung cấp</c:when>
+                        <c:when test="${pageContext.request.requestURI.contains('/maintenance-log')}">Nhật ký bảo trì</c:when>
+                        <c:when test="${pageContext.request.requestURI.contains('/ticket-category')}">Danh mục phiếu</c:when>
+                        <c:when test="${pageContext.request.requestURI.contains('/service')}">Quản lý dịch vụ</c:when>
                         <c:when test="${pageContext.request.requestURI.contains('/admin/users')}">Quản lý người dùng</c:when>
                         <c:when test="${pageContext.request.requestURI.contains('/admin/departments')}">Quản lý phòng ban</c:when>
                         <c:when test="${pageContext.request.requestURI.contains('/admin/knowledge-base')}">Quản lý bài viết</c:when>
                         <c:when test="${pageContext.request.requestURI.contains('/admin/knowledge-article')}">Quản lý cơ sở kiến thức</c:when>
-                        <c:when test="${pageContext.request.requestURI.contains('/ticket-category')}">Danh mục Ticket</c:when>
-                        <c:when test="${pageContext.request.requestURI.contains('/workflows')}">Tự động điều hướng Ticket</c:when>
-                        <c:when test="${pageContext.request.requestURI.contains('/time-tracking')}">Theo dõi Thời gian</c:when>
-                        <c:otherwise>IT Service Management</c:otherwise>
+                        <c:when test="${pageContext.request.requestURI.contains('/workflows')}">Tự động điều hướng ticket</c:when>
+                        <c:when test="${pageContext.request.requestURI.contains('/dashboard')}">Bảng điều khiển</c:when>
+                        <c:when test="${pageContext.request.requestURI.contains('/home')}">Trang chủ</c:when>
+                        <c:otherwise>Hệ thống Quản lý Dịch vụ IT</c:otherwise>
                     </c:choose>
                 </span>
             </div>
@@ -361,9 +347,7 @@
                             <span class="fw-bold text-dark">Thông báo</span>
                             <a href="#" class="text-decoration-none small text-primary" onclick="markAllNotificationsAsRead(event)">Đánh dấu tất cả đã đọc</a>
                         </li>
-                        <div id="notificationList">
-                            <!-- Notifications will be loaded here via JS -->
-                        </div>
+                        <div id="notificationList"></div>
                     </ul>
                 </div>
                 <div class="user-info dropdown">
@@ -374,15 +358,10 @@
                         <span class="ms-2 d-none d-md-inline">${sessionScope.user.fullName}</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end shadow border-0">
-                        <li><a class="dropdown-item" href="${pageContext.request.contextPath}/profile">
-                                <i class="bi bi-person me-2"></i> Hồ sơ</a></li>
-                        <li><a class="dropdown-item" href="${pageContext.request.contextPath}/profile#change-pass">
-                                <i class="bi bi-shield-lock me-2"></i> Đổi mật khẩu</a></li>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                        <li><a class="dropdown-item text-danger" href="${pageContext.request.contextPath}/auth?action=logout">
-                                <i class="bi bi-box-arrow-right me-2"></i> Đăng xuất</a></li>
+                        <li><a class="dropdown-item" href="${pageContext.request.contextPath}/profile"><i class="bi bi-person me-2"></i> Hồ sơ</a></li>
+                        <li><a class="dropdown-item" href="${pageContext.request.contextPath}/profile#change-pass"><i class="bi bi-shield-lock me-2"></i> Đổi mật khẩu</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="${pageContext.request.contextPath}/auth?action=logout"><i class="bi bi-box-arrow-right me-2"></i> Đăng xuất</a></li>
                     </ul>
                 </div>
             </div>

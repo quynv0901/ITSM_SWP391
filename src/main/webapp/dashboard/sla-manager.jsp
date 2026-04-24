@@ -40,9 +40,18 @@
 <c:url var="matrixUrl" value="/sla-dashboard"><c:param name="view" value="matrix" /></c:url>
 <c:url var="feedbackUrl" value="/sla-dashboard"><c:param name="view" value="feedback" /><c:param name="pageSize" value="${pageSize}" /></c:url>
 
+<div class="container-fluid bg-white p-4 rounded shadow-sm">
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div>
 <div class="sla-page-title">SLA & Năng suất xử lý</div>
 <div class="sla-page-sub">
     Mỗi màn hình chỉ hiển thị một nhóm thông tin để giảm tải nội dung.
+</div>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="sla-btn sla-btn-outline" href="${pageContext.request.contextPath}/incident?action=list">Danh sách incident</a>
+        <a class="sla-btn sla-btn-outline" href="${pageContext.request.contextPath}/home">Trang chủ</a>
+    </div>
 </div>
 
 <div class="sla-tabs">
@@ -271,5 +280,6 @@
         </table>
     </div>
 </c:if>
+</div>
 
 <jsp:include page="/includes/footer.jsp" />
