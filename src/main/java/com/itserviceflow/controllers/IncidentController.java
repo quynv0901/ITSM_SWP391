@@ -8,6 +8,7 @@ import com.itserviceflow.daos.FeedbackDAO;
 import com.itserviceflow.models.Ticket;
 import com.itserviceflow.models.User;
 import com.itserviceflow.models.ConfigurationItem;
+import com.itserviceflow.models.Feedback;
 import com.itserviceflow.utils.TimeLogService;
 import com.itserviceflow.utils.AuthUtils;
 import com.itserviceflow.daos.UserDAO;
@@ -39,6 +40,7 @@ public class IncidentController extends HttpServlet {
     private static final Set<String> ALLOWED_STATUSES = new HashSet<>(
             Arrays.asList("NEW", "OPEN", "IN_PROGRESS", "PENDING", "RESOLVED", "CLOSED", "CANCELLED")
     );
+    private static final int MAX_SEARCH_LENGTH = 255;
 
     private TicketDAO ticketDAO;
     private TimeLogService timeLogService;
@@ -115,6 +117,9 @@ public class IncidentController extends HttpServlet {
                 break;
             case "comment":
                 addIncidentComment(request, response);
+                break;
+            case "feedback":
+                submitFeedback(request, response);
                 break;
             default:
                 response.sendRedirect(request.getContextPath() + "/incident?action=list");
@@ -199,6 +204,18 @@ public class IncidentController extends HttpServlet {
         request.setAttribute("category", category);
         request.setAttribute("cancelReason", cancelReason);
         request.setAttribute("cancelRejectedReason", cancelRejectedReason);
+        FeedbackDAO feedbackDAO = new FeedbackDAO();
+        Feedback userFeedback = null;
+        boolean canGiveFeedback = false;
+        if (currentUser != null && currentUser.getRoleId() != null
+                && currentUser.getRoleId() == AuthUtils.ROLE_END_USER
+                && currentUser.getUserId() == incident.getReportedBy()
+                && ("RESOLVED".equalsIgnoreCase(incident.getStatus()) || "CLOSED".equalsIgnoreCase(incident.getStatus()))) {
+            userFeedback = feedbackDAO.getFeedbackByTicketAndUser(id, currentUser.getUserId());
+            canGiveFeedback = userFeedback == null;
+        }
+        request.setAttribute("canGiveFeedback", canGiveFeedback);
+        request.setAttribute("userFeedback", userFeedback);
 
         request.getRequestDispatcher("/incidents/incident-detail.jsp").forward(request, response);
     }
@@ -224,7 +241,19 @@ public class IncidentController extends HttpServlet {
             return;
         }
 
-        String q = request.getParameter("q");
+        String q = normalizeWhitespace(request.getParameter("q"));
+        if (q != null && q.length() > MAX_SEARCH_LENGTH) {
+            q = q.substring(0, MAX_SEARCH_LENGTH);
+        }
+        // Search should be readable text: trim spaces, no risky/special control symbols.
+        if (q != null && !isValidSearchText(q)) {
+            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+            response.setContentType("application/json");
+            try (PrintWriter out = response.getWriter()) {
+                out.print("[]");
+            }
+            return;
+        }
         Integer categoryId = parsePositiveInt(request.getParameter("categoryId"));
         String mode = request.getParameter("mode"); // "agent" | null
         Integer ticketId = parsePositiveInt(request.getParameter("excludeId"));
@@ -450,7 +479,7 @@ public class IncidentController extends HttpServlet {
             boolean requested = ticketDAO.requestCancelIncidentTicket(id, userId);
             if (requested) {
                 String reason = (cancelReason != null && !cancelReason.trim().isEmpty())
-                        ? cancelReason
+                        ? normalizeWhitespace(cancelReason)
                         : "User requested cancellation";
                 ActivityLogDAO activityLogDAO = new ActivityLogDAO();
                 activityLogDAO.logActivity(id, userId, "CANCEL_REQUESTED", reason);
@@ -465,11 +494,16 @@ public class IncidentController extends HttpServlet {
         // Agent/Expert/Admin: approve or reject cancellation request
         String decision = request.getParameter("cancelDecision");
         ActivityLogDAO activityLogDAO = new ActivityLogDAO();
-        String reason = (cancelReason != null && !cancelReason.trim().isEmpty()) ? cancelReason : null;
+        String reason = (cancelReason != null && !cancelReason.trim().isEmpty())
+                ? normalizeWhitespace(cancelReason) : null;
 
         // Require reason for any non-end-user cancellation action
         if (reason == null) {
             response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + id + "&error=missingCancelReason");
+            return;
+        }
+        if (reason.length() < 5 || reason.length() > 500 || !isSafeText(reason)) {
+            response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + id + "&error=invalidCancelReason");
             return;
         }
 
@@ -651,6 +685,80 @@ public class IncidentController extends HttpServlet {
                 + (saved ? "&commentSuccess=1" : "&commentError=saveFailed"));
     }
 
+    private void submitFeedback(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        Integer ticketId = parsePositiveInt(request.getParameter("id"));
+        if (ticketId == null) {
+            response.sendRedirect(request.getContextPath() + "/incident?action=list&feedbackError=invalidId");
+            return;
+        }
+
+        User currentUser = (User) request.getSession().getAttribute("user");
+        if (currentUser == null || currentUser.getRoleId() == null || currentUser.getRoleId() != AuthUtils.ROLE_END_USER) {
+            response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + ticketId + "&feedbackError=forbidden");
+            return;
+        }
+
+        Ticket incident = ticketDAO.getTicketWithDetails(ticketId);
+        if (incident == null || !"INCIDENT".equalsIgnoreCase(incident.getTicketType())) {
+            response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + ticketId + "&feedbackError=notFound");
+            return;
+        }
+        if (incident.getReportedBy() != currentUser.getUserId()) {
+            response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + ticketId + "&feedbackError=forbidden");
+            return;
+        }
+        String status = incident.getStatus() == null ? "" : incident.getStatus().toUpperCase();
+        if (!"RESOLVED".equals(status) && !"CLOSED".equals(status)) {
+            response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + ticketId + "&feedbackError=invalidState");
+            return;
+        }
+
+        String ratingRaw = trimToNull(request.getParameter("rating"));
+        if (ratingRaw == null || !ratingRaw.matches("^[1-5]$")) {
+            response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + ticketId + "&feedbackError=invalidRating");
+            return;
+        }
+        int rating = Integer.parseInt(ratingRaw);
+
+        String feedbackText = normalizeWhitespace(request.getParameter("feedbackText"));
+        if (!isValidFeedbackText(feedbackText)) {
+            response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + ticketId + "&feedbackError=invalidText");
+            return;
+        }
+
+        FeedbackDAO feedbackDAO = new FeedbackDAO();
+        if (feedbackDAO.hasFeedback(ticketId, currentUser.getUserId())) {
+            response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + ticketId + "&feedbackError=exists");
+            return;
+        }
+
+        Feedback feedback = new Feedback();
+        feedback.setTicketId(ticketId);
+        feedback.setUserId(currentUser.getUserId());
+        feedback.setAgentId(incident.getAssignedTo());
+        feedback.setRating(rating);
+        feedback.setFeedbackText(feedbackText);
+
+        boolean saved = feedbackDAO.saveFeedback(feedback);
+        response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + ticketId
+                + (saved ? "&feedbackSuccess=1" : "&feedbackError=saveFailed"));
+    }
+
+    private boolean isValidFeedbackText(String value) {
+        if (value == null) {
+            return false;
+        }
+        if (value.length() < 5 || value.length() > 250) {
+            return false;
+        }
+        if (!isSafeText(value)) {
+            return false;
+        }
+        // Allow natural-language feedback with common punctuation; block noisy/suspicious payloads.
+        return value.matches("^[\\p{L}\\p{N}\\s.,!?;:'\"()\\-_/]+$");
+    }
+
     private Integer parsePositiveInt(String raw) {
         if (raw == null || raw.trim().isEmpty()) {
             return null;
@@ -727,6 +835,14 @@ public class IncidentController extends HttpServlet {
         return !lowered.contains("<script")
                 && !lowered.contains("</script>")
                 && !lowered.contains("javascript:");
+    }
+
+    private boolean isValidSearchText(String value) {
+        if (value == null || value.isBlank()) {
+            return true;
+        }
+        // Allow letters/numbers/space and common separators in incident text search.
+        return value.matches("^[\\p{L}\\p{N}\\s\\-_/.,:()]+$");
     }
 
     private boolean canCurrentUserEditIncident(User currentUser, Ticket incident) {

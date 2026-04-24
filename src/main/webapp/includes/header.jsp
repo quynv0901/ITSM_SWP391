@@ -254,6 +254,12 @@
                        class="menu-item ${pageContext.request.requestURI.contains('/dashboard') ? 'active' : ''}">
                         <i class="bi bi-speedometer2"></i> Bảng điều khiển
                     </a>
+                    <c:if test="${sessionScope.user != null && (sessionScope.user.roleId == 3 || sessionScope.user.roleId == 10)}">
+                        <a href="${pageContext.request.contextPath}/sla-dashboard"
+                           class="menu-item ${pageContext.request.requestURI.contains('/sla-dashboard') ? 'active' : ''}">
+                            <i class="bi bi-graph-up-arrow"></i> SLA &amp; Năng suất
+                        </a>
+                    </c:if>
                 </ul>
             </div>
 
@@ -271,6 +277,7 @@
                                 <c:when test="${pageContext.request.requestURI.contains('/vendor')}">Quản lý Nhà cung cấp</c:when>
                                 <c:when test="${pageContext.request.requestURI.contains('/ticket-category')}">Danh mục Phiếu</c:when>
                                 <c:when test="${pageContext.request.requestURI.contains('/incident/')}">Quản lý Sự cố</c:when>
+                                <c:when test="${pageContext.request.requestURI.contains('/sla-dashboard')}">SLA &amp; Năng suất</c:when>
                                 <c:when test="${pageContext.request.requestURI.contains('/dashboard')}">Bảng điều khiển</c:when>
                                 <c:when test="${pageContext.request.requestURI.contains('/home/')}">Trang chủ</c:when>
                                 <c:otherwise>Hệ thống Quản lý Dịch vụ IT</c:otherwise>

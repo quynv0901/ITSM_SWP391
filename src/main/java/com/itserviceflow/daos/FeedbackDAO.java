@@ -12,6 +12,24 @@ import java.util.List;
 public class FeedbackDAO {
     
     public boolean saveFeedback(Feedback feedback) {
+        if (feedback == null) {
+            return false;
+        }
+        if (feedback.getTicketId() <= 0 || feedback.getUserId() <= 0) {
+            return false;
+        }
+        if (feedback.getRating() < 1 || feedback.getRating() > 5) {
+            return false;
+        }
+        String feedbackText = feedback.getFeedbackText();
+        if (feedbackText == null) {
+            return false;
+        }
+        feedbackText = feedbackText.trim().replace("\n", " ").replace("\r", " ");
+        if (feedbackText.length() < 5 || feedbackText.length() > 250) {
+            return false;
+        }
+
         String sql = "INSERT INTO feedback (ticket_id, user_id, agent_id, rating, feedback_text, submitted_at, updated_at) "
                    + "VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
         try (Connection conn = DBConnection.getConnection(); 
@@ -21,18 +39,6 @@ public class FeedbackDAO {
             ps.setInt(2, feedback.getUserId());
             ps.setInt(3, feedback.getAgentId());
             ps.setInt(4, feedback.getRating());
-            
-            // Xử lý feedback_text an toàn
-            String feedbackText = feedback.getFeedbackText();
-            if (feedbackText == null) {
-                feedbackText = "";
-            }
-            // Cắt ngắn nếu quá dài (giới hạn 250 ký tự để an toàn)
-            if (feedbackText.length() > 250) {
-                feedbackText = feedbackText.substring(0, 250);
-            }
-            // Encode lại để tránh lỗi charset
-            feedbackText = feedbackText.replace("\n", " ").replace("\r", " ").trim();
             ps.setString(5, feedbackText);
             
             return ps.executeUpdate() > 0;
@@ -67,6 +73,32 @@ public class FeedbackDAO {
         }
         return null;
     }
+
+    public Feedback getFeedbackByTicketAndUser(int ticketId, int userId) {
+        String sql = "SELECT * FROM feedback WHERE ticket_id = ? AND user_id = ? ORDER BY submitted_at DESC LIMIT 1";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, ticketId);
+            ps.setInt(2, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Feedback feedback = new Feedback();
+                    feedback.setFeedbackId(rs.getInt("feedback_id"));
+                    feedback.setTicketId(rs.getInt("ticket_id"));
+                    feedback.setUserId(rs.getInt("user_id"));
+                    feedback.setAgentId(rs.getInt("agent_id"));
+                    feedback.setRating(rs.getInt("rating"));
+                    feedback.setFeedbackText(rs.getString("feedback_text"));
+                    feedback.setSubmittedAt(rs.getTimestamp("submitted_at"));
+                    feedback.setUpdatedAt(rs.getTimestamp("updated_at"));
+                    return feedback;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
     
     public boolean hasFeedback(int ticketId) {
         String sql = "SELECT COUNT(*) FROM feedback WHERE ticket_id = ?";
@@ -74,6 +106,23 @@ public class FeedbackDAO {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setInt(1, ticketId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean hasFeedback(int ticketId, int userId) {
+        String sql = "SELECT COUNT(*) FROM feedback WHERE ticket_id = ? AND user_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, ticketId);
+            ps.setInt(2, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1) > 0;

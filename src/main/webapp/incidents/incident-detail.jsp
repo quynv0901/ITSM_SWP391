@@ -606,6 +606,11 @@
             .btn-confirm.active:hover {
                 background: #f56565;
             }
+            .feedback-card { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-top: 18px; }
+            .feedback-stars { display: flex; gap: 8px; margin-top: 8px; margin-bottom: 12px; }
+            .feedback-stars label { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: #4a5568; }
+            .feedback-textarea { width: 100%; min-height: 90px; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-family: inherit; resize: vertical; }
+            .feedback-textarea:focus { outline: none; border-color: #4299e1; box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15); }
         </style>
     </head>
 
@@ -634,6 +639,15 @@
         </c:if>
         <c:if test="${not empty param.error and param.error eq 'missingCancelReason'}">
             <div class="alert alert-error">Vui lòng nhập lý do (bắt buộc) trước khi hủy/duyệt hủy.</div>
+        </c:if>
+        <c:if test="${not empty param.error and param.error eq 'invalidCancelReason'}">
+            <div class="alert alert-error">Lý do hủy không hợp lệ (5-500 ký tự, không chứa ký tự nguy hiểm).</div>
+        </c:if>
+        <c:if test="${param.feedbackSuccess eq '1'}">
+            <div class="alert alert-success">Cảm ơn bạn đã gửi feedback.</div>
+        </c:if>
+        <c:if test="${not empty param.feedbackError}">
+            <div class="alert alert-error">Không thể gửi feedback (${param.feedbackError}).</div>
         </c:if>
         <c:if test="${incident.status eq 'CANCELLED' and not empty cancelReason}">
             <div class="alert alert-error">Lý do hủy: ${cancelReason}</div>
@@ -747,6 +761,42 @@
                     </form>
                 </c:if>
             </div>
+
+            <c:if test="${sessionScope.user.roleId == 1 and (incident.status eq 'RESOLVED' or incident.status eq 'CLOSED')}">
+                <div class="feedback-card">
+                    <div class="card-title" style="margin-bottom:10px; border-bottom:0; padding-bottom:0;">Feedback sau xử lý</div>
+                    <c:choose>
+                        <c:when test="${canGiveFeedback}">
+                            <form action="${pageContext.request.contextPath}/incident" method="post">
+                                <input type="hidden" name="action" value="feedback">
+                                <input type="hidden" name="id" value="${incident.ticketId}">
+                                <div class="feedback-stars">
+                                    <label><input type="radio" name="rating" value="5" required> 5 - Rất hài lòng</label>
+                                    <label><input type="radio" name="rating" value="4"> 4</label>
+                                    <label><input type="radio" name="rating" value="3"> 3</label>
+                                    <label><input type="radio" name="rating" value="2"> 2</label>
+                                    <label><input type="radio" name="rating" value="1"> 1 - Không hài lòng</label>
+                                </div>
+                                <div class="form-group">
+                                    <label for="feedbackText">Nội dung feedback (5-250 ký tự)</label>
+                                    <textarea id="feedbackText" name="feedbackText" class="feedback-textarea" maxlength="250" required placeholder="Chia sẻ trải nghiệm xử lý vấn đề của bạn..."></textarea>
+                                </div>
+                                <div class="form-group" style="margin-top:10px;">
+                                    <button type="submit" class="btn btn-primary">Gửi feedback</button>
+                                </div>
+                            </form>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="alert alert-success" style="margin:0;">
+                                Bạn đã gửi feedback cho ticket này rồi.
+                                <c:if test="${not empty userFeedback}">
+                                    (Đánh giá: ${userFeedback.rating}/5)
+                                </c:if>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+            </c:if>
         </div>
 
         <!-- Card chứa các tab -->

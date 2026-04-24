@@ -383,6 +383,15 @@
         <i class="bi bi-arrow-right card-arrow"></i>
     </a>
 
+    <c:if test="${sessionScope.user.roleId == 3 || sessionScope.user.roleId == 10}">
+        <a href="${pageContext.request.contextPath}/sla-dashboard" class="action-card">
+            <div class="card-icon teal"><i class="bi bi-graph-up-arrow"></i></div>
+            <h3>SLA &amp; Năng suất</h3>
+            <p>Theo dõi ticket NEW quá hạn, escalation và hiệu suất support/expert cho KPI/lương thưởng.</p>
+            <i class="bi bi-arrow-right card-arrow"></i>
+        </a>
+    </c:if>
+
 
 </div>
 
