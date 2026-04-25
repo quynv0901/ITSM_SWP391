@@ -169,7 +169,7 @@
     <table class="table admin-table mb-0">
         <thead>
             <tr>
-                <th><a href="javascript:void(0)" onclick="setSort('user_id')" class="text-dark text-decoration-none">ID <i class="bi bi-sort-numeric-down"></i></a></th>
+                <th><a href="javascript:void(0)" onclick="setSort('user_id')" class="text-dark text-decoration-none">STT <i class="bi bi-sort-numeric-down"></i></a></th>
                 <th><a href="javascript:void(0)" onclick="setSort('full_name')" class="text-dark text-decoration-none">Họ tên <i class="bi bi-sort-alpha-down"></i></a></th>
                 <th><a href="javascript:void(0)" onclick="setSort('email')" class="text-dark text-decoration-none">Email <i class="bi bi-sort-alpha-down"></i></a></th>
                 <th>SĐT</th>
@@ -180,9 +180,9 @@
             </tr>
         </thead>
         <tbody>
-            <c:forEach var="u" items="${userList}">
+            <c:forEach var="u" items="${userList}" varStatus="loop">
                 <tr>
-                    <td class="text-muted">#${u.userId}</td>
+                    <td class="text-muted">${(currentPage - 1) * 10 + loop.count}</td>
                     <td class="text-primary fw-bold">${u.fullName}</td>
                     <td>${u.email}</td>
                     <td>${u.phone}</td>
@@ -238,7 +238,7 @@
                 <h5 class="modal-title">Thêm nhân viên mới</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form action="${pageContext.request.contextPath}/admin/users?action=add" method="post">
+            <form id="addUserForm" action="${pageContext.request.contextPath}/admin/users?action=add" method="post">
                 <div class="modal-body p-4">
                     <div class="mb-3">
                         <label class="form-label fw-bold">Họ và tên</label>
@@ -273,10 +273,23 @@
                             </c:forEach>
                         </select>
                     </div>
+                    <div class="mb-3 border-top pt-3">
+                        <label class="form-label fw-bold text-danger">
+                            <i class="bi bi-shield-lock"></i> Mật khẩu xác nhận (Admin)
+                        </label>
+                        <input type="password" name="adminPassword" id="addAdminPassword" 
+                               class="form-control border-danger" required
+                               placeholder="Nhập mật khẩu của bạn để xác nhận">
+                        <div id="addAdminPasswordError" class="text-danger small mt-1" style="display:none">
+                            <i class="bi bi-exclamation-circle"></i> Mật khẩu không đúng, vui lòng thử lại!
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-primary px-4">Lưu lại</button>
+                    <button type="button" class="btn btn-primary px-4" onclick="submitWithVerify('addUserForm', 'addAdminPassword', 'addAdminPasswordError')">
+                        Lưu lại
+                    </button>
                 </div>
             </form>
         </div>
@@ -291,7 +304,7 @@
                 <h5 class="modal-title">Chỉnh sửa nhân viên</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form action="${pageContext.request.contextPath}/admin/users?action=update" method="post">
+            <form id="editUserForm" action="${pageContext.request.contextPath}/admin/users?action=update" method="post">
                 <input type="hidden" name="userId" id="editUserId">
                 <div class="modal-body p-4">
                     <div class="mb-3">
@@ -319,10 +332,23 @@
                             </c:forEach>
                         </select>
                     </div>
+                    <div class="mb-3 border-top pt-3">
+                        <label class="form-label fw-bold text-danger">
+                            <i class="bi bi-shield-lock"></i> Mật khẩu xác nhận (Admin)
+                        </label>
+                        <input type="password" name="adminPassword" id="editAdminPassword"
+                               class="form-control border-danger" required
+                               placeholder="Nhập mật khẩu của bạn để xác nhận">
+                        <div id="editAdminPasswordError" class="text-danger small mt-1" style="display:none">
+                            <i class="bi bi-exclamation-circle"></i> Mật khẩu không đúng, vui lòng thử lại!
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-warning px-4">Cập nhật</button>
+                    <button type="button" class="btn btn-warning px-4" onclick="submitWithVerify('editUserForm', 'editAdminPassword', 'editAdminPasswordError')">
+                        Cập nhật
+                    </button>
                 </div>
             </form>
         </div>
@@ -396,6 +422,142 @@
         let urlParams = new URLSearchParams(window.location.search);
         urlParams.set('page', page);
         window.location.search = urlParams.toString();
+    }
+    function submitWithVerify(formId, passwordFieldId, errorDivId) {
+        const form = document.getElementById(formId);
+        const isAdd = formId === 'addUserForm';
+        const btn = event.target; // ← chuyển lên đây, trước fetch
+
+        // 1. HTML5 validation
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        // 2. Validate khoảng trắng
+        const usernameField = isAdd ? form.querySelector('[name="username"]') : null;
+        const emailField = form.querySelector('[name="email"]');
+        const passwordField2 = isAdd ? form.querySelector('[name="password"]') : null;
+        const fullNameField = form.querySelector('[name="fullName"]');
+
+        if (usernameField && /\s/.test(usernameField.value)) {
+            showFieldError(usernameField, 'Tên đăng nhập không được chứa khoảng trắng!');
+            return;
+        }
+        if (usernameField && !/^[a-z0-9_-]+$/.test(usernameField.value)) {
+            showFieldError(usernameField, 'Tên đăng nhập chỉ được chứa chữ thường (a-z), số (0-9), dấu gạch dưới (_) và gạch ngang (-)!');
+            return;
+        }
+        if (emailField && /\s/.test(emailField.value)) {
+            showFieldError(emailField, 'Email không được chứa khoảng trắng!');
+            return;
+        }
+        if (passwordField2 && /\s/.test(passwordField2.value)) {
+            showFieldError(passwordField2, 'Mật khẩu không được chứa khoảng trắng!');
+            return;
+        }
+        if (fullNameField)
+            fullNameField.value = fullNameField.value.trim();
+
+        // 3. Check trùng username/email
+        const userId = isAdd ? null : document.getElementById('editUserId').value;
+        const username = usernameField ? usernameField.value : null;
+        const email = emailField ? emailField.value : null;
+
+        let dupParams = '';
+        if (username)
+            dupParams += 'username=' + encodeURIComponent(username);
+        if (email)
+            dupParams += (dupParams ? '&' : '') + 'email=' + encodeURIComponent(email);
+        if (userId)
+            dupParams += (dupParams ? '&' : '') + 'userId=' + userId;
+
+        btn.disabled = true; // ← disable sớm tránh double click
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang kiểm tra...';
+
+        fetch('${pageContext.request.contextPath}/admin/users?action=checkDuplicate&' + dupParams, {
+            method: 'GET'
+        })
+                .then(res => res.json())
+                .then(dup => {
+                    if (dup.usernameTaken) {
+                        showFieldError(usernameField, 'Tên đăng nhập đã tồn tại!');
+                        btn.disabled = false;
+                        btn.innerHTML = isAdd ? 'Lưu lại' : 'Cập nhật';
+                        return;
+                    }
+                    if (dup.emailTaken) {
+                        showFieldError(emailField, 'Email đã được sử dụng!');
+                        btn.disabled = false;
+                        btn.innerHTML = isAdd ? 'Lưu lại' : 'Cập nhật';
+                        return;
+                    }
+
+                    // 4. Verify mật khẩu admin
+                    const passwordField = document.getElementById(passwordFieldId);
+                    const errorDiv = document.getElementById(errorDivId);
+                    const adminPassword = passwordField.value;
+
+                    if (!adminPassword) {
+                        errorDiv.style.display = 'block';
+                        errorDiv.innerHTML = '<i class="bi bi-exclamation-circle"></i> Vui lòng nhập mật khẩu xác nhận!';
+                        btn.disabled = false;
+                        btn.innerHTML = isAdd ? 'Lưu lại' : 'Cập nhật';
+                        return;
+                    }
+
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang xác thực...';
+
+                    fetch('${pageContext.request.contextPath}/admin/users?action=verifyAdmin', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: 'adminPassword=' + encodeURIComponent(adminPassword)
+                    })
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.valid) {
+                                    errorDiv.style.display = 'none';
+                                    form.submit();
+                                } else {
+                                    errorDiv.style.display = 'block';
+                                    errorDiv.innerHTML = '<i class="bi bi-exclamation-circle"></i> Mật khẩu không đúng, vui lòng thử lại!';
+                                    passwordField.value = '';
+                                    passwordField.focus();
+                                    btn.disabled = false;
+                                    btn.innerHTML = isAdd ? 'Lưu lại' : 'Cập nhật';
+                                }
+                            })
+                            .catch(() => {
+                                errorDiv.style.display = 'block';
+                                errorDiv.innerHTML = '<i class="bi bi-exclamation-circle"></i> Lỗi kết nối, vui lòng thử lại!';
+                                btn.disabled = false;
+                                btn.innerHTML = isAdd ? 'Lưu lại' : 'Cập nhật';
+                            });
+                })
+                .catch(() => {
+                    alert('Lỗi kiểm tra trùng lặp, vui lòng thử lại!');
+                    btn.disabled = false;
+                    btn.innerHTML = isAdd ? 'Lưu lại' : 'Cập nhật';
+                });
+    }
+    function showFieldError(field, message) {
+        const existing = field.parentNode.querySelector('.field-error');
+        if (existing)
+            existing.remove();
+
+        field.classList.add('is-invalid');
+        const div = document.createElement('div');
+        div.className = 'field-error text-danger small mt-1';
+        div.innerHTML = '<i class="bi bi-exclamation-circle"></i> ' + message;
+        field.parentNode.appendChild(div);
+        field.focus();
+
+        field.addEventListener('input', function () {
+            field.classList.remove('is-invalid');
+            const err = field.parentNode.querySelector('.field-error');
+            if (err)
+                err.remove();
+        }, {once: true});
     }
 </script>
 
