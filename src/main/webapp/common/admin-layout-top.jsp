@@ -241,7 +241,7 @@
                         <c:when test="${pageContext.request.requestURI.contains('/admin/knowledge-base')}">Quản lý bài viết</c:when>
                         <c:when test="${pageContext.request.requestURI.contains('/admin/knowledge-article')}">Quản lý cơ sở kiến thức</c:when>
                         <c:when test="${pageContext.request.requestURI.contains('/ticket-category')}">Ticket Categories</c:when>
-                        <c:otherwise>IT Service Management</c:otherwise>
+                        <c:otherwise>Dịch vụ quản lý IT</c:otherwise>
                     </c:choose>
                 </span>
             </div>

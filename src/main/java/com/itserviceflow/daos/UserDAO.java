@@ -110,8 +110,9 @@ public class UserDAO {
         }
 
         // Validate sortBy to prevent SQL Injection
-        String validSort = (sortBy != null && (sortBy.equals("full_name") || sortBy.equals("username")
-                || sortBy.equals("email") || sortBy.equals("updated_at"))) ? sortBy : "updated_at";
+        String validSort = (sortBy != null && (sortBy.equals("user_id") || sortBy.equals("full_name")
+                || sortBy.equals("username") || sortBy.equals("email")
+                || sortBy.equals("updated_at"))) ? sortBy : "updated_at";
         String validOrder = (order != null && order.equalsIgnoreCase("ASC")) ? "ASC" : "DESC";
 
         sql.append(" ORDER BY ").append(validSort).append(" ").append(validOrder);
@@ -379,5 +380,41 @@ public class UserDAO {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public boolean isUsernameTaken(String username, Integer excludeUserId) {
+        String sql = "SELECT COUNT(*) FROM `user` WHERE username = ?"
+                + (excludeUserId != null ? " AND user_id != ?" : "");
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setString(1, username);
+            if (excludeUserId != null) {
+                st.setInt(2, excludeUserId);
+            }
+            ResultSet rs = st.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean isEmailTaken(String email, Integer excludeUserId) {
+        String sql = "SELECT COUNT(*) FROM `user` WHERE email = ?"
+                + (excludeUserId != null ? " AND user_id != ?" : "");
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setString(1, email);
+            if (excludeUserId != null) {
+                st.setInt(2, excludeUserId);
+            }
+            ResultSet rs = st.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }
