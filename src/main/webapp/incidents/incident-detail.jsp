@@ -2,24 +2,18 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
-<!DOCTYPE html>
-<html lang="en">
-
-    <head>
-        <meta charset="UTF-8">
-        <title>Chi tiết Sự cố - ${incident.ticketNumber}</title>
-        <style>
+<jsp:include page="/includes/header.jsp" />
+<style>
             * {
                 box-sizing: border-box;
                 margin: 0;
                 padding: 0;
             }
 
-            body {
+            .incident-detail-page {
                 font-family: 'Segoe UI', sans-serif;
                 background: #f0f4f8;
                 color: #2d3748;
-                padding: 24px;
             }
 
             .page-header {
@@ -606,10 +600,14 @@
             .btn-confirm.active:hover {
                 background: #f56565;
             }
+            .feedback-card { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-top: 18px; }
+            .feedback-stars { display: flex; gap: 8px; margin-top: 8px; margin-bottom: 12px; }
+            .feedback-stars label { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: #4a5568; }
+            .feedback-textarea { width: 100%; min-height: 90px; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-family: inherit; resize: vertical; }
+            .feedback-textarea:focus { outline: none; border-color: #4299e1; box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15); }
         </style>
-    </head>
 
-    <body>
+        <div class="incident-detail-page container-fluid bg-white p-4 rounded shadow-sm">
 
         <div class="page-header">
             <a href="${pageContext.request.contextPath}/incident?action=list" class="back-btn">&#8592; Quay lại
@@ -623,11 +621,26 @@
         <c:if test="${not empty param.logError}">
             <div class="alert alert-error">Không thể lưu nhật ký thời gian (${param.logError}).</div>
         </c:if>
+        <c:if test="${param.commentSuccess eq '1'}">
+            <div class="alert alert-success">Đã thêm bình luận nội bộ.</div>
+        </c:if>
+        <c:if test="${not empty param.commentError}">
+            <div class="alert alert-error">Không thể thêm bình luận (${param.commentError}).</div>
+        </c:if>
         <c:if test="${param.editError eq 'locked'}">
             <div class="alert alert-error">Bạn không thể chỉnh sửa incident này vì trạng thái đã được Agent/Expert cập nhật.</div>
         </c:if>
         <c:if test="${not empty param.error and param.error eq 'missingCancelReason'}">
             <div class="alert alert-error">Vui lòng nhập lý do (bắt buộc) trước khi hủy/duyệt hủy.</div>
+        </c:if>
+        <c:if test="${not empty param.error and param.error eq 'invalidCancelReason'}">
+            <div class="alert alert-error">Lý do hủy không hợp lệ (5-500 ký tự, không chứa ký tự nguy hiểm).</div>
+        </c:if>
+        <c:if test="${param.feedbackSuccess eq '1'}">
+            <div class="alert alert-success">Cảm ơn bạn đã gửi feedback.</div>
+        </c:if>
+        <c:if test="${not empty param.feedbackError}">
+            <div class="alert alert-error">Không thể gửi feedback (${param.feedbackError}).</div>
         </c:if>
         <c:if test="${incident.status eq 'CANCELLED' and not empty cancelReason}">
             <div class="alert alert-error">Lý do hủy: ${cancelReason}</div>
@@ -741,6 +754,42 @@
                     </form>
                 </c:if>
             </div>
+
+            <c:if test="${sessionScope.user.roleId == 1 and (incident.status eq 'RESOLVED' or incident.status eq 'CLOSED')}">
+                <div class="feedback-card">
+                    <div class="card-title" style="margin-bottom:10px; border-bottom:0; padding-bottom:0;">Feedback sau xử lý</div>
+                    <c:choose>
+                        <c:when test="${canGiveFeedback}">
+                            <form action="${pageContext.request.contextPath}/incident" method="post">
+                                <input type="hidden" name="action" value="feedback">
+                                <input type="hidden" name="id" value="${incident.ticketId}">
+                                <div class="feedback-stars">
+                                    <label><input type="radio" name="rating" value="5" required> 5 - Rất hài lòng</label>
+                                    <label><input type="radio" name="rating" value="4"> 4</label>
+                                    <label><input type="radio" name="rating" value="3"> 3</label>
+                                    <label><input type="radio" name="rating" value="2"> 2</label>
+                                    <label><input type="radio" name="rating" value="1"> 1 - Không hài lòng</label>
+                                </div>
+                                <div class="form-group">
+                                    <label for="feedbackText">Nội dung feedback (5-250 ký tự)</label>
+                                    <textarea id="feedbackText" name="feedbackText" class="feedback-textarea" maxlength="250" required placeholder="Chia sẻ trải nghiệm xử lý vấn đề của bạn..."></textarea>
+                                </div>
+                                <div class="form-group" style="margin-top:10px;">
+                                    <button type="submit" class="btn btn-primary">Gửi feedback</button>
+                                </div>
+                            </form>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="alert alert-success" style="margin:0;">
+                                Bạn đã gửi feedback cho ticket này rồi.
+                                <c:if test="${not empty userFeedback}">
+                                    (Đánh giá: ${userFeedback.rating}/5)
+                                </c:if>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+            </c:if>
         </div>
 
         <!-- Card chứa các tab -->
@@ -750,6 +799,7 @@
                     <button class="tab-btn active" onclick="switchTab('timelog', this)">&#9201; Nhật ký thời gian</button>
                     <button class="tab-btn" onclick="switchTab('related', this)">&#128279; Sự cố
                         liên quan</button>
+                    <button class="tab-btn" onclick="switchTab('comment', this)">&#128172; Bình luận nội bộ</button>
                 </div>
 
                 <!-- Tab nhật ký thời gian -->
@@ -867,6 +917,54 @@
                             <div class="empty-state">
                                 <div class="empty-icon">&#128279;</div>
                                 <p>Không có sự cố liên quan.</p>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+
+                <div id="tab-comment" class="tab-content">
+                    <div class="manual-log-form">
+                        <h4>Bình luận nội bộ (Agent/Expert)</h4>
+                        <form action="${pageContext.request.contextPath}/incident" method="post">
+                            <input type="hidden" name="action" value="comment">
+                            <input type="hidden" name="id" value="${incident.ticketId}">
+                            <div class="form-row">
+                                <div class="form-group fg-desc" style="flex:1;">
+                                    <label for="commentText">Nội dung bình luận</label>
+                                    <input type="text" id="commentText" name="commentText"
+                                           maxlength="1000"
+                                           placeholder="Mô tả cập nhật xử lý, phân tích lỗi, hướng xử lý tiếp theo..." required>
+                                </div>
+                                <div class="form-group">
+                                    <label>&nbsp;</label>
+                                    <button type="submit" class="btn btn-primary">Gửi bình luận</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <c:choose>
+                        <c:when test="${not empty comments}">
+                            <ul class="related-list">
+                                <c:forEach var="cmt" items="${comments}">
+                                    <li style="display:block;">
+                                        <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;">
+                                            <div>
+                                                <strong>${cmt.userName}</strong>
+                                                <span style="color:#718096;">(#${cmt.userId})</span>
+                                            </div>
+                                            <span style="color:#a0aec0; font-size:12px;">
+                                                <fmt:formatDate value="${cmt.createdAt}" pattern="dd/MM/yyyy HH:mm" />
+                                            </span>
+                                        </div>
+                                        <div style="margin-top:8px;color:#4a5568;white-space:pre-wrap;">${cmt.commentText}</div>
+                                    </li>
+                                </c:forEach>
+                            </ul>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="empty-state">
+                                <p>Chưa có bình luận nội bộ.</p>
                             </div>
                         </c:otherwise>
                     </c:choose>
@@ -1155,6 +1253,6 @@
             });
 
         </script>
-    </body>
+</div>
 
-</html>
+<jsp:include page="/includes/footer.jsp" />

@@ -11,10 +11,10 @@ public class TicketCategory {
     private int categoryId;
     private String categoryName;
     private String categoryCode;
-    private String categoryType;      // INCIDENT, SERVICE_REQUEST, CHANGE, PROBLEM
+    private String categoryType;      // INCIDENT, SERVICE_REQUEST, CHANGE, PROBLEM, KNOWLEDGE
     private String description;
     private Integer parentCategoryId;
-    private String difficultyLevel;   // EASY, MEDIUM, HARD
+    private String difficultyLevel;   // LEVEL_1, LEVEL_2, LEVEL_3
     private boolean isActive;
     private Timestamp updatedAt;
 

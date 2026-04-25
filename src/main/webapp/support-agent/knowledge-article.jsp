@@ -38,13 +38,16 @@
         <input type="hidden" name="action" value="list">
 
         <input type="text" class="form-control" name="keyword"
-               placeholder="Tìm theo id hoặc tiêu đề"
+               placeholder="Tìm theo tiêu đề"
                value="${keyword}" style="max-width: 280px;">
 
+        <%-- Filter Status --%>
         <select class="form-select" name="status" style="max-width: 180px;">
-            <option value="ALL" ${empty statusFilter || statusFilter=='ALL' ? 'selected' : ''}>Tất cả trạng thái</option>
-            <option value="PUBLISHED" ${statusFilter=='PUBLISHED' ? 'selected' : ''}>Đã đăng</option>
-            <option value="ARCHIVED"  ${statusFilter=='ARCHIVED'  ? 'selected' : ''}>Lưu trữ</option>
+            <option value="ALL"      ${empty statusFilter || statusFilter=='ALL'      ? 'selected' : ''}>Tất cả trạng thái</option>
+            <option value="APPROVED" ${statusFilter=='APPROVED' ? 'selected' : ''}>Đã duyệt</option>
+            <option value="PENDING"  ${statusFilter=='PENDING'  ? 'selected' : ''}>Chờ duyệt</option>
+            <option value="REJECTED" ${statusFilter=='REJECTED' ? 'selected' : ''}>Từ chối</option>
+            <option value="ARCHIVED" ${statusFilter=='ARCHIVED' ? 'selected' : ''}>Lưu trữ</option>
         </select>
 
         <button type="submit" class="btn btn-primary">
@@ -59,7 +62,7 @@
         <table class="table table-hover table-bordered align-middle">
             <thead class="table-light">
                 <tr>
-                    <th>ID</th>
+                    <th>Stt</th>
                     <th>Tiêu đề</th>
                     <th>Trạng thái</th>
                     <th>Cập nhật</th>
@@ -67,9 +70,9 @@
                 </tr>
             </thead>
             <tbody>
-                <c:forEach var="a" items="${articles}">
+                <c:forEach var="a" items="${articles}" varStatus="loop">
                     <tr>
-                        <td class="text-muted">#${a.articleId}</td>
+                        <td class="text-muted">${(currentPage - 1) * 10 + loop.count}</td>
                         <td>
                             <a href="${pageContext.request.contextPath}/support-agent/knowledge-article?action=detail&id=${a.articleId}"
                                class="fw-bold text-decoration-none">
@@ -81,10 +84,18 @@
                         </td>
                         <td>
                             <c:choose>
-                                <c:when test="${a.status == 'PUBLISHED'}">
-                                    <span class="badge bg-success">Đã đăng</span></c:when>
+                                <c:when test="${a.status == 'APPROVED'}">
+                                    <span class="badge bg-success">Đã duyệt</span>
+                                </c:when>
+                                <c:when test="${a.status == 'PENDING'}">
+                                    <span class="badge bg-warning text-dark">Chờ duyệt</span>
+                                </c:when>
+                                <c:when test="${a.status == 'REJECTED'}">
+                                    <span class="badge bg-danger">Từ chối</span>
+                                </c:when>
                                 <c:when test="${a.status == 'ARCHIVED'}">
-                                    <span class="badge bg-dark">Lưu trữ</span></c:when>
+                                    <span class="badge bg-dark">Lưu trữ</span>
+                                </c:when>
                             </c:choose>
                         </td>
                         <td class="text-muted small">${a.updatedAt}</td>
@@ -100,23 +111,6 @@
                                    class="btn btn-warning btn-sm" title="Edit">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <%-- Toggle Status --%>
-                                <c:choose>
-                                    <c:when test="${a.status == 'PUBLISHED'}">
-                                        <a href="${pageContext.request.contextPath}/support-agent/knowledge-article?action=toggle&id=${a.articleId}&status=ARCHIVED"
-                                           class="btn btn-secondary btn-sm" title="Archive"
-                                           onclick="return confirm('Archive this article?')">
-                                            <i class="bi bi-archive"></i>
-                                        </a>
-                                    </c:when>
-                                    <c:when test="${a.status == 'ARCHIVED'}">
-                                        <a href="${pageContext.request.contextPath}/support-agent/knowledge-article?action=toggle&id=${a.articleId}&status=PUBLISHED"
-                                           class="btn btn-success btn-sm" title="Restore"
-                                           onclick="return confirm('Restore this article?')">
-                                            <i class="bi bi-arrow-counterclockwise"></i>
-                                        </a>
-                                    </c:when>
-                                </c:choose>
                                 <%-- Delete --%>
                                 <a href="${pageContext.request.contextPath}/support-agent/knowledge-article?action=delete&amp;id=${a.articleId}"
                                    class="btn btn-danger btn-sm" title="Delete"

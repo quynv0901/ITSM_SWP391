@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
-<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <jsp:include page="/includes/header.jsp" />
 
@@ -150,51 +150,23 @@
             
             <%-- Phân trang --%>
             <c:if test="${totalPages > 1}">
-                <nav aria-label="Phân trang" class="mt-4">
-                    <ul class="pagination justify-content-center">
-
-                        <%-- Nút Trước --%>
-                        <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
-                            <a class="page-link"
-                               href="?keyword=${keyword}&status=${status}&page=${currentPage - 1}">
-                                <i class="bi bi-chevron-left"></i> Trước
-                            </a>
-                        </li>
-
-                        <%-- Số trang --%>
-                        <c:forEach begin="1" end="${totalPages}" var="i">
-                            <c:choose>
-                                <c:when test="${i == currentPage}">
-                                    <li class="page-item active">
-                                        <span class="page-link">${i}</span>
-                                    </li>
-                                </c:when>
-                                <c:when test="${i == 1 || i == totalPages || (i >= currentPage - 2 && i <= currentPage + 2)}">
-                                    <li class="page-item">
-                                        <a class="page-link"
-                                           href="?keyword=${keyword}&status=${status}&page=${i}">${i}</a>
-                                    </li>
-                                </c:when>
-                                <c:when test="${i == currentPage - 3 || i == currentPage + 3}">
-                                    <li class="page-item disabled">
-                                        <span class="page-link">&hellip;</span>
-                                    </li>
-                                </c:when>
-                            </c:choose>
-                        </c:forEach>
-
-                        <%-- Nút Sau --%>
-                        <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
-                            <a class="page-link"
-                               href="?keyword=${keyword}&status=${status}&page=${currentPage + 1}">
-                                Sau <i class="bi bi-chevron-right"></i>
-                            </a>
-                        </li>
-
-                    </ul>
-                </nav>
-                <div class="text-center text-muted small mt-2">
-                    Hiển thị trang ${currentPage} / ${totalPages} &mdash; Tổng ${totalRecords} mục
+                <div class="card-footer bg-white border-top-0 py-3 d-flex justify-content-between align-items-center px-4">
+                    <span class="text-muted small">Tổng <strong>${totalRecords}</strong> mục</span>
+                    <nav>
+                        <ul class="pagination pagination-sm mb-0">
+                            <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
+                                <a class="page-link" href="?page=${currentPage - 1}&keyword=${keyword}&status=${status}">‹</a>
+                            </li>
+                            <c:forEach begin="1" end="${totalPages}" var="i">
+                                <li class="page-item ${currentPage == i ? 'active' : ''}">
+                                    <a class="page-link" href="?page=${i}&keyword=${keyword}&status=${status}">${i}</a>
+                                </li>
+                            </c:forEach>
+                            <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
+                                <a class="page-link" href="?page=${currentPage + 1}&keyword=${keyword}&status=${status}">›</a>
+                            </li>
+                        </ul>
+                    </nav>
                 </div>
             </c:if>
             
