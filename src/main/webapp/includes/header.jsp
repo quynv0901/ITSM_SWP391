@@ -166,9 +166,9 @@
                             <i class="bi bi-person-gear"></i> Quản lý người dùng
                         </a>
                         <a href="${pageContext.request.contextPath}/admin/knowledge-base"
-                               class="menu-item ${pageContext.request.requestURI.endsWith('/admin/knowledge-base.jsp') ? 'active' : ''}">
-                                <i class="bi bi-journal-text"></i> Quản lý bài viết
-                            </a>
+                           class="menu-item ${pageContext.request.requestURI.endsWith('/admin/knowledge-base.jsp') ? 'active' : ''}">
+                            <i class="bi bi-journal-text"></i> Quản lý bài viết
+                        </a>
                         <c:if test="${sessionScope.user != null && sessionScope.user.roleId == 10}">
                             <li class="menu-header">Hệ thống</li>
                             <a href="${pageContext.request.contextPath}/admin/users"
@@ -195,8 +195,11 @@
                             <i class="bi bi-bug"></i> Danh sách lỗi đã xác định
                         </a>
                         <li class="menu-header">Dịch vụ</li>
-                        <a href="${pageContext.request.contextPath}/service"
-                           class="menu-item ${pageContext.request.requestURI.contains('/service') ? 'active' : ''}">
+                            <c:set var="roleId" value="${sessionScope.user.roleId}" />
+                            <c:set var="serviceUrl" value="${roleId == 1 ? '/service-catalog' : '/admin-services'}" />
+
+                        <a href="${pageContext.request.contextPath}${serviceUrl}"
+                           class="menu-item ${pageContext.request.requestURI.contains(serviceUrl) ? 'active' : ''}">
                             <i class="bi bi-hdd-network"></i> Danh mục Dịch vụ
                         </a>
 
@@ -236,8 +239,25 @@
                         <i class="bi bi-bug"></i> Danh sách lỗi đã xác định
                     </a>
                     <li class="menu-header">Dịch vụ</li>
-                    <a href="${pageContext.request.contextPath}/service"
-                       class="menu-item ${pageContext.request.requestURI.contains('/service') ? 'active' : ''}">
+                        <c:set var="roleId" value="${sessionScope.user.roleId}" />
+
+                    <c:choose>
+                        <c:when test="${roleId == 1}">
+                            <c:set var="serviceUrl" value="/service-catalog"/>
+                        </c:when>
+                        <c:when test="${roleId == 3}">
+                            <c:set var="serviceUrl" value="/service-request"/>
+                        </c:when>
+                        <c:when test="${roleId == 10}">
+                            <c:set var="serviceUrl" value="/admin-services"/>
+                        </c:when>
+                        <c:otherwise>
+                            <c:set var="serviceUrl" value="/access-denied"/>
+                        </c:otherwise>
+                    </c:choose>
+
+                    <a href="${pageContext.request.contextPath}${serviceUrl}"
+                       class="menu-item ${pageContext.request.requestURI.contains(serviceUrl) ? 'active' : ''}">
                         <i class="bi bi-hdd-network"></i> Danh mục Dịch vụ
                     </a>
 

@@ -17,6 +17,7 @@ import java.util.List;
 public class ServiceCatalogServlet extends HttpServlet {
 
     private static final int ROLE_END_USER = 1;
+
     private ServiceDAO serviceDAO;
 
     @Override
@@ -55,6 +56,8 @@ public class ServiceCatalogServlet extends HttpServlet {
         }
     }
 
+    private static final int PAGE_SIZE = 8;
+
     private void listActiveServices(HttpServletRequest request, HttpServletResponse response, User loginUser)
             throws ServletException, IOException {
 
@@ -63,11 +66,42 @@ public class ServiceCatalogServlet extends HttpServlet {
             keyword = "";
         }
 
-        List<Service> services = serviceDAO.searchActiveServices(keyword);
+        List<Service> fullList = serviceDAO.searchActiveServices(keyword);
 
-        request.setAttribute("services", services);
+        // ===== PAGINATION =====
+        int currentPage = 1;
+        try {
+            currentPage = Integer.parseInt(request.getParameter("page"));
+            if (currentPage < 1) {
+                currentPage = 1;
+            }
+        } catch (Exception e) {
+            currentPage = 1;
+        }
+
+        int totalItems = fullList.size();
+        int totalPages = (int) Math.ceil((double) totalItems / PAGE_SIZE);
+        if (totalPages == 0) {
+            totalPages = 1;
+        }
+
+        if (currentPage > totalPages) {
+            currentPage = totalPages;
+        }
+
+        int fromIndex = (currentPage - 1) * PAGE_SIZE;
+        int toIndex = Math.min(fromIndex + PAGE_SIZE, totalItems);
+
+        List<Service> pagedList = fullList.subList(fromIndex, toIndex);
+
+        // ===== SET ATTRIBUTE =====
+        request.setAttribute("services", pagedList);
         request.setAttribute("keyword", keyword);
         request.setAttribute("roleId", loginUser.getRoleId());
+
+        request.setAttribute("currentPage", currentPage);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalItems", totalItems);
 
         request.getRequestDispatcher("/admin/service-management.jsp").forward(request, response);
     }
