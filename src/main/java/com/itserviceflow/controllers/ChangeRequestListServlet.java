@@ -91,6 +91,8 @@ public class ChangeRequestListServlet extends HttpServlet {
             assessChangeRisk(request, response, loginUser);
         } else if ("/review".equals(path)) {
             reviewChangeRequest(request, response, loginUser);
+        } else if ("/comment".equals(path)) {
+            addComment(request, response, loginUser);
         } else {
             response.sendRedirect(request.getContextPath() + "/change-request-list/list");
         }
@@ -182,6 +184,26 @@ public class ChangeRequestListServlet extends HttpServlet {
             return;
         }
         request.getRequestDispatcher("/ticket/create-change-request.jsp").forward(request, response);
+    }
+
+    private void addComment(HttpServletRequest request, HttpServletResponse response, User loginUser) throws IOException {
+
+        int ticketId = parseInt(request.getParameter("ticketId"));
+        String content = trim(request.getParameter("commentText"));
+
+        if (ticketId <= 0 || content == null || content.isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/change-request-list/detail?id=" + ticketId + "&msg=invalid_comment");
+            return;
+        }
+
+        boolean ok = changeRequestDAO.addComment(ticketId, loginUser.getUserId(), content);
+
+        if (ok) {
+            changeRequestDAO.addHistory(ticketId, loginUser.getUserId(),
+                    "COMMENT", null, content, "COMMENT");
+        }
+
+        response.sendRedirect(request.getContextPath() + "/change-request-list/detail?id=" + ticketId + (ok ? "&msg=comment_added" : "&msg=comment_failed"));
     }
 
     private void showUpdateForm(HttpServletRequest request, HttpServletResponse response, User loginUser) throws ServletException, IOException {

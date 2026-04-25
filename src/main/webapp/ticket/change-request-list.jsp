@@ -235,7 +235,11 @@
                                         <td>${cr.riskLevel}</td>
                                         <td>${cr.status}</td>
                                         <td>${cr.reportedByName}</td>
-                                        <td>${cr.assignedToName}</td>
+                                        <td>
+                                            ${empty cr.assignedToName 
+                                              ? '<span class="badge bg-secondary">Không có</span>' 
+                                              : cr.assignedToName}
+                                        </td>
                                         <td>
                                             <div><fmt:formatDate value="${cr.scheduledStart}" pattern="dd/MM/yyyy HH:mm" /></div>
                                             <div><fmt:formatDate value="${cr.scheduledEnd}" pattern="dd/MM/yyyy HH:mm" /></div>
@@ -245,11 +249,6 @@
                                                 <a href="${pageContext.request.contextPath}/change-request-list/detail?id=${cr.ticketId}"
                                                    class="btn btn-info btn-sm text-white">
                                                     Xem
-                                                </a>
-
-                                                <a href="${pageContext.request.contextPath}/change-request-list/detail?id=${cr.ticketId}#history-section"
-                                                   class="btn btn-outline-primary btn-sm">
-                                                    Lịch sử thay đổi
                                                 </a>
                                             </div>
                                         </td>
@@ -289,7 +288,11 @@
                                     <td>${cr.riskLevel}</td>
                                     <td>${cr.status}</td>
                                     <td>${cr.reportedByName}</td>
-                                    <td>${cr.assignedToName}</td>
+                                    <td>
+                                        ${empty cr.assignedToName 
+                                          ? '<span class="badge bg-secondary">Không có</span>' 
+                                          : cr.assignedToName}
+                                    </td>
                                     <td>
                                         <div><fmt:formatDate value="${cr.scheduledStart}" pattern="dd/MM/yyyy HH:mm" /></div>
                                         <div><fmt:formatDate value="${cr.scheduledEnd}" pattern="dd/MM/yyyy HH:mm" /></div>
@@ -435,13 +438,12 @@
                                     headerToolbar: {
                                         left: 'prev,next today',
                                         center: 'title',
-                                        right: 'dayGridMonth,timeGridWeek,listWeek'
+                                        right: 'dayGridMonth,timeGridWeek'
                                     },
                                     buttonText: {
                                         today: 'Hôm nay',
                                         month: 'Tháng',
                                         week: 'Tuần',
-                                        list: 'Danh sách'
                                     },
                                     noEventsContent: 'Không có lịch thay đổi trong khoảng thời gian này.',
                                     events: events,

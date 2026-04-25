@@ -278,87 +278,6 @@
                     </c:forEach>
                 </div>
             </div>
-
-            <c:if test="${sessionScope.user.roleId == 3 || sessionScope.user.roleId == 6 || sessionScope.user.roleId == 7}">
-                <div class="card shadow-sm border-0 mt-4" id="history-section">
-                    <div class="card-header bg-white border-bottom py-3">
-                        <h6 class="mb-0 fw-bold text-primary">
-                            <i class="bi bi-clock-history me-2"></i>Lịch sử thay đổi trạng thái
-                        </h6>
-                    </div>
-
-                    <div class="card-body">
-                        <c:if test="${empty historyList}">
-                            <div class="text-muted">Chưa có lịch sử thay đổi nào.</div>
-                        </c:if>
-
-                        <c:if test="${not empty historyList}">
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-hover align-middle history-table">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th style="width: 160px;">Thời gian</th>
-                                            <th style="width: 170px;">Người thực hiện</th>
-                                            <th style="width: 160px;">Trường thay đổi</th>
-                                            <th style="width: 180px;">Giá trị cũ</th>
-                                            <th style="width: 180px;">Giá trị mới</th>
-                                            <th>Diễn giải</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <c:forEach var="h" items="${historyList}">
-                                            <tr>
-                                                <td>
-                                                    <fmt:formatDate value="${h.changedAt}" pattern="dd/MM/yyyy HH:mm" />
-                                                </td>
-                                                <td>
-                                                    ${empty h.changedByName ? '---' : h.changedByName}
-                                                </td>
-                                                <td>
-                                                    <c:choose>
-                                                        <c:when test="${h.fieldName eq 'status'}">Trạng thái</c:when>
-                                                        <c:when test="${h.fieldName eq 'approval_status'}">Trạng thái duyệt</c:when>
-                                                        <c:when test="${h.fieldName eq 'assigned_to'}">Người xử lý</c:when>
-                                                        <c:when test="${h.fieldName eq 'risk_level'}">Mức rủi ro</c:when>
-                                                        <c:when test="${h.fieldName eq 'scheduled_start'}">Bắt đầu dự kiến</c:when>
-                                                        <c:when test="${h.fieldName eq 'scheduled_end'}">Kết thúc dự kiến</c:when>
-                                                        <c:when test="${h.fieldName eq 'title'}">Tiêu đề</c:when>
-                                                        <c:when test="${h.fieldName eq 'description'}">Mô tả</c:when>
-                                                        <c:otherwise>${h.fieldName}</c:otherwise>
-                                                    </c:choose>
-                                                </td>
-                                                <td>${empty h.oldValue ? '---' : h.oldValue}</td>
-                                                <td>${empty h.newValue ? '---' : h.newValue}</td>
-                                                <td>
-                                                    ${empty h.changedByName ? 'Người dùng' : h.changedByName}
-                                                    thay đổi
-                                                    <strong>
-                                                        <c:choose>
-                                                            <c:when test="${h.fieldName eq 'status'}">trạng thái</c:when>
-                                                            <c:when test="${h.fieldName eq 'approval_status'}">trạng thái duyệt</c:when>
-                                                            <c:when test="${h.fieldName eq 'assigned_to'}">người xử lý</c:when>
-                                                            <c:when test="${h.fieldName eq 'risk_level'}">mức rủi ro</c:when>
-                                                            <c:when test="${h.fieldName eq 'scheduled_start'}">bắt đầu dự kiến</c:when>
-                                                            <c:when test="${h.fieldName eq 'scheduled_end'}">kết thúc dự kiến</c:when>
-                                                            <c:when test="${h.fieldName eq 'title'}">tiêu đề</c:when>
-                                                            <c:when test="${h.fieldName eq 'description'}">mô tả</c:when>
-                                                            <c:otherwise>${h.fieldName}</c:otherwise>
-                                                        </c:choose>
-                                                    </strong>
-                                                    từ
-                                                    <strong>${empty h.oldValue ? '---' : h.oldValue}</strong>
-                                                    sang
-                                                    <strong>${empty h.newValue ? '---' : h.newValue}</strong>
-                                                </td>
-                                            </tr>
-                                        </c:forEach>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </c:if>
-                    </div>
-                </div>
-            </c:if>
         </div>
 
         <div class="col-lg-4">
@@ -370,9 +289,26 @@
                 </div>
 
                 <div class="card-body">
-                    <p><span class="info-label">Người tạo:</span> <span class="info-value">${ticket.reportedByName}</span></p>
-                    <p><span class="info-label">Người xử lý:</span> <span class="info-value">${ticket.assignedToName}</span></p>
-                    <p><span class="info-label">CAB phụ trách:</span> <span class="info-value">${ticket.cabMemberName}</span></p>
+                    <p>
+                        <span class="info-label">Người tạo:</span>
+                        <span class="info-value">
+                            ${empty ticket.reportedByName ? 'Không có' : ticket.reportedByName}
+                        </span>
+                    </p>
+
+                    <p>
+                        <span class="info-label">Người xử lý:</span>
+                        <span class="info-value">
+                            ${empty ticket.assignedToName ? 'Không có' : ticket.assignedToName}
+                        </span>
+                    </p>
+
+                    <p>
+                        <span class="info-label">CAB phụ trách:</span>
+                        <span class="info-value">
+                            ${empty ticket.cabMemberName ? 'Không có' : ticket.cabMemberName}
+                        </span>
+                    </p>
                     <p><span class="info-label">Bắt đầu dự kiến:</span>
                         <span class="info-value">
                             <fmt:formatDate value="${ticket.scheduledStart}" pattern="dd/MM/yyyy HH:mm" />
@@ -381,16 +317,6 @@
                     <p><span class="info-label">Kết thúc dự kiến:</span>
                         <span class="info-value">
                             <fmt:formatDate value="${ticket.scheduledEnd}" pattern="dd/MM/yyyy HH:mm" />
-                        </span>
-                    </p>
-                    <p><span class="info-label">Bắt đầu thực tế:</span>
-                        <span class="info-value">
-                            <fmt:formatDate value="${ticket.actualStart}" pattern="dd/MM/yyyy HH:mm" />
-                        </span>
-                    </p>
-                    <p class="mb-0"><span class="info-label">Kết thúc thực tế:</span>
-                        <span class="info-value">
-                            <fmt:formatDate value="${ticket.actualEnd}" pattern="dd/MM/yyyy HH:mm" />
                         </span>
                     </p>
                 </div>
