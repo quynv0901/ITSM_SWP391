@@ -21,6 +21,10 @@
         <servlet-name>ChangeRequestListServlet</servlet-name>
         <servlet-class>com.itserviceflow.controllers.ChangeRequestListServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>MyAssignServlet</servlet-name>
+        <servlet-class>com.itserviceflow.controllers.MyAssignServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>ServiceCatalogServlet</servlet-name>
         <url-pattern>/service-catalog</url-pattern>
@@ -40,6 +44,10 @@
     <servlet-mapping>
         <servlet-name>ChangeRequestListServlet</servlet-name>
         <url-pattern>/change-request-list/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>MyAssignServlet</servlet-name>
+        <url-pattern>/my-assign</url-pattern>
     </servlet-mapping>
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>

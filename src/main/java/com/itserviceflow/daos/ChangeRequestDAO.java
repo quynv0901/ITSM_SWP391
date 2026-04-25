@@ -6,6 +6,7 @@ import com.itserviceflow.dtos.ChangeRequestListDTO;
 import com.itserviceflow.dtos.ServiceRequestCommentDTO;
 import com.itserviceflow.dtos.UserOptionDTO;
 import com.itserviceflow.utils.DBConnection;
+import com.itserviceflow.dtos.TicketHistoryDTO;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -34,6 +35,20 @@ public class ChangeRequestDAO {
         dto.setScheduledStart(rs.getTimestamp("scheduled_start"));
         dto.setScheduledEnd(rs.getTimestamp("scheduled_end"));
         dto.setCreatedAt(rs.getTimestamp("created_at"));
+        return dto;
+    }
+
+    private TicketHistoryDTO mapHistoryDTO(ResultSet rs) throws SQLException {
+        TicketHistoryDTO dto = new TicketHistoryDTO();
+        dto.setHistoryId(rs.getInt("history_id"));
+        dto.setTicketId(rs.getInt("ticket_id"));
+        dto.setChangedBy(rs.getInt("changed_by"));
+        dto.setChangedByName(rs.getString("changed_by_name"));
+        dto.setFieldName(rs.getString("field_name"));
+        dto.setOldValue(rs.getString("old_value"));
+        dto.setNewValue(rs.getString("new_value"));
+        dto.setChangeType(rs.getString("change_type"));
+        dto.setChangedAt(rs.getTimestamp("changed_at"));
         return dto;
     }
 
@@ -105,14 +120,14 @@ public class ChangeRequestDAO {
         List<ChangeRequestListDTO> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT t.ticket_id, t.ticket_number, t.title, t.description, t.status, t.priority, ")
-           .append("t.change_type, t.risk_level, t.approval_status, ")
-           .append("t.reported_by, rb.full_name AS reported_by_name, ")
-           .append("t.assigned_to, au.full_name AS assigned_to_name, ")
-           .append("t.scheduled_start, t.scheduled_end, t.created_at ")
-           .append("FROM ticket t ")
-           .append("LEFT JOIN `user` rb ON t.reported_by = rb.user_id ")
-           .append("LEFT JOIN `user` au ON t.assigned_to = au.user_id ")
-           .append("WHERE t.ticket_type = 'CHANGE' ");
+                .append("t.change_type, t.risk_level, t.approval_status, ")
+                .append("t.reported_by, rb.full_name AS reported_by_name, ")
+                .append("t.assigned_to, au.full_name AS assigned_to_name, ")
+                .append("t.scheduled_start, t.scheduled_end, t.created_at ")
+                .append("FROM ticket t ")
+                .append("LEFT JOIN `user` rb ON t.reported_by = rb.user_id ")
+                .append("LEFT JOIN `user` au ON t.assigned_to = au.user_id ")
+                .append("WHERE t.ticket_type = 'CHANGE' ");
 
         if (filter != null) {
             if (filter.getSearch() != null && !filter.getSearch().trim().isEmpty()) {
@@ -128,8 +143,7 @@ public class ChangeRequestDAO {
 
         sql.append("ORDER BY t.created_at DESC");
 
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
             int idx = 1;
             if (filter != null) {
@@ -158,20 +172,19 @@ public class ChangeRequestDAO {
     }
 
     public ChangeRequestDetailDTO getChangeRequestDetail(int ticketId) {
-        String sql = "SELECT t.ticket_id, t.ticket_number, t.title, t.description, t.status, t.priority, " +
-                "t.approval_status, t.change_type, t.risk_level, t.impact_assessment, t.implementation_plan, " +
-                "t.rollback_plan, t.test_plan, t.justification, t.solution, t.cab_risk_assessment, t.cab_comment, " +
-                "t.reported_by, rb.full_name AS reported_by_name, t.assigned_to, au.full_name AS assigned_to_name, " +
-                "t.cab_member_id, cb.full_name AS cab_member_name, t.scheduled_start, t.scheduled_end, " +
-                "t.actual_start, t.actual_end, t.created_at, t.updated_at " +
-                "FROM ticket t " +
-                "LEFT JOIN `user` rb ON t.reported_by = rb.user_id " +
-                "LEFT JOIN `user` au ON t.assigned_to = au.user_id " +
-                "LEFT JOIN `user` cb ON t.cab_member_id = cb.user_id " +
-                "WHERE t.ticket_id = ? AND t.ticket_type = 'CHANGE'";
+        String sql = "SELECT t.ticket_id, t.ticket_number, t.title, t.description, t.status, t.priority, "
+                + "t.approval_status, t.change_type, t.risk_level, t.impact_assessment, t.implementation_plan, "
+                + "t.rollback_plan, t.test_plan, t.justification, t.solution, t.cab_risk_assessment, t.cab_comment, "
+                + "t.reported_by, rb.full_name AS reported_by_name, t.assigned_to, au.full_name AS assigned_to_name, "
+                + "t.cab_member_id, cb.full_name AS cab_member_name, t.scheduled_start, t.scheduled_end, "
+                + "t.actual_start, t.actual_end, t.created_at, t.updated_at "
+                + "FROM ticket t "
+                + "LEFT JOIN `user` rb ON t.reported_by = rb.user_id "
+                + "LEFT JOIN `user` au ON t.assigned_to = au.user_id "
+                + "LEFT JOIN `user` cb ON t.cab_member_id = cb.user_id "
+                + "WHERE t.ticket_id = ? AND t.ticket_type = 'CHANGE'";
 
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, ticketId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -185,20 +198,48 @@ public class ChangeRequestDAO {
         return null;
     }
 
-    public boolean createChangeRequest(ChangeRequestDetailDTO dto) {
-        String sql = "INSERT INTO ticket (" +
-                "ticket_number, ticket_type, title, description, status, priority, approval_status, " +
-                "reported_by, department_id, change_type, risk_level, justification, impact_assessment, " +
-                "implementation_plan, rollback_plan, test_plan, scheduled_start, scheduled_end, downtime_required, estimated_downtime_hour" +
-                ") VALUES (?, 'CHANGE', ?, ?, 'NEW', ?, 'PENDING', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+    public List<TicketHistoryDTO> getTicketHistoryByTicketId(int ticketId) {
+        List<TicketHistoryDTO> list = new ArrayList<>();
+
+        String sql = "SELECT th.history_id, th.ticket_id, th.changed_by, "
+                + "u.full_name AS changed_by_name, "
+                + "th.field_name, th.old_value, th.new_value, "
+                + "th.change_type, th.changed_at "
+                + "FROM ticket_history th "
+                + "LEFT JOIN `user` u ON th.changed_by = u.user_id "
+                + "WHERE th.ticket_id = ? "
+                + "ORDER BY th.changed_at DESC, th.history_id DESC";
+
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, ticketId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                list.add(mapHistoryDTO(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public int createChangeRequest(ChangeRequestDetailDTO dto) {
+        String sql = "INSERT INTO ticket ("
+                + "ticket_number, ticket_type, title, description, status, priority, approval_status, "
+                + "reported_by, department_id, change_type, risk_level, justification, impact_assessment, "
+                + "implementation_plan, rollback_plan, test_plan, scheduled_start, scheduled_end, downtime_required, estimated_downtime_hour"
+                + ") VALUES (?, 'CHANGE', ?, ?, 'NEW', ?, 'PENDING', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
             ps.setString(1, dto.getTicketNumber());
             ps.setString(2, dto.getTitle());
             ps.setString(3, dto.getDescription());
             ps.setString(4, dto.getPriority());
             ps.setInt(5, dto.getReportedBy());
-            ps.setInt(6, dto.getAssignedTo() == null ? dto.getReportedBy() : dto.getAssignedTo()); // placeholder if needed
+            ps.setInt(6, dto.getAssignedTo() == null ? dto.getReportedBy() : dto.getAssignedTo());
             ps.setString(7, dto.getChangeType());
             ps.setString(8, dto.getRiskLevel());
             ps.setString(9, dto.getJustification());
@@ -210,21 +251,29 @@ public class ChangeRequestDAO {
             ps.setTimestamp(15, dto.getScheduledEnd());
             ps.setBoolean(16, false);
             ps.setNull(17, Types.DECIMAL);
-            return ps.executeUpdate() > 0;
+
+            int affected = ps.executeUpdate();
+
+            if (affected > 0) {
+                ResultSet rs = ps.getGeneratedKeys();
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
         }
+        return -1;
     }
 
     public boolean updateChangeRequest(ChangeRequestDetailDTO dto) {
-        String sql = "UPDATE ticket SET " +
-                "title = ?, description = ?, priority = ?, change_type = ?, risk_level = ?, " +
-                "justification = ?, impact_assessment = ?, implementation_plan = ?, rollback_plan = ?, test_plan = ?, " +
-                "scheduled_start = ?, scheduled_end = ?, updated_at = CURRENT_TIMESTAMP " +
-                "WHERE ticket_id = ? AND ticket_type = 'CHANGE' AND status = 'NEW'";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        String sql = "UPDATE ticket SET "
+                + "title = ?, description = ?, priority = ?, change_type = ?, risk_level = ?, "
+                + "justification = ?, impact_assessment = ?, implementation_plan = ?, rollback_plan = ?, test_plan = ?, "
+                + "scheduled_start = ?, scheduled_end = ?, updated_at = CURRENT_TIMESTAMP "
+                + "WHERE ticket_id = ? AND ticket_type = 'CHANGE' AND status = 'NEW'";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, dto.getTitle());
             ps.setString(2, dto.getDescription());
             ps.setString(3, dto.getPriority());
@@ -245,11 +294,31 @@ public class ChangeRequestDAO {
         }
     }
 
+    public void addHistory(int ticketId, int userId,
+            String field, String oldVal, String newVal, String type) {
+
+        String sql = "INSERT INTO ticket_history(ticket_id, changed_by, field_name, old_value, new_value, change_type) "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, ticketId);
+            ps.setInt(2, userId);
+            ps.setString(3, field);
+            ps.setString(4, oldVal);
+            ps.setString(5, newVal);
+            ps.setString(6, type);
+
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public boolean deleteChangeRequest(int ticketId) {
-        String sql = "DELETE FROM ticket WHERE ticket_id = ? AND ticket_type = 'CHANGE' AND status = 'NEW' " +
-                "AND (cab_risk_assessment IS NULL OR TRIM(cab_risk_assessment) = '')";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        String sql = "DELETE FROM ticket WHERE ticket_id = ? AND ticket_type = 'CHANGE' AND status = 'NEW' "
+                + "AND (cab_risk_assessment IS NULL OR TRIM(cab_risk_assessment) = '')";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, ticketId);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -259,19 +328,22 @@ public class ChangeRequestDAO {
     }
 
     public int bulkDeleteChangeRequests(String[] ticketIds) {
-        if (ticketIds == null || ticketIds.length == 0) return 0;
+        if (ticketIds == null || ticketIds.length == 0) {
+            return 0;
+        }
         int count = 0;
-        String sql = "DELETE FROM ticket WHERE ticket_id = ? AND ticket_type = 'CHANGE' AND status = 'NEW' " +
-                "AND (cab_risk_assessment IS NULL OR TRIM(cab_risk_assessment) = '')";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        String sql = "DELETE FROM ticket WHERE ticket_id = ? AND ticket_type = 'CHANGE' AND status = 'NEW' "
+                + "AND (cab_risk_assessment IS NULL OR TRIM(cab_risk_assessment) = '')";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             for (String id : ticketIds) {
                 ps.setInt(1, Integer.parseInt(id));
                 ps.addBatch();
             }
             int[] results = ps.executeBatch();
             for (int r : results) {
-                if (r > 0) count++;
+                if (r > 0) {
+                    count++;
+                }
             }
         } catch (SQLException | NumberFormatException e) {
             e.printStackTrace();
@@ -281,8 +353,7 @@ public class ChangeRequestDAO {
 
     public boolean cancelChangeRequest(int ticketId) {
         String sql = "UPDATE ticket SET status = 'CANCELLED', updated_at = CURRENT_TIMESTAMP WHERE ticket_id = ? AND ticket_type = 'CHANGE'";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, ticketId);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -293,8 +364,7 @@ public class ChangeRequestDAO {
 
     public boolean assignChangeRequest(int ticketId, int engineerId) {
         String sql = "UPDATE ticket SET assigned_to = ?, status = CASE WHEN status = 'NEW' THEN 'ASSIGNED' ELSE status END, updated_at = CURRENT_TIMESTAMP WHERE ticket_id = ? AND ticket_type = 'CHANGE'";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, engineerId);
             ps.setInt(2, ticketId);
             return ps.executeUpdate() > 0;
@@ -306,8 +376,7 @@ public class ChangeRequestDAO {
 
     public boolean assessRisk(int ticketId, int cabMemberId, String riskLevel, String impactAssessment, String cabRiskAssessment, Timestamp scheduledStart, Timestamp scheduledEnd) {
         String sql = "UPDATE ticket SET cab_member_id = ?, risk_level = ?, impact_assessment = ?, cab_risk_assessment = ?, scheduled_start = ?, scheduled_end = ?, updated_at = CURRENT_TIMESTAMP WHERE ticket_id = ? AND ticket_type = 'CHANGE'";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, cabMemberId);
             ps.setString(2, riskLevel);
             ps.setString(3, impactAssessment);
@@ -324,8 +393,7 @@ public class ChangeRequestDAO {
 
     public boolean reviewChangeRequest(int ticketId, int cabMemberId, boolean approve, String cabComment) {
         String sql = "UPDATE ticket SET cab_member_id = ?, approval_status = ?, status = ?, cab_comment = ?, updated_at = CURRENT_TIMESTAMP WHERE ticket_id = ? AND ticket_type = 'CHANGE'";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, cabMemberId);
             ps.setString(2, approve ? "APPROVED" : "REJECTED");
             ps.setString(3, approve ? "ASSIGNED" : "CANCELLED");
@@ -340,8 +408,7 @@ public class ChangeRequestDAO {
 
     public boolean addComment(int ticketId, int userId, String commentText) {
         String sql = "INSERT INTO comment (ticket_id, user_id, comment_text) VALUES (?, ?, ?)";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, ticketId);
             ps.setInt(2, userId);
             ps.setString(3, commentText);
@@ -354,10 +421,9 @@ public class ChangeRequestDAO {
 
     public List<ServiceRequestCommentDTO> getCommentsByTicketId(int ticketId) {
         List<ServiceRequestCommentDTO> comments = new ArrayList<>();
-        String sql = "SELECT c.comment_id, c.ticket_id, c.user_id, u.full_name AS user_name, u.role_id AS user_role_id, c.comment_text, c.created_at, c.updated_at " +
-                "FROM comment c JOIN `user` u ON c.user_id = u.user_id WHERE c.ticket_id = ? ORDER BY c.created_at ASC";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        String sql = "SELECT c.comment_id, c.ticket_id, c.user_id, u.full_name AS user_name, u.role_id AS user_role_id, c.comment_text, c.created_at, c.updated_at "
+                + "FROM comment c JOIN `user` u ON c.user_id = u.user_id WHERE c.ticket_id = ? ORDER BY c.created_at ASC";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, ticketId);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -372,9 +438,7 @@ public class ChangeRequestDAO {
     public List<UserOptionDTO> getSystemEngineers() {
         List<UserOptionDTO> list = new ArrayList<>();
         String sql = "SELECT user_id, full_name, role_id, department_id FROM `user` WHERE role_id = 6 AND is_active = 1 ORDER BY full_name ASC";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(mapUserOption(rs));
             }
@@ -386,9 +450,7 @@ public class ChangeRequestDAO {
 
     public String generateNextChangeRequestNumber() {
         String sql = "SELECT COUNT(*) + 1 AS next_no FROM ticket WHERE ticket_type = 'CHANGE'";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 return "CHG-" + String.format("%06d", rs.getInt("next_no"));
             }

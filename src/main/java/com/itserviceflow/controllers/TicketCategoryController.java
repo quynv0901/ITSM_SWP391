@@ -174,14 +174,29 @@ public class TicketCategoryController extends HttpServlet {
 
     private void handleCreate(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         TicketCategory cat = buildFromRequest(req);
-        // Duplicate code check
-        TicketCategory exists = dao.findByCode(cat.getCategoryCode());
-        if (exists != null) {
-            // Re-display form with error
+
+        // ── Server-side validation ────────────────────────────────────────
+        String validationError = validateCategory(cat);
+        if (validationError != null) {
             req.setAttribute("cat", cat);
             req.setAttribute("isEdit", false);
             req.setAttribute("allCats", dao.getAllCategories());
-            req.setAttribute("error", "Category code already in use.");
+            req.setAttribute("error", validationError);
+            try {
+                req.getRequestDispatcher("/ticket-category/category-form.jsp").forward(req, resp);
+            } catch (ServletException e) {
+                resp.sendRedirect(req.getContextPath() + "/ticket-category?action=form&error=validation_failed");
+            }
+            return;
+        }
+
+        // Duplicate code check
+        TicketCategory exists = dao.findByCode(cat.getCategoryCode());
+        if (exists != null) {
+            req.setAttribute("cat", cat);
+            req.setAttribute("isEdit", false);
+            req.setAttribute("allCats", dao.getAllCategories());
+            req.setAttribute("error", "Category Code '" + cat.getCategoryCode() + "' đã được sử dụng. Vui lòng chọn mã khác.");
             try {
                 req.getRequestDispatcher("/ticket-category/category-form.jsp").forward(req, resp);
             } catch (ServletException e) {
@@ -202,14 +217,28 @@ public class TicketCategoryController extends HttpServlet {
         TicketCategory cat = buildFromRequest(req);
         cat.setCategoryId(parseId(req.getParameter("id")));
 
-        // Duplicate code check: allow same code for the same record
-        TicketCategory exists = dao.findByCode(cat.getCategoryCode());
-        if (exists != null && exists.getCategoryId() != cat.getCategoryId()) {
-            // Re-display form with error
+        // ── Server-side validation ────────────────────────────────────────
+        String validationError = validateCategory(cat);
+        if (validationError != null) {
             req.setAttribute("cat", cat);
             req.setAttribute("isEdit", true);
             req.setAttribute("allCats", dao.getAllCategories());
-            req.setAttribute("error", "Category code already in use.");
+            req.setAttribute("error", validationError);
+            try {
+                req.getRequestDispatcher("/ticket-category/category-form.jsp").forward(req, resp);
+            } catch (ServletException e) {
+                resp.sendRedirect(req.getContextPath() + "/ticket-category?action=form&id=" + cat.getCategoryId() + "&error=validation_failed");
+            }
+            return;
+        }
+
+        // Duplicate code check: allow same code for the same record
+        TicketCategory exists = dao.findByCode(cat.getCategoryCode());
+        if (exists != null && exists.getCategoryId() != cat.getCategoryId()) {
+            req.setAttribute("cat", cat);
+            req.setAttribute("isEdit", true);
+            req.setAttribute("allCats", dao.getAllCategories());
+            req.setAttribute("error", "Category Code '" + cat.getCategoryCode() + "' đã được sử dụng. Vui lòng chọn mã khác.");
             try {
                 req.getRequestDispatcher("/ticket-category/category-form.jsp").forward(req, resp);
             } catch (ServletException e) {
@@ -258,16 +287,65 @@ public class TicketCategoryController extends HttpServlet {
         resp.sendRedirect(req.getContextPath() + "/ticket-category?bulkToggleSuccess=" + updated);
     }
 
+    /**
+     * Validates required fields and max-length constraints.
+     * Returns an error message string if invalid, or null if valid.
+     */
+    private String validateCategory(TicketCategory cat) {
+        // Category Name – required, max 120
+        String name = cat.getCategoryName();
+        if (name == null || name.isBlank()) {
+            return "Tên danh mục (Category Name) không được để trống.";
+        }
+        if (name.trim().length() > 120) {
+            return "Tên danh mục không được vượt quá 120 ký tự (hiện tại: " + name.trim().length() + " ký tự).";
+        }
+
+        // Category Code – required, max 30
+        String code = cat.getCategoryCode();
+        if (code == null || code.isBlank()) {
+            return "Category Code không được để trống.";
+        }
+        if (code.trim().length() > 30) {
+            return "Category Code không được vượt quá 30 ký tự (hiện tại: " + code.trim().length() + " ký tự).";
+        }
+
+        // Category Type – required
+        String type = cat.getCategoryType();
+        if (type == null || type.isBlank()) {
+            return "Vui lòng chọn Category Type.";
+        }
+
+        // Difficulty Level – required
+        String diff = cat.getDifficultyLevel();
+        if (diff == null || diff.isBlank()) {
+            return "Vui lòng chọn mức Độ khó.";
+        }
+
+        // Description – optional, max 500
+        String desc = cat.getDescription();
+        if (desc != null && desc.length() > 500) {
+            return "Mô tả không được vượt quá 500 ký tự (hiện tại: " + desc.length() + " ký tự).";
+        }
+
+        return null; // all valid
+    }
+
     private TicketCategory buildFromRequest(HttpServletRequest req) {
         TicketCategory cat = new TicketCategory();
-        cat.setCategoryName(req.getParameter("categoryName"));
-        cat.setCategoryCode(req.getParameter("categoryCode"));
-        cat.setCategoryType(req.getParameter("categoryType"));
+        cat.setCategoryName(trim(req.getParameter("categoryName")));
+        cat.setCategoryCode(trim(req.getParameter("categoryCode")));
+        cat.setCategoryType(trim(req.getParameter("categoryType")));
         cat.setDescription(req.getParameter("description"));
         cat.setParentCategoryId(parseId(req.getParameter("parentCategoryId")));
-        cat.setDifficultyLevel(req.getParameter("difficultyLevel"));
+        cat.setDifficultyLevel(trim(req.getParameter("difficultyLevel")));
         cat.setActive(Boolean.parseBoolean(req.getParameter("isActive")));
         return cat;
+    }
+
+    /** Null-safe trim helper */
+    private String trim(String val) {
+        return val == null ? null : val.trim();
     }
 
     private int parseId(String val) {

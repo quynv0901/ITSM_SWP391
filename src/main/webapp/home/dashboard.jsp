@@ -315,12 +315,24 @@
         <i class="bi bi-arrow-right card-arrow"></i>
     </a>
 
-    <a href="${pageContext.request.contextPath}/create-request" class="action-card">
-        <div class="card-icon green"><i class="bi bi-clipboard2-plus-fill"></i></div>
-        <h3>Tạo Service Request</h3>
-        <p>Yêu cầu dịch vụ IT mới như cấp tài khoản, cài phần mềm, hỗ trợ thiết bị.</p>
-        <i class="bi bi-arrow-right card-arrow"></i>
-    </a>
+    <c:if test="${sessionScope.user.roleId == 10}">
+        <a href="${pageContext.request.contextPath}/admin-services" class="action-card">
+            <div class="card-icon green"><i class="bi bi-clipboard2-plus-fill"></i></div>
+            <h3>Tạo Service Request</h3>
+            <p>Yêu cầu dịch vụ IT mới như cấp tài khoản, cài phần mềm, hỗ trợ thiết bị.</p>
+            <i class="bi bi-arrow-right card-arrow"></i>
+        </a>
+    </c:if>
+
+    <c:if test="${sessionScope.user.roleId == 1}">
+        <a href="${pageContext.request.contextPath}/service-catalog" class="action-card">
+            <div class="card-icon green"><i class="bi bi-clipboard2-plus-fill"></i></div>
+            <h3>Tạo Service Request</h3>
+            <p>Yêu cầu dịch vụ IT mới như cấp tài khoản, cài phần mềm, hỗ trợ thiết bị.</p>
+            <i class="bi bi-arrow-right card-arrow"></i>
+        </a>
+    </c:if>
+
 
     <c:if test="${sessionScope.user.roleId != 1}">
         <a href="${pageContext.request.contextPath}/known-error?action=list" class="action-card">
@@ -331,15 +343,21 @@
         </a>
     </c:if>
 
-    <a href="${pageContext.request.contextPath}/service-catalog" class="action-card">
-        <div class="card-icon orange"><i class="bi bi-grid-3x3-gap-fill"></i></div>
-        <h3>Service Catalog</h3>
-        <p>Xem danh mục các dịch vụ IT đang cung cấp trong tổ chức.</p>
-        <i class="bi bi-arrow-right card-arrow"></i>
-    </a>
-    <a href="${pageContext.request.contextPath}/change-request/list" class="action-card">
+    <c:set var="roleId" value="${sessionScope.user.roleId}" />
+
+    <c:if test="${roleId == 1}">
+        <a href="${pageContext.request.contextPath}/service-catalog" class="action-card">
+            <div class="card-icon orange">
+                <i class="bi bi-grid-3x3-gap-fill"></i>
+            </div>
+            <h3>Service Catalog</h3>
+            <p>Xem danh mục các dịch vụ IT đang cung cấp trong tổ chức.</p>
+            <i class="bi bi-arrow-right card-arrow"></i>
+        </a>
+    </c:if>
+    <a href="${pageContext.request.contextPath}/change-request-list/list" class="action-card">
         <div class="card-icon orange"><i class="bi bi-arrow-repeat me-2"></i></div>
-        <h3>Change Request</h3>
+        <h3>Task Assignment</h3>
         <p>Hiển thị danh sách yêu cầu thay đổi dưới dạng lịch cho các thay đổi đã lên lịch.</p>
         <i class="bi bi-arrow-right card-arrow"></i>
     </a>
@@ -381,6 +399,19 @@
         <p>Tra cứu tài liệu hướng dẫn, FAQ và giải pháp từ kho tri thức nội bộ.</p>
         <i class="bi bi-arrow-right card-arrow"></i>
     </a>
+
+    <c:set var="roleId" value="${sessionScope.user.roleId}" />
+
+    <c:if test="${roleId == 2 || roleId == 6}">
+        <a href="${pageContext.request.contextPath}/my-assign" class="action-card">
+            <div class="card-icon blue">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <h3>Việc của tôi</h3>
+            <p>Công việc được giao.</p>
+            <i class="bi bi-arrow-right card-arrow"></i>
+        </a>
+    </c:if>
 
 
 </div>

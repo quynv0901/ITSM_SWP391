@@ -9,13 +9,9 @@
     List<Ticket> list = (List<Ticket>) request.getAttribute("incidentList");
 %>
 
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Quản lý Sự cố - ITServiceFlow</title>
-        <style>
+<jsp:include page="/includes/header.jsp" />
+
+<style>
             :root {
                 --primary-color: #3b82f6;
                 --primary-hover: #2563eb;
@@ -39,7 +35,7 @@
                 padding: 0;
             }
 
-            body {
+            .incident-page {
                 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
                 background-color: var(--bg-color);
                 color: var(--text-primary);
@@ -89,9 +85,9 @@
 
             /* Khung chứa chính */
             .container {
-                max-width: 1200px;
-                margin: 30px auto;
-                padding: 0 20px;
+                max-width: 100%;
+                margin: 0;
+                padding: 0;
             }
 
             /* Kiểu hiển thị Card */
@@ -580,8 +576,8 @@
                 }
             }
         </style>
-    </head>
-    <body>
+
+        <div class="incident-page container-fluid bg-white p-4 rounded shadow-sm">
         <!-- Phần đầu trang -->
         <div class="header">
             <h1>🚨 Quản lý Sự cố</h1>
@@ -803,7 +799,7 @@
             <input type="hidden" name="cancelReason" id="cancelReasonHidden">
         </form>
 
-    </body>
+</div>
 
     <script>
         // Biến dùng cho phân trang
@@ -1052,4 +1048,5 @@
             }
         });
     </script>
-</html>
+
+<jsp:include page="/includes/footer.jsp" />
