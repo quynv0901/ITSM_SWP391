@@ -63,7 +63,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="nav flex-column nav-pills nav-pills-custom" id="v-pills-tab" role="tablist">
                 <button class="nav-link active text-start" data-bs-toggle="pill" data-bs-target="#edit-profile">
                     <i class="bi bi-person-lines-fill me-2"></i> Hồ sơ cá nhân
@@ -158,39 +158,117 @@
 <jsp:include page="/common/footer.jsp" />
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    // ===================== HELPER =====================
+    function showError(field, message) {
+        field.classList.add('is-invalid');
+        const existing = field.parentNode.querySelector('.invalid-feedback');
+        if (existing)
+            existing.remove();
+        const fb = document.createElement('div');
+        fb.className = 'invalid-feedback';
+        fb.textContent = message;
+        field.insertAdjacentElement('afterend', fb);
+        field.addEventListener('input', function () {
+            field.classList.remove('is-invalid');
+            const err = field.parentNode.querySelector('.invalid-feedback');
+            if (err)
+                err.remove();
+        }, {once: true});
+    }
+
+    function clearErrors(form) {
+        form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        form.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+    }
+
+    // ===================== VALIDATE ĐỔI THÔNG TIN CÁ NHÂN =====================
+    document.querySelector('#edit-profile form"]')
+            ?.addEventListener('submit', function (e) {
+                clearErrors(this);
+
+                const fullNameField = this.querySelector('[name="fullName"]');
+                const phoneField = this.querySelector('[name="phone"]');
+
+                // Trim
+                if (fullNameField)
+                    fullNameField.value = fullNameField.value.trim();
+                if (phoneField)
+                    phoneField.value = phoneField.value.trim();
+
+                let hasError = false;
+
+                // Validate họ tên
+                if (fullNameField) {
+                    if (!fullNameField.value) {
+                        showError(fullNameField, 'Họ tên không được để trống!');
+                        hasError = true;
+                    } else if (fullNameField.value.length < 2 || fullNameField.value.length > 50) {
+                        showError(fullNameField, 'Họ tên phải từ 2 đến 50 ký tự!');
+                        hasError = true;
+                    }
+                }
+
+                // Validate số điện thoại (không bắt buộc nhưng nếu nhập thì phải đúng)
+                if (phoneField && phoneField.value !== '') {
+                    if (!/^0\d{9}$/.test(phoneField.value)) {
+                        showError(phoneField, 'Số điện thoại phải có 10 số và bắt đầu bằng 0!');
+                        hasError = true;
+                    }
+                }
+
+                if (hasError)
+                    e.preventDefault();
+            });
+
     // ===================== VALIDATE ĐỔI MẬT KHẨU =====================
     document.querySelector('#change-pass form').addEventListener('submit', function (e) {
-        const newPass    = this.querySelector('[name="newPassword"]');
+        clearErrors(this);
+
+        const currentPass = this.querySelector('[name="currentPassword"]');
+        const newPass = this.querySelector('[name="newPassword"]');
         const confirmPass = this.querySelector('[name="confirmPassword"]');
 
-        // Xóa lỗi cũ
-        this.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
-        this.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+        // Trim cả 3 trường
+        currentPass.value = currentPass.value.trim();
 
-        const errors = [];
+        let hasError = false;
 
-        if (newPass.value.length < 8) {
-            errors.push({ el: newPass, msg: 'Mật khẩu mới phải có ít nhất 8 ký tự' });
+        // Validate mật khẩu hiện tại
+        if (!currentPass.value) {
+            showError(currentPass, 'Vui lòng nhập mật khẩu hiện tại!');
+            hasError = true;
         }
 
-        if (newPass.value !== confirmPass.value) {
-            errors.push({ el: confirmPass, msg: 'Mật khẩu xác nhận không khớp' });
+        // Validate mật khẩu mới
+        if (!newPass.value) {
+            showError(newPass, 'Vui lòng nhập mật khẩu mới!');
+            hasError = true;
+        } else if (newPass.value.length < 8) {
+            showError(newPass, 'Mật khẩu mới phải có ít nhất 8 ký tự!');
+            hasError = true;
+        } else if (newPass.value.length > 50) {
+            showError(newPass, 'Mật khẩu mới không được vượt quá 50 ký tự!');
+            hasError = true;
+        } else if (/\s/.test(newPass.value)) {  // ← thêm vào đây
+            showError(newPass, 'Mật khẩu mới không được chứa khoảng trắng!');
+            hasError = true;
         }
 
-        if (errors.length > 0) {
-            e.preventDefault();
-            errors.forEach(({ el, msg }) => {
-                el.classList.add('is-invalid');
-                const fb = document.createElement('div');
-                fb.className = 'invalid-feedback';
-                fb.textContent = msg;
-                el.insertAdjacentElement('afterend', fb);
-            });
-            errors[0].el.focus();
+// Validate xác nhận mật khẩu
+        if (!confirmPass.value) {
+            showError(confirmPass, 'Vui lòng nhập lại mật khẩu mới!');
+            hasError = true;
+        } else if (/\s/.test(confirmPass.value)) {  // ← thêm vào đây
+            showError(confirmPass, 'Mật khẩu xác nhận không được chứa khoảng trắng!');
+            hasError = true;
+        } else if (newPass.value !== confirmPass.value) {
+            showError(confirmPass, 'Mật khẩu xác nhận không khớp!');
+            hasError = true;
         }
     });
-    document.addEventListener("DOMContentLoaded", function() {
-        // Auto-select tab from hash
+
+    // ===================== AUTO SELECT TAB =====================
+    document.addEventListener("DOMContentLoaded", function () {
         let hash = window.location.hash;
         if (hash) {
             let triggerEl = document.querySelector('button[data-bs-target="' + hash + '"]');
@@ -200,13 +278,13 @@
         }
     });
 
-    // Reset URL message params
+    // ===================== RESET URL PARAMS =====================
     if (window.history.replaceState) {
         const url = new URL(window.location.href);
         if (url.searchParams.has('message') || url.searchParams.has('error')) {
             url.searchParams.delete('message');
             url.searchParams.delete('error');
-            window.history.replaceState({ path: url.href }, '', url.href);
+            window.history.replaceState({path: url.href}, '', url.href);
         }
     }
 </script>

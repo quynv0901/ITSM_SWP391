@@ -458,6 +458,15 @@
         }
         if (fullNameField)
             fullNameField.value = fullNameField.value.trim();
+        // Validate độ dài
+        if (fullNameField && (fullNameField.value.length < 2 || fullNameField.value.length > 50)) {
+            showFieldError(fullNameField, 'Họ tên phải từ 2 đến 50 ký tự!');
+            return;
+        }
+        if (usernameField && (usernameField.value.length < 2 || usernameField.value.length > 50)) {
+            showFieldError(usernameField, 'Tên đăng nhập phải từ 2 đến 50 ký tự!');
+            return;
+        }
 
         // 3. Check trùng username/email
         const userId = isAdd ? null : document.getElementById('editUserId').value;
