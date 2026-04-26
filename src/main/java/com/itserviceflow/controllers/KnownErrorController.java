@@ -164,6 +164,7 @@ public class KnownErrorController extends HttpServlet {
         request.setAttribute("statusFilter", statusFilter != null ? statusFilter : "ALL");
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalRecords", totalRecords);
         request.getRequestDispatcher("/known-error/list.jsp").forward(request, response);
     }
 
