@@ -1,10 +1,3 @@
--- ============================================================
--- MERGED DATABASE: itserviceflow_db
--- Chiến lược: Giữ itserviceflow_db làm nền,
---   thay configuration_item bằng schema kedb,
---   thêm vendor + maintenance_log,
---   cập nhật CHECK article.
--- ============================================================
 DROP DATABASE IF EXISTS itserviceflow_db;
 CREATE DATABASE IF NOT EXISTS itserviceflow_db
   CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -625,6 +618,4 @@ INSERT INTO ticket (ticket_number, ticket_type, title, description, status, prio
 ('PRB-20261006', 'PROBLEM',
  'Job backup hàng đêm thất bại không nhất quán',
  'Job backup lúc 02:00 thất bại 2-3 lần/tuần mà không có cảnh báo rõ ràng. Chỉ phát hiện khi kiểm tra thủ công.',
-
  'ASSIGNED', 'HIGH', 8, 3, 3, 2, NULL, NULL);
-
