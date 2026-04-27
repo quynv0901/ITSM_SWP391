@@ -258,9 +258,20 @@ public class WorkflowServlet extends HttpServlet {
 
         // Validate
         if (w.getWorkflowName() == null || w.getWorkflowName().isBlank()) {
-            req.setAttribute("error", "Workflow name is required.");
+            req.setAttribute("error", "Tên Workflow không được để trống.");
             req.setAttribute("workflow", w);
             req.setAttribute("formAction", "create");
+            addReferenceData(req);
+            req.getRequestDispatcher("/views/workflow/workflow-form.jsp")
+                    .forward(req, resp);
+            return;
+        }
+
+        if (w.getWorkflowName().length() > 100) {
+            req.setAttribute("error", "Tên Workflow không được vượt quá 100 ký tự.");
+            req.setAttribute("workflow", w);
+            req.setAttribute("formAction", "create");
+            addReferenceData(req);
             req.getRequestDispatcher("/views/workflow/workflow-form.jsp")
                     .forward(req, resp);
             return;
@@ -274,6 +285,36 @@ public class WorkflowServlet extends HttpServlet {
             req.setAttribute("formAction", "create");
             addReferenceData(req);
             req.getRequestDispatcher("/views/workflow/workflow-form.jsp").forward(req, resp);
+            return;
+        }
+
+        if (w.getDescription() != null && w.getDescription().length() > 500) {
+            req.setAttribute("error", "Mô tả không được vượt quá 500 ký tự.");
+            req.setAttribute("workflow", w);
+            req.setAttribute("formAction", "create");
+            addReferenceData(req);
+            req.getRequestDispatcher("/views/workflow/workflow-form.jsp")
+                    .forward(req, resp);
+            return;
+        }
+
+        // Check config (Trigger & Conditions)
+        String config = w.getWorkflowConfig();
+        if (config == null || config.isBlank()) {
+            req.setAttribute("error", "Dữ liệu cấu hình (JSON) bị trống.");
+            returnToForm(req, resp, w, "create");
+            return;
+        }
+        
+        if (!config.contains("\"trigger\"")) {
+            req.setAttribute("error", "Vui lòng chọn sự kiện kích hoạt (Trigger).");
+            returnToForm(req, resp, w, "create");
+            return;
+        }
+
+        if (!config.contains("\"conditions\"") || config.contains("\"criteria\":[]") || config.contains("\"conditions\":[]")) {
+            req.setAttribute("error", "Vui lòng thêm ít nhất một điều kiện lọc cho workflow.");
+            returnToForm(req, resp, w, "create");
             return;
         }
 
@@ -293,9 +334,20 @@ public class WorkflowServlet extends HttpServlet {
         w.setWorkflowId(parseId(req.getParameter("workflowId")));
 
         if (w.getWorkflowName() == null || w.getWorkflowName().isBlank()) {
-            req.setAttribute("error", "Workflow name is required.");
+            req.setAttribute("error", "Tên Workflow không được để trống.");
             req.setAttribute("workflow", w);
             req.setAttribute("formAction", "update");
+            addReferenceData(req);
+            req.getRequestDispatcher("/views/workflow/workflow-form.jsp")
+                    .forward(req, resp);
+            return;
+        }
+
+        if (w.getWorkflowName().length() > 100) {
+            req.setAttribute("error", "Tên Workflow không được vượt quá 100 ký tự.");
+            req.setAttribute("workflow", w);
+            req.setAttribute("formAction", "update");
+            addReferenceData(req);
             req.getRequestDispatcher("/views/workflow/workflow-form.jsp")
                     .forward(req, resp);
             return;
@@ -310,6 +362,36 @@ public class WorkflowServlet extends HttpServlet {
             addReferenceData(req);
             req.getRequestDispatcher("/views/workflow/workflow-form.jsp").forward(req, resp);
             return;
+        }
+
+        if (w.getDescription() != null && w.getDescription().length() > 500) {
+            req.setAttribute("error", "Mô tả không được vượt quá 500 ký tự.");
+            req.setAttribute("workflow", w);
+            req.setAttribute("formAction", "update");
+            addReferenceData(req);
+            req.getRequestDispatcher("/views/workflow/workflow-form.jsp")
+                    .forward(req, resp);
+            return;
+        }
+
+        // Check config (Trigger & Conditions)
+        String config = w.getWorkflowConfig();
+        if (config == null || config.isBlank()) {
+             req.setAttribute("error", "Dữ liệu cấu hình (JSON) bị trống.");
+             returnToForm(req, resp, w, "update");
+             return;
+        }
+
+        if (!config.contains("\"trigger\"")) {
+             req.setAttribute("error", "Vui lòng chọn sự kiện kích hoạt (Trigger).");
+             returnToForm(req, resp, w, "update");
+             return;
+        }
+
+        if (!config.contains("\"conditions\"") || config.contains("\"criteria\":[]")) {
+             req.setAttribute("error", "Vui lòng thêm ít nhất một điều kiện lọc cho workflow.");
+             returnToForm(req, resp, w, "update");
+             return;
         }
 
         boolean ok = dao.updateWorkflow(w);
@@ -386,6 +468,14 @@ public class WorkflowServlet extends HttpServlet {
     // ==================================================================
     // Helpers
     // ==================================================================
+    private void returnToForm(HttpServletRequest req, HttpServletResponse resp, Workflow w, String action)
+            throws ServletException, IOException {
+        req.setAttribute("workflow", w);
+        req.setAttribute("formAction", action);
+        addReferenceData(req);
+        req.getRequestDispatcher("/views/workflow/workflow-form.jsp").forward(req, resp);
+    }
+
     private Workflow buildFromRequest(HttpServletRequest req) {
         Workflow w = new Workflow();
         w.setWorkflowName(trim(req.getParameter("workflowName")));

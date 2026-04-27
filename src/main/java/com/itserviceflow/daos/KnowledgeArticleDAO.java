@@ -191,28 +191,28 @@ public class KnowledgeArticleDAO {
      * Thêm bài viết mới — status luôn PENDING
      */
     public boolean addArticle(Article a) {
-    String sql = "INSERT INTO article (title, summary, content, article_type, tag, status, "
-            + "author_id, error_code, symptom, cause, solution) "
-            + "VALUES (?, ?, ?, 'KNOWLEDGE_ARTICLE', ?, 'PENDING', ?, ?, ?, ?, ?)";
-    try (PreparedStatement st = conn.prepareStatement(sql)) {
-        st.setString(1, a.getTitle());
-        st.setString(2, a.getSummary());
-        st.setString(3, a.getContent());
-        // idx 4 = 'KNOWLEDGE_ARTICLE' hardcode, bỏ qua
-        st.setString(4, a.getTag());
-        // idx 6 = 'PENDING' hardcode, bỏ qua
-        if (a.getAuthorId() != null) st.setInt(5, a.getAuthorId());
-        else st.setNull(5, Types.INTEGER);
-        st.setString(6, a.getErrorCode());
-        st.setString(7, a.getSymptom());
-        st.setString(8, a.getCause());
-        st.setString(9, a.getSolution());
-        return st.executeUpdate() > 0;
-    } catch (Exception e) {
-        e.printStackTrace();
+        String sql = "INSERT INTO article (title, summary, content, article_type, tag, status, "
+                + "author_id, error_code, symptom, cause, solution) "
+                + "VALUES (?, ?, ?, 'KNOWLEDGE_ARTICLE', ?, 'PENDING', ?, ?, ?, ?, ?)";
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setString(1, a.getTitle());
+            st.setString(2, a.getSummary());
+            st.setString(3, a.getContent());
+            // idx 4 = 'KNOWLEDGE_ARTICLE' hardcode, bỏ qua
+            st.setString(4, a.getTag());
+            // idx 6 = 'PENDING' hardcode, bỏ qua
+            if (a.getAuthorId() != null) st.setInt(5, a.getAuthorId());
+            else st.setNull(5, Types.INTEGER);
+            st.setString(6, a.getErrorCode());
+            st.setString(7, a.getSymptom());
+            st.setString(8, a.getCause());
+            st.setString(9, a.getSolution());
+            return st.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
-    return false;
-}
 
     /**
      * Chỉnh sửa bài viết — chỉ được sửa nếu đúng author_id

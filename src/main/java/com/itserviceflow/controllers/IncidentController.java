@@ -627,14 +627,19 @@ public class IncidentController extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + ticketId + "&logError=invalidTime");
             return;
         }
-        if (timeSpent <= 0 || timeSpent > 24) {
+        if (timeSpent <= 0 || timeSpent > 48) {
             response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + ticketId + "&logError=invalidTime");
             return;
         }
         String description = normalizeWhitespace(request.getParameter("logDescription"));
-        if (description == null || description.length() < 5 || description.length() > 500 || !isSafeText(description)) {
-            response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + ticketId + "&logError=invalidDescription");
-            return;
+        // Optional description: if not empty, must be <= 200 and safe
+        if (description != null && !description.isEmpty()) {
+            if (description.length() > 200 || !isSafeText(description)) {
+                response.sendRedirect(request.getContextPath() + "/incident?action=detail&id=" + ticketId + "&logError=invalidDescription");
+                return;
+            }
+        } else {
+            description = ""; // Default to empty string if null/empty
         }
 
         HttpSession session = request.getSession();

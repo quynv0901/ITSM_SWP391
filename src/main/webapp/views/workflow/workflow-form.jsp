@@ -288,7 +288,7 @@
                     <div class="breadcrumb-custom">
                         <i class="bi bi-house-door me-1"></i> Trang chủ &gt;
                         <a href="${pageContext.request.contextPath}/workflows"
-                            class="text-decoration-none text-secondary">Tự động điều hướng Ticket</a>
+                            class="text-decoration-none text-secondary">Cấu hình thông báo tự động</a>
                         <i class="fa fa-chevron-right text-muted mx-2" style="font-size:0.8rem;"></i>
                         <c:choose>
                             <c:when test="${formAction == 'create'}">Tạo mới</c:when>
@@ -301,9 +301,9 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0 fw-bold">
                             <c:choose>
-                                <c:when test="${empty workflow.workflowId}"><i
+                                <c:when test="${formAction == 'create'}"><i
                                         class="bi bi-plus-circle me-2 text-primary"></i>Tạo quy tắc mới</c:when>
-                                <c:otherwise><i class="bi bi-pencil-square me-2 text-warning"></i>Chỉnh sửa Hệ thống tự động
+                                <c:otherwise><i class="bi bi-pencil-square me-2 text-warning"></i>Chỉnh sửa Quy tắc
                                 </c:otherwise>
                             </c:choose>
                         </h5>
@@ -343,7 +343,7 @@
                         <div class="workflow-card mb-4">
                             <div class="card-header-bar d-flex align-items-center gap-2 px-4 py-3">
                                 <i class="fa fa-circle-info text-primary"></i>
-                                <span class="fw-bold">Basic Information</span>
+                                <span class="fw-bold">Thông tin cơ bản</span>
                             </div>
                             <div class="p-4">
                                 <div class="row g-4">
@@ -351,30 +351,30 @@
                                         <label class="form-label" for="workflowName">Tên Quy tắc <span
                                                 class="text-danger">*</span></label>
                                         <input type="text" id="workflowName" name="workflowName" class="form-control"
-                                            placeholder="VD: Quy trình phê duyệt mua sắm IT"
+                                            placeholder="Ví dụ: Quy trình phê duyệt Incident P1"
                                             value="<c:out value='${workflow.workflowName}'/>" maxlength="255"
                                             required />
                                         <div class="invalid-feedback">Tên Workflow không được để trống.</div>
                                         <div class="field-error" id="nameError" style="display:none;"><i class="fa fa-circle-exclamation"></i><span></span></div>
                                     </div>
                                     <div class="col-12">
-                                        <label class="form-label" for="description">Mô tả</label>
+                                        <label class="form-label" for="description">Mô tả <span class="text-danger">*</span></label>
                                         <textarea id="description" name="description" class="form-control" rows="3"
-                                            placeholder="Mô tả mục đích của workflow này…" maxlength="500"><c:out value="${workflow.description}"/></textarea>
+                                            placeholder="Mô tả mục đích của workflow này..." maxlength="1000"><c:out value="${workflow.description}"/></textarea>
                                         <div class="form-text text-secondary mt-1"><span id="descCharCount">0</span>/500 ký tự</div>
                                         <div class="field-error" id="descError" style="display:none;"><i class="fa fa-circle-exclamation"></i><span></span></div>
                                     </div>
                                     <div class="col-sm-6">
-                                        <label class="form-label" for="status">Status <span
+                                        <label class="form-label" for="status">Trạng thái <span
                                                 class="text-danger">*</span></label>
                                         <select id="status" name="status" class="form-select" required>
                                             <option value="DRAFT" <c:if
                                                 test="${workflow.status == 'DRAFT' || empty workflow.status}">selected
-                                                </c:if>>Draft</option>
+                                                </c:if>>Bản nháp</option>
                                             <option value="ACTIVE" <c:if test="${workflow.status == 'ACTIVE'}">selected
-                                                </c:if>>Active</option>
+                                                </c:if>>Hoạt động</option>
                                             <option value="INACTIVE" <c:if test="${workflow.status == 'INACTIVE'}">
-                                                selected</c:if>>Inactive</option>
+                                                selected</c:if>>Ngừng hoạt động</option>
                                         </select>
                                         <div id="statusHint" class="mt-2"></div>
                                     </div>
@@ -382,37 +382,23 @@
                             </div>
                         </div>
 
-                        <div class="workflow-card mb-4">
+                        <div class="workflow-card mb-4" style="display: none !important;">
                             <div class="card-header-bar d-flex align-items-center gap-2 px-4 py-3">
                                 <i class="fa fa-bolt text-warning"></i>
-                                <span class="fw-bold">Trigger</span>
+                                <span class="fw-bold">Sự kiện kích hoạt</span>
                             </div>
-                            <div class="p-4">
+                            <div class="p-4" style="display: none !important;">
                                 <div class="row g-3" id="triggerOptions">
                                     <div class="col-sm-6 col-lg-3">
                                         <div class="trigger-option" data-trigger="TICKET_CREATED"
                                             onclick="selectTrigger(this)">
                                             <div class="trigger-icon"><i class="fa fa-ticket"></i></div>
-                                            <div class="fw-semibold text-dark" style="font-size:13px;">Ticket Created
+                                            <div class="fw-semibold text-dark" style="font-size:13px;">Tạo mới Ticket
                                             </div>
                                         </div>
                                     </div>
-<!--                                    <div class="col-sm-6 col-lg-3">
-                                        <div class="trigger-option" data-trigger="TICKET_UPDATED"
-                                            onclick="selectTrigger(this)">
-                                            <div class="trigger-icon"><i class="fa fa-pen-to-square"></i></div>
-                                            <div class="fw-semibold text-dark" style="font-size:13px;">Ticket Updated
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-sm-6 col-lg-3">
-                                        <div class="trigger-option" data-trigger="SLA_BREACH"
-                                            onclick="selectTrigger(this)">
-                                            <div class="trigger-icon"><i class="fa fa-clock"></i></div>
-                                            <div class="fw-semibold text-dark" style="font-size:13px;">SLA Breach</div>
-                                        </div>
-                                    </div>-->
                                 </div>
+                                <div class="field-error" id="triggerError" style="display:none; margin-top:15px;"><i class="fa fa-circle-exclamation"></i><span>Vui lòng chọn sự kiện kích hoạt.</span></div>
                             </div>
                         </div>
 
@@ -420,19 +406,20 @@
                             <div class="card-header-bar d-flex align-items-center justify-content-between px-4 py-3">
                                 <div class="d-flex align-items-center gap-2">
                                     <i class="fa fa-filter text-info"></i>
-                                    <span class="fw-bold">Trigger Conditions</span>
+                                    <span class="fw-bold">Điều kiện kích hoạt</span>
                                     <span class="badge bg-info ms-1" id="conditionCountBadge"
-                                        style="font-size:10px;">All tickets</span>
+                                        style="font-size:10px;">Tất cả Ticket</span>
                                 </div>
                                 <button type="button" class="btn btn-sm btn-outline-info" onclick="addCondition()"><i
-                                        class="bi bi-plus-circle me-1"></i>Add Condition</button>
+                                        class="bi bi-plus-circle me-1"></i>Thêm điều kiện</button>
                             </div>
                             <div class="p-4">
                                 <div id="conditionsContainer">
                                     <div class="text-center py-2 text-muted" id="noConditionsMsg">
-                                        <small><i class="fa fa-info-circle me-1"></i> No conditions set.</small>
+                                        <small><i class="fa fa-info-circle me-1"></i> Chưa có điều kiện nào được thiết lập.</small>
                                     </div>
                                 </div>
+                                <div class="field-error" id="conditionsError" style="display:none; border-top: 1px solid #eee; padding-top:10px; margin-top:10px;"><i class="fa fa-circle-exclamation"></i><span>Vui lòng thêm ít nhất một điều kiện kích hoạt.</span></div>
                             </div>
                         </div>
 
@@ -440,51 +427,34 @@
                             <div class="card-header-bar d-flex align-items-center justify-content-between px-4 py-3">
                                 <div class="d-flex align-items-center gap-2">
                                     <i class="fa fa-list-ol text-success"></i>
-                                    <span class="fw-bold">Approval Steps</span>
+                                    <span class="fw-bold">Danh sách nhiệm vụ (Steps)</span>
                                     <span class="badge bg-success ms-1" id="stepCountBadge" style="font-size:10px;">0
-                                        steps</span>
+                                        bước</span>
                                 </div>
                                 <button type="button" class="btn btn-sm btn-primary" onclick="addStep()"><i
-                                        class="fa fa-plus me-1"></i>Thêm Step</button>
+                                        class="fa fa-plus me-1"></i>Thêm bước</button>
                             </div>
                             <div class="p-4">
                                 <div class="field-error mb-2" id="stepsGlobalError" style="display:none;"><i class="fa fa-circle-exclamation"></i><span></span></div>
                                 <div id="stepsContainer">
                                     <div class="empty-steps-placeholder" id="emptyStepsPlaceholder">
-                                        <div class="fw-semibold">Chưa có step nào được thêm</div>
+                                        <div class="fw-semibold">Chưa có bước nào được thêm</div>
                                     </div>
                                 </div>
                                 <button type="button" class="btn btn-add-step w-100 mt-3 py-2 d-none" id="addStepBtn"
                                     onclick="addStep()">
-                                    <i class="fa fa-plus-circle me-2"></i>Thêm Step khác
+                                    <i class="fa fa-plus-circle me-2"></i>Thêm bước khác
                                 </button>
                             </div>
                         </div>
 
-                        <!--                        <div class="workflow-card mb-4">
-            <div class="card-header-bar d-flex align-items-center justify-content-between px-4 py-3"
-                style="cursor:pointer;" data-bs-toggle="collapse" data-bs-target="#jsonPreviewCollapse">
-                <div class="d-flex align-items-center gap-2">
-                    <i class="fa fa-code text-secondary"></i>
-                    <span class="text-secondary fw-semibold" style="font-size:13px;">Preview Generated
-                        JSON</span>
-                </div>
-                <i class="fa fa-chevron-down text-secondary"></i>
-            </div>
-            <div class="collapse" id="jsonPreviewCollapse">
-                <div class="px-4 pb-4 pt-3">
-                    <div class="json-preview-box" id="jsonPreview">{}</div>
-                </div>
-            </div>
-        </div>-->
-
                         <div class="d-flex align-items-center justify-content-end gap-3">
                             <a href="${pageContext.request.contextPath}/workflows" class="btn btn-secondary px-4"><i
-                                    class="fa fa-xmark me-1"></i>Cancel</a>
+                                    class="fa fa-xmark me-1"></i>Hủy bỏ</a>
                             <button type="button" class="btn btn-outline-secondary px-4" onclick="saveDraft()"><i
-                                    class="fa fa-floppy-disk me-1"></i>Save as Draft</button>
+                                    class="fa fa-floppy-disk me-1"></i>Lưu nháp</button>
                             <button type="submit" class="btn btn-primary px-4" id="submitBtn"><i
-                                    class="fa fa-check-circle me-1"></i>Save</button>
+                                    class="fa fa-check-circle me-1"></i>Lưu</button>
                         </div>
                     </form>
 
@@ -530,10 +500,8 @@ out.print(gson.toJson(_pr));
 
                             const ROLES = ['Manager', 'Finance', 'IT Support', 'HR', 'Director', 'Security Team', 'Legal'];
                             const ACTIONS = [
-//                                { value: 'APPROVE_REJECT', label: 'Approve / Reject', badgeClass: 'badge-approve' },
-                                { value: 'REVIEW', label: 'Review Only', badgeClass: 'badge-review' },
-                                { value: 'EXECUTE', label: 'Execute Task', badgeClass: 'badge-execute' },
-//                                { value: 'NOTIFY', label: 'Notify Only', badgeClass: 'badge-notify' },
+                                { value: 'REVIEW', label: 'Kiểm tra', badgeClass: 'badge-review' },
+                                { value: 'EXECUTE', label: 'Làm nhiệm vụ', badgeClass: 'badge-execute' },
                             ];
 
                             var _placeholder = document.getElementById('emptyStepsPlaceholder');
@@ -555,10 +523,8 @@ out.print(gson.toJson(_pr));
                                         }
                                         if (Array.isArray(cfg.steps)) {
                                             cfg.steps.forEach(s => {
-                                                // If action is NOTIFY, SLA should always be 0 and not editable
                                                 const actionVal = s.action || 'EXECUTE';
                                                 const slaVal = (actionVal === 'NOTIFY') ? 0 : (s.sla_hours || 24);
-                                                // Prefer explicit users array in config; fall back to legacy role
                                                 const usersArr = Array.isArray(s.users) ? s.users.map(u => ({ userId: u.userId, fullName: u.fullName, role: u.roleName || u.role || '', departmentName: u.departmentName || u.department || '' })) : [];
                                                 steps.push({ id: ++stepIdCounter, name: s.name || '', description: s.description || '', users: usersArr, legacyRole: s.role || null, action: actionVal, sla_hours: slaVal });
                                             });
@@ -640,20 +606,20 @@ out.print(gson.toJson(_pr));
                                 const badge = document.getElementById('conditionCountBadge');
                                 if (!container) return;
                                 if (conditions.length === 0) {
-                                    container.innerHTML = '<div class="text-center py-4 text-secondary opacity-50"><small>No conditions set.</small></div>';
-                                    badge.textContent = 'All tickets';
+                                    container.innerHTML = '<div class="text-center py-4 text-secondary opacity-50"><small>Chưa có điều kiện nào.</small></div>';
+                                    badge.textContent = 'Tất cả Ticket';
                                     return;
                                 }
-                                badge.textContent = conditions.length + (conditions.length === 1 ? ' condition' : ' conditions');
+                                badge.textContent = conditions.length + ' điều kiện';
                                 let html = '';
                                 if (conditions.length > 1) {
                                     html += '<div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom border-secondary-subtle">'
-                                        + '<span class="text-secondary small">Match</span>'
+                                        + '<span class="text-secondary small">Thỏa mãn</span>'
                                         + '<select class="form-select form-select-sm fw-bold border-secondary-subtle" style="width: auto;" onchange="conditionLogic = this.value; updateJsonPreview();">'
-                                        + '<option value="AND" ' + (conditionLogic === 'AND' ? 'selected' : '') + '>ALL (AND)</option>'
-                                        + '<option value="OR" ' + (conditionLogic === 'OR' ? 'selected' : '') + '>ANY (OR)</option>'
+                                        + '<option value="AND" ' + (conditionLogic === 'AND' ? 'selected' : '') + '>Tất cả (AND)</option>'
+                                        + '<option value="OR" ' + (conditionLogic === 'OR' ? 'selected' : '') + '>Bất kỳ (OR)</option>'
                                         + '</select>'
-                                        + '<span class="text-secondary small">of the following conditions:</span>'
+                                        + '<span class="text-secondary small">trong số tự động các điều kiện dưới đây:</span>'
                                         + '</div>';
                                 }
                                 html += '<div class="conditions-list">';
@@ -682,7 +648,7 @@ out.print(gson.toJson(_pr));
                                 var valueInput = '';
                                 if (c.field === 'ticket_type') {
                                     valueInput = '<select class="form-select form-select-sm" onchange="updateCondition(' + c.id + ', \'value\', this.value)">'
-                                        + '<option value="">-- Type --</option>'
+                                        + '<option value="">-- Loại --</option>'
                                         + (TICKET_TYPES.map(function (t) { return '<option value="' + t + '"' + (c.value === t ? ' selected' : '') + '>' + t + '</option>'; }).join(''))
                                         + '</select>';
                                 } else if (c.field === 'priority') {
@@ -693,7 +659,7 @@ out.print(gson.toJson(_pr));
                                         + '</select>';
                                 } else if (c.field === 'category_id') {
                                     valueInput = '<select class="form-select form-select-sm" onchange="updateCondition(' + c.id + ', \'value\', this.value)">'
-                                        + '<option value="">-- Category --</option>'
+                                        + '<option value="">-- Danh mục --</option>'
                                         + (CATEGORIES.map(function (cat) { return '<option value="' + cat.categoryId + '"' + (c.value == cat.categoryId ? ' selected' : '') + '>' + cat.categoryName + '</option>'; }).join(''))
                                         + '</select>';
                                 }
@@ -703,10 +669,10 @@ out.print(gson.toJson(_pr));
                                 html += '<div class="col-md-3">';
                                 html += '<select class="form-select form-select-sm" onchange="updateCondition(' + c.id + ', \'field\', this.value)">' + fieldOptions + '</select>';
                                 html += '</div>';
-                                html += '<div class="col-md-2">';
+                                html += '<div class="col-md-2 d-none">'; // Hiding the operator
                                 html += '<select class="form-select form-select-sm" onchange="updateCondition(' + c.id + ', \'operator\', this.value)">' + operatorOptions + '</select>';
                                 html += '</div>';
-                                html += '<div class="col-md-6">' + valueInput + '</div>';
+                                html += '<div class="col-md-8">' + valueInput + '</div>'; // Expanded to fit hidden operator space
                                 html += '<div class="col-md-1 text-end">';
                                 html += '<button type="button" class="btn btn-sm text-danger" onclick="removeCondition(' + c.id + ')"><i class="bi bi-trash"></i></button>';
                                 html += '</div>';
@@ -724,20 +690,18 @@ out.print(gson.toJson(_pr));
                             function renderSteps() {
                                 var container = document.getElementById('stepsContainer');
                                 var badge = document.getElementById('stepCountBadge');
-                                badge.textContent = steps.length + ' step' + (steps.length !== 1 ? 's' : '');
+                                badge.textContent = steps.length + ' bước';
                                 if (steps.length === 0) {
-                                    container.innerHTML = '<div class="empty-steps-placeholder"><div class="fw-semibold">No steps added yet</div></div>';
+                                    container.innerHTML = '<div class="empty-steps-placeholder"><div class="fw-semibold">Chưa có bước nào được thêm</div></div>';
                                     _addStepBtn.classList.add('d-none');
                                     return;
                                 }
                                 _addStepBtn.classList.remove('d-none');
                                 let html = '';
                                 steps.forEach(function (s, i) {
-                                    // users preview (chips) and picker button
                                     var usersHtml = '';
                                     var selectedUsers = s.users || [];
                                     if (selectedUsers.length === 0 && s.legacyRole) {
-                                        // show legacy role as hint
                                         usersHtml = '<div class="small text-muted px-1">Role: ' + escHtml(s.legacyRole) + '</div>';
                                     } else if (selectedUsers.length > 0) {
                                         var show = 3;
@@ -752,9 +716,6 @@ out.print(gson.toJson(_pr));
                                     var actionOptions = ACTIONS.map(function (a) { return '<option value="' + a.value + '"' + (a.value === s.action ? ' selected' : '') + '>' + a.label + '</option>'; }).join('');
                                     var upBtn = i > 0 ? '<button type="button" class="btn btn-sm p-0 text-secondary" title="Move Up" onclick="moveStep(' + s.id + ', -1)"><i class="fa fa-chevron-up"></i></button>' : '<span style="display:inline-block;width:22px;"></span>';
                                     var downBtn = i < steps.length - 1 ? '<button type="button" class="btn btn-sm p-0 text-secondary" title="Move Down" onclick="moveStep(' + s.id + ', 1)"><i class="fa fa-chevron-down"></i></button>' : '<span style="display:inline-block;width:22px;"></span>';
-                                    // SLA input is not editable for NOTIFY-only steps; show disabled 0
-                                    // Per-step SLA input removed from UI (SLA still stored in model).
-                                    var slaHtml = '';
                                     html += '<div class="step-card p-3 mb-2 d-flex align-items-start gap-3">'
                                         + '<div class="d-flex flex-column align-items-center gap-1">'
                                         + '<div class="step-number">' + (i + 1) + '</div>'
@@ -762,18 +723,14 @@ out.print(gson.toJson(_pr));
                                         + '</div>'
                                         + '<div class="flex-grow-1">'
                                         + '<div class="row g-3 mb-2">'
-                                        // Adjusted column widths: name (5), users (4), action (3). SLA removed from UI
-                                        + '<div class="col-md-5"><input type="text" class="form-control form-control-sm" placeholder="Step Name" value="' + escHtml(s.name) + '" oninput="updateStepField(' + s.id + ', \'name\', this.value)" /></div>'
+                                        + '<div class="col-md-5"><input type="text" class="form-control form-control-sm" placeholder="Tên bước" value="' + escHtml(s.name) + '" oninput="updateStepField(' + s.id + ', \'name\', this.value)" /></div>'
                                         + '<div class="col-md-4">'
                                         + '<div class="form-control form-control-sm btn-user-add d-flex flex-wrap align-items-center gap-1" style="min-height:31px; height:auto; cursor:text; padding:3px 6px;" onclick="openUserPicker(event, ' + s.id + ')">'
                                         + usersHtml
-                                        + '<input type="text" onclick="openUserPicker(event, ' + s.id + ')" onfocus="openUserPicker(event, ' + s.id + ')" oninput="fetchUsersForPicker(this.value)" style="border:none; outline:none; box-shadow:none; flex-grow:1; min-width:60px; background:transparent; font-size:13px;" placeholder="' + (selectedUsers.length > 0 ? '' : 'Search users...') + '" />'
+                                        + '<input type="text" onclick="openUserPicker(event, ' + s.id + ')" onfocus="openUserPicker(event, ' + s.id + ')" oninput="fetchUsersForPicker(this.value)" style="border:none; outline:none; box-shadow:none; flex-grow:1; min-width:60px; background:transparent; font-size:13px;" placeholder="' + (selectedUsers.length > 0 ? '' : 'Tìm người dùng...') + '" />'
                                         + '</div>'
                                         + '</div>'
                                         + '<div class="col-md-3"><select class="form-select form-select-sm" onchange="updateStepField(' + s.id + ', \'action\', this.value)">' + actionOptions + '</select></div>'
-                                        + '</div>'
-                                        + '<div class="row g-3">'
-                                        + '<div class="col-12"><input type="text" class="form-control form-control-sm" placeholder="Step Description (Optional)" value="' + escHtml(s.description || '') + '" oninput="updateStepField(' + s.id + ', \'description\', this.value)" /></div>'
                                         + '</div>'
                                         + '</div>'
                                         + '<button type="button" class="btn btn-sm text-danger" onclick="removeStep(' + s.id + ')"><i class="fa fa-trash"></i></button>'
@@ -787,14 +744,11 @@ out.print(gson.toJson(_pr));
                                 if (s) {
                                     if (field === 'action') {
                                         s[field] = value;
-                                        // If switched to NOTIFY, SLA must be 0 and not editable
                                         if (String(value).toUpperCase() === 'NOTIFY') {
                                             s.sla_hours = 0;
                                         } else {
-                                            // If previously 0 due to NOTIFY, reset to reasonable default
                                             if (!s.sla_hours || s.sla_hours === 0) s.sla_hours = 24;
                                         }
-                                        // Re-render steps so SLA input shows/hides correctly
                                         renderSteps();
                                         updateJsonPreview();
                                         return;
@@ -811,17 +765,14 @@ out.print(gson.toJson(_pr));
                             // ----- User picker logic -----
                             var _userPickerState = { stepId: null, selected: {} };
                             function openUserPicker(e, stepId) {
-                                // e is the click event from the Add button
                                 _userPickerState.stepId = stepId;
                                 _userPickerState.selected = {};
-                                // preselect existing users
                                 var s = steps.find(x => x.id === stepId);
                                 if (s && Array.isArray(s.users)) {
                                     s.users.forEach(u => { if (u && u.userId) _userPickerState.selected[u.userId] = u; });
                                 }
                                 renderUserPickerDropdown();
                                 positionUserPickerDropdown(e);
-                                // perform initial fetch
                                 fetchUsersForPicker('');
                             }
 
@@ -842,7 +793,6 @@ out.print(gson.toJson(_pr));
     </div>
     <div id="userPickerResults" style="max-height:240px; overflow:auto;"></div>`;
                                 document.body.appendChild(container);
-                                // populate role select from client-side ROLES array
                                 try {
                                     var roleSel = document.getElementById('userPickerRole');
                                     if (roleSel && Array.isArray(ROLES)) {
@@ -870,7 +820,6 @@ out.print(gson.toJson(_pr));
                                 dropdown.style.left = left + 'px';
                                 dropdown.style.minWidth = Math.max(300, btnRect.width * 1.2) + 'px';
                                 dropdown.style.display = 'block';
-                                // close when clicking outside
                                 window.removeEventListener('click', outsideClickHandler);
                                 setTimeout(function () {
                                     window.addEventListener('click', outsideClickHandler);
@@ -899,15 +848,12 @@ out.print(gson.toJson(_pr));
                                 var params = new URLSearchParams();
                                 if (q) params.set('q', q);
                                 if (role) params.set('roleName', role);
-                                // call our new JSON endpoint
                                 var url = ctx + '/admin/users?action=searchJson&q=' + encodeURIComponent(q);
                                 if (role) url += '&roleName=' + encodeURIComponent(role);
-                                console.debug('User picker search URL:', url);
                                 var out = document.getElementById('userPickerResults');
                                 fetch(url)
                                     .then(res => {
                                         if (!res.ok) {
-                                            console.warn('User search responded with status', res.status, res.statusText);
                                             if (out) {
                                                 if (res.status === 403) {
                                                     out.innerHTML = '<div class="text-center text-muted py-3"><strong>Access denied</strong><div class="small">You do not have permission to search users.</div></div>';
@@ -920,13 +866,10 @@ out.print(gson.toJson(_pr));
                                         var ct = (res.headers.get('content-type') || '').toLowerCase();
                                         if (ct.indexOf('application/json') !== -1) {
                                             return res.json().catch(e => {
-                                                console.error('Failed to parse JSON from user search', e);
                                                 return [];
                                             });
                                         }
-                                        // non-json response (likely HTML login/redirect). read text for debug and return empty
                                         return res.text().then(t => {
-                                            console.warn('User search returned non-JSON response (showing first 300 chars):', t && t.substring ? t.substring(0, 300) : t);
                                             if (out) {
                                                 var tl = (t || '').toLowerCase();
                                                 if (tl.indexOf('access denied') !== -1 || tl.indexOf('accessdenied') !== -1) {
@@ -937,7 +880,6 @@ out.print(gson.toJson(_pr));
                                             }
                                             return [];
                                         }).catch(e => {
-                                            console.error('Error reading non-JSON user search response', e);
                                             if (out) out.innerHTML = '<div class="text-center text-muted py-3">No users found</div>';
                                             return [];
                                         });
@@ -963,7 +905,6 @@ out.print(gson.toJson(_pr));
                                         html += '</div>';
                                         out.innerHTML = html;
                                     }).catch(err => {
-                                        console.error('User search error', err);
                                     });
                             }
 
@@ -973,13 +914,11 @@ out.print(gson.toJson(_pr));
                                 if (!s) return;
 
                                 if (checkbox.checked) {
-                                    // optimistic placeholder so UI updates immediately
                                     _userPickerState.selected[userId] = { userId: userId, fullName: '...', role: '', departmentName: '' };
                                     s.users = Object.values(_userPickerState.selected);
                                     s.legacyRole = null;
                                     renderSteps();
 
-                                    // fetch user info and fill
                                     var ctxMeta = document.querySelector('meta[name="ctx-path"]');
                                     var ctx = ctxMeta ? ctxMeta.getAttribute('content') : '';
                                     fetch(ctx + '/admin/users?action=getInfo&id=' + userId)
@@ -992,7 +931,7 @@ out.print(gson.toJson(_pr));
                                                 updateJsonPreview();
                                             }
                                         })
-                                        .catch(() => { /* ignore */ });
+                                        .catch(() => { });
                                 } else {
                                     delete _userPickerState.selected[userId];
                                     s.users = Object.values(_userPickerState.selected);
@@ -1043,12 +982,10 @@ out.print(gson.toJson(_pr));
                             }
                             function updateJsonPreview() {
                                 var json = JSON.stringify(buildConfig(), null, 2);
-                                // Update preview if present (the preview panel may be commented out)
                                 var previewEl = document.getElementById('jsonPreview');
                                 if (previewEl) {
                                     previewEl.textContent = json;
                                 }
-                                // Always update the hidden input so server receives the config
                                 var hidden = document.getElementById('workflowConfigHidden');
                                 if (hidden) {
                                     hidden.value = json;
@@ -1057,7 +994,7 @@ out.print(gson.toJson(_pr));
 
                             var statusSelect = document.getElementById('status');
                             function updateStatusHint() {
-                                const h = { DRAFT: 'Draft: Not yet active.', ACTIVE: 'Active: Live.', INACTIVE: 'Inactive: Paused.' }[statusSelect.value];
+                                const h = { DRAFT: 'Bản nháp: Chưa có tác dụng.', ACTIVE: 'Hoạt động: Đang chạy.', INACTIVE: 'Ngừng hoạt động: Đã tạm dừng.' }[statusSelect.value];
                                 document.getElementById('statusHint').innerHTML = h ? '<div class="alert alert-info p-2 small">' + escHtml(h) + '</div>' : '';
                             }
                             statusSelect.addEventListener('change', updateStatusHint);
@@ -1070,8 +1007,22 @@ out.print(gson.toJson(_pr));
                                 charCount.textContent = len;
                                 charCount.style.color = len > 480 ? '#ef4444' : '';
                             }
-                            descArea.addEventListener('input', updateCharCount);
-                            updateCharCount();
+                             descArea.addEventListener('input', function() {
+                                 updateCharCount();
+                                 var val = this.value.trim();
+                                 var er = document.getElementById('descError');
+                                 if (!val) {
+                                     this.classList.add('is-invalid');
+                                     if (er) { er.style.display = 'flex'; er.querySelector('span').textContent = 'Mô tả không được để trống.'; }
+                                 } else if (val.length > 500) {
+                                     this.classList.add('is-invalid');
+                                     if (er) { er.style.display = 'flex'; er.querySelector('span').textContent = 'Mô tả không được vượt quá 500 ký tự (hiện tại: ' + val.length + ').'; }
+                                 } else {
+                                     this.classList.remove('is-invalid');
+                                     if (er) er.style.display = 'none';
+                                 }
+                             });
+                             updateCharCount();
 
                             // ===== VALIDATION ENGINE =====
                             function validateWorkflowForm(isDraft) {
@@ -1085,28 +1036,53 @@ out.print(gson.toJson(_pr));
                                     errors.push('Tên Workflow không được để trống.');
                                     if (nameEl) nameEl.classList.add('is-invalid');
                                     if (nameErrorEl) { nameErrorEl.style.display = 'flex'; nameErrorEl.querySelector('span').textContent = 'Tên Workflow không được để trống.'; }
+                                } else if (nameVal.length > 100) {
+                                    errors.push('Tên Workflow không được vượt quá 100 ký tự.');
+                                    if (nameEl) nameEl.classList.add('is-invalid');
+                                    if (nameErrorEl) { nameErrorEl.style.display = 'flex'; nameErrorEl.querySelector('span').textContent = 'Tên Workflow không được vượt quá 100 ký tự.'; }
                                 } else {
                                     if (nameEl) nameEl.classList.remove('is-invalid');
                                     if (nameErrorEl) nameErrorEl.style.display = 'none';
                                 }
 
-                                // 2. Description max 500
+                                // 2. Description: Required + max 500
                                 var descEl = document.getElementById('description');
+                                var descVal = descEl ? descEl.value.trim() : '';
                                 var descErrorEl = document.getElementById('descError');
-                                if (descEl && descEl.value.length > 500) {
-                                    errors.push('Mô tả không được vượt quá 500 ký tự (hiện tại: ' + descEl.value.length + ').');
-                                    descEl.classList.add('is-invalid');
+                                
+                                if (!isDraft && !descVal) {
+                                    errors.push('Mô tả workflow không được để trống.');
+                                    if (descEl) descEl.classList.add('is-invalid');
+                                    if (descErrorEl) { descErrorEl.style.display = 'flex'; descErrorEl.querySelector('span').textContent = 'Mô tả không được để trống.'; }
+                                } else if (descVal.length > 500) {
+                                    errors.push('Mô tả không được vượt quá 500 ký tự (hiện tại: ' + descVal.length + ').');
+                                    if (descEl) descEl.classList.add('is-invalid');
                                     if (descErrorEl) { descErrorEl.style.display = 'flex'; descErrorEl.querySelector('span').textContent = 'Mô tả vượt quá 500 ký tự.'; }
                                 } else {
                                     if (descEl) descEl.classList.remove('is-invalid');
                                     if (descErrorEl) descErrorEl.style.display = 'none';
                                 }
 
+                                // 3. Trigger must be selected
+                                var triggerErrorEl = document.getElementById('triggerError');
+                                if (!selectedTrigger) {
+                                    errors.push('Vui lòng chọn một Sự kiện kích hoạt (Trigger).');
+                                    if (triggerErrorEl) triggerErrorEl.style.display = 'flex';
+                                } else {
+                                    if (triggerErrorEl) triggerErrorEl.style.display = 'none';
+                                }
+
+                                // 4. Additional Conditions: Mandatory
+                                var condsErrorEl = document.getElementById('conditionsError');
+                                var condRows = document.querySelectorAll('#conditionsContainer .condition-row');
+                                if (condRows.length === 0) {
+                                    errors.push('Vui lòng thêm ít nhất một Điều kiện kích hoạt cho workflow.');
+                                    if (condsErrorEl) condsErrorEl.style.display = 'flex';
+                                } else {
+                                    if (condsErrorEl) condsErrorEl.style.display = 'none';
+                                }
+
                                 if (!isDraft) {
-                                    // 3. Trigger must be selected
-                                    if (!selectedTrigger) {
-                                        errors.push('Vui lòng chọn một Trigger cho workflow.');
-                                    }
 
                                     // 4. At least one step required
                                     var stepsGlobalErr = document.getElementById('stepsGlobalError');
@@ -1119,8 +1095,11 @@ out.print(gson.toJson(_pr));
                                         // 5. Each step must have a name and at least 1 user
                                         steps.forEach(function(s, idx) {
                                             var stepNum = idx + 1;
-                                            if (!s.name || !s.name.trim()) {
+                                            var sName = s.name ? s.name.trim() : '';
+                                            if (!sName) {
                                                 errors.push('Step ' + stepNum + ': Tên step không được để trống.');
+                                            } else if (sName.length > 100) {
+                                                errors.push('Step ' + stepNum + ': Tên step không được vượt quá 100 ký tự.');
                                             }
                                             if (!s.users || s.users.length === 0) {
                                                 errors.push('Step ' + stepNum + ' ("' + (s.name.trim() || 'Không tên') + '"): Phải chọn ít nhất 1 người phụ trách.');
@@ -1130,7 +1109,9 @@ out.print(gson.toJson(_pr));
                                         // Highlight invalid step cards in the DOM
                                         document.querySelectorAll('.step-card').forEach(function(card, idx) {
                                             var s = steps[idx];
-                                            if (s && (!s.name || !s.name.trim() || !s.users || s.users.length === 0)) {
+                                            var isNameValid = s.name && s.name.trim() && s.name.trim().length <= 100;
+                                            var isUsersValid = s.users && s.users.length > 0;
+                                            if (!isNameValid || !isUsersValid) {
                                                 card.classList.add('step-invalid');
                                             } else {
                                                 card.classList.remove('step-invalid');
@@ -1176,13 +1157,20 @@ out.print(gson.toJson(_pr));
                             });
 
                             // Live-clear name error on input
-                            document.getElementById('workflowName').addEventListener('input', function() {
-                                if (this.value.trim()) {
-                                    this.classList.remove('is-invalid');
-                                    var er = document.getElementById('nameError');
-                                    if (er) er.style.display = 'none';
-                                }
-                            });
+                             document.getElementById('workflowName').addEventListener('input', function() {
+                                 var val = this.value.trim();
+                                 var er = document.getElementById('nameError');
+                                 if (!val) {
+                                     this.classList.add('is-invalid');
+                                     if (er) { er.style.display = 'flex'; er.querySelector('span').textContent = 'Tên Workflow không được để trống.'; }
+                                 } else if (val.length > 100) {
+                                     this.classList.add('is-invalid');
+                                     if (er) { er.style.display = 'flex'; er.querySelector('span').textContent = 'Tên Workflow không được vượt quá 100 ký tự (hiện tại: ' + val.length + ').'; }
+                                 } else {
+                                     this.classList.remove('is-invalid');
+                                     if (er) er.style.display = 'none';
+                                 }
+                             });
 
                             function saveDraft() {
                                 updateJsonPreview();

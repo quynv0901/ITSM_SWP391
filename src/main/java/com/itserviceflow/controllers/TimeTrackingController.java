@@ -140,7 +140,7 @@ public class TimeTrackingController extends HttpServlet {
         double timeSpent;
         try {
             timeSpent = Double.parseDouble(request.getParameter("timeSpent"));
-            if (timeSpent <= 0 || timeSpent > 999.99) {
+            if (timeSpent <= 0 || timeSpent > 48.0) {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException e) {
@@ -149,6 +149,10 @@ public class TimeTrackingController extends HttpServlet {
         }
 
         String description = request.getParameter("description");
+        if (description != null && description.length() > 200) {
+            response.sendRedirect(backUrl + "&updateError=invalidDescription");
+            return;
+        }
         boolean ok = timeLogDAO.updateLog(logId, timeSpent, description);
         response.sendRedirect(backUrl + (ok ? "&updateSuccess=1" : "&updateError=saveFailed"));
     }

@@ -461,13 +461,16 @@
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Số giờ <span class="text-danger">*</span></label>
                         <input type="number" class="form-control" id="editTimeSpent" name="timeSpent"
-                               step="any" min="0.25" max="999.99" required>
-                        <div class="form-text text-muted">Tối thiểu 0.25h, tối đa 999.99h</div>
+                               step="any" min="0.25" max="48" required>
+                        <div class="form-text text-muted">Tối thiểu 0.25h, tối đa 48h</div>
+                        <div id="editTimeError" style="color:#dc3545; font-size:0.8rem; margin-top:4px; display:none;"></div>
                     </div>
                     <div class="mb-1">
                         <label class="form-label fw-semibold">Mô tả</label>
                         <textarea class="form-control" id="editDescription" name="description"
-                                  rows="3" placeholder="Mô tả công việc đã thực hiện..."></textarea>
+                                  rows="3" maxlength="200" placeholder="Mô tả công việc đã thực hiện..."></textarea>
+                        <div class="form-text text-muted small"><span id="descCharCount">0</span>/200 ký tự</div>
+                        <div id="editDescError" style="color:#dc3545; font-size:0.8rem; margin-top:4px; display:none;"></div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -580,6 +583,46 @@
         });
 
         
+
+        // ── Real-time validation for Edit Modal ──────────────────────────────
+        const editTimeInput = document.getElementById('editTimeSpent');
+        const editTimeErr   = document.getElementById('editTimeError');
+        const editDescInput = document.getElementById('editDescription');
+        const editDescErr   = document.getElementById('editDescError');
+        const charCountSpan = document.getElementById('descCharCount');
+
+        if (editTimeInput) {
+            editTimeInput.addEventListener('input', function() {
+                const val = parseFloat(this.value);
+                if (val > 48) {
+                    this.classList.add('is-invalid');
+                    editTimeErr.textContent = 'Số giờ không được vượt quá 48h';
+                    editTimeErr.style.display = 'block';
+                } else if (val < 0.25) {
+                    this.classList.add('is-invalid');
+                    editTimeErr.textContent = 'Số giờ tối thiểu là 0.25h';
+                    editTimeErr.style.display = 'block';
+                } else {
+                    this.classList.remove('is-invalid');
+                    editTimeErr.style.display = 'none';
+                }
+            });
+        }
+
+        if (editDescInput) {
+            editDescInput.addEventListener('input', function() {
+                const val = this.value;
+                charCountSpan.textContent = val.length;
+                if (val.length > 200) {
+                    this.classList.add('is-invalid');
+                    editDescErr.textContent = 'Mô tả không được vượt quá 200 ký tự';
+                    editDescErr.style.display = 'block';
+                } else {
+                    this.classList.remove('is-invalid');
+                    editDescErr.style.display = 'none';
+                }
+            });
+        }
 
         // ── Auto-dismiss toast after 4s ───────────────────────────────────────
         const toast = document.getElementById('toastMsg');
