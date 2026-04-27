@@ -227,8 +227,7 @@
                    class="menu-item ${pageContext.request.requestURI.contains('/admin/knowledge-article') ? 'active' : ''}">
                     <i class="bi bi-journal-text"></i> Quản lý cơ sở kiến thức
                 </a>
-                <a href="#" class="menu-item"><i class="bi bi-shield-lock"></i> Danh sách quyền</a>
-                <a href="#" class="menu-item"><i class="bi bi-gear"></i> Cấu hình hệ thống</a>
+
                 <a href="${pageContext.request.contextPath}/workflows"
                    class="menu-item ${pageContext.request.requestURI.contains('/workflows') ? 'active' : ''}">
                     <i class="bi bi-diagram-3"></i> Tự động điều hướng Ticket
