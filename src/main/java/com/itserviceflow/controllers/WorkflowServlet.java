@@ -24,7 +24,7 @@ import java.util.List;
  * /workflows?action=delete -> delete workflow (id in body) POST
  * /workflows?action=toggle -> enable / disable (id + newStatus in body)
  */
-@WebServlet(name = "WorkflowServlet", urlPatterns = {"/workflows"})
+@WebServlet(name = "WorkflowServlet", urlPatterns = { "/workflows" })
 public class WorkflowServlet extends HttpServlet {
 
     private final WorkflowDAO dao = new WorkflowDAO();
@@ -114,15 +114,15 @@ public class WorkflowServlet extends HttpServlet {
         if (search != null && !search.isBlank()) {
             final String kw = search.trim().toLowerCase();
             allFiltered = allFiltered.stream()
-                .filter(w -> (w.getWorkflowName() != null && w.getWorkflowName().toLowerCase().contains(kw))
-                          || (w.getDescription()   != null && w.getDescription().toLowerCase().contains(kw)))
-                .toList();
+                    .filter(w -> (w.getWorkflowName() != null && w.getWorkflowName().toLowerCase().contains(kw))
+                            || (w.getDescription() != null && w.getDescription().toLowerCase().contains(kw)))
+                    .toList();
         }
 
         // Counts for the filter tabs (always from full list)
-        List<Workflow> all     = dao.getAllWorkflows();
-        long countAll      = all.size();
-        long countActive   = all.stream().filter(w -> "ACTIVE".equals(w.getStatus())).count();
+        List<Workflow> all = dao.getAllWorkflows();
+        long countAll = all.size();
+        long countActive = all.stream().filter(w -> "ACTIVE".equals(w.getStatus())).count();
         long countInactive = all.stream().filter(w -> "INACTIVE".equals(w.getStatus())).count();
         long countDraft = all.stream().filter(w -> "DRAFT".equals(w.getStatus())).count();
 
@@ -163,17 +163,17 @@ public class WorkflowServlet extends HttpServlet {
 
         req.setAttribute("workflows", workflows);
         req.setAttribute("statusFilter", statusFilter == null ? "" : statusFilter);
-        req.setAttribute("search",       search == null ? "" : search);
-        req.setAttribute("countAll",     countAll);
-        req.setAttribute("countActive",  countActive);
-        req.setAttribute("countInactive",countInactive);
-        req.setAttribute("countDraft",   countDraft);
-        req.setAttribute("currentPage",  currentPage);
-        req.setAttribute("totalPages",   totalPages);
-        req.setAttribute("pageSize",     pageSize);
-        req.setAttribute("totalCount",   total);
-        req.setAttribute("fromIdx",      fromIdx + 1);
-        req.setAttribute("toIdx",        toIdx);
+        req.setAttribute("search", search == null ? "" : search);
+        req.setAttribute("countAll", countAll);
+        req.setAttribute("countActive", countActive);
+        req.setAttribute("countInactive", countInactive);
+        req.setAttribute("countDraft", countDraft);
+        req.setAttribute("currentPage", currentPage);
+        req.setAttribute("totalPages", totalPages);
+        req.setAttribute("pageSize", pageSize);
+        req.setAttribute("totalCount", total);
+        req.setAttribute("fromIdx", fromIdx + 1);
+        req.setAttribute("toIdx", toIdx);
 
         req.getRequestDispatcher("/views/workflow/workflow-list.jsp")
                 .forward(req, resp);
@@ -227,8 +227,7 @@ public class WorkflowServlet extends HttpServlet {
     /**
      * Ticket types used both for SSR data island and the JSON API.
      */
-    private static final List<String> TICKET_TYPES
-            = List.of("INCIDENT", "SERVICE_REQUEST", "PROBLEM", "CHANGE");
+    private static final List<String> TICKET_TYPES = List.of("INCIDENT", "SERVICE_REQUEST", "PROBLEM", "CHANGE");
 
     private void addReferenceData(HttpServletRequest req) {
         req.setAttribute("categories", categoryDAO.getActiveCategories());
@@ -305,14 +304,15 @@ public class WorkflowServlet extends HttpServlet {
             returnToForm(req, resp, w, "create");
             return;
         }
-        
+
         if (!config.contains("\"trigger\"")) {
             req.setAttribute("error", "Vui lòng chọn sự kiện kích hoạt (Trigger).");
             returnToForm(req, resp, w, "create");
             return;
         }
 
-        if (!config.contains("\"conditions\"") || config.contains("\"criteria\":[]") || config.contains("\"conditions\":[]")) {
+        if (!config.contains("\"conditions\"") || config.contains("\"criteria\":[]")
+                || config.contains("\"conditions\":[]")) {
             req.setAttribute("error", "Vui lòng thêm ít nhất một điều kiện lọc cho workflow.");
             returnToForm(req, resp, w, "create");
             return;
@@ -377,21 +377,21 @@ public class WorkflowServlet extends HttpServlet {
         // Check config (Trigger & Conditions)
         String config = w.getWorkflowConfig();
         if (config == null || config.isBlank()) {
-             req.setAttribute("error", "Dữ liệu cấu hình (JSON) bị trống.");
-             returnToForm(req, resp, w, "update");
-             return;
+            req.setAttribute("error", "Dữ liệu cấu hình (JSON) bị trống.");
+            returnToForm(req, resp, w, "update");
+            return;
         }
 
         if (!config.contains("\"trigger\"")) {
-             req.setAttribute("error", "Vui lòng chọn sự kiện kích hoạt (Trigger).");
-             returnToForm(req, resp, w, "update");
-             return;
+            req.setAttribute("error", "Vui lòng chọn sự kiện kích hoạt (Trigger).");
+            returnToForm(req, resp, w, "update");
+            return;
         }
 
         if (!config.contains("\"conditions\"") || config.contains("\"criteria\":[]")) {
-             req.setAttribute("error", "Vui lòng thêm ít nhất một điều kiện lọc cho workflow.");
-             returnToForm(req, resp, w, "update");
-             return;
+            req.setAttribute("error", "Vui lòng thêm ít nhất một điều kiện lọc cho workflow.");
+            returnToForm(req, resp, w, "update");
+            return;
         }
 
         boolean ok = dao.updateWorkflow(w);
