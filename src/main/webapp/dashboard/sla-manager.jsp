@@ -270,12 +270,12 @@
     <div class="sla-card">
         <div class="sla-card-title">Ma trận tác động và độ khẩn cấp (mẫu)</div>
         <table class="sla-table">
-            <thead><tr><th>Tác động</th><th>Khẩn cấp</th><th>Ưu tiên</th><th>Mục tiêu phản hồi đầu tiên</th><th>Mục tiêu xử lý xong</th><th>Quy tắc leo thang</th></tr></thead>
+            <thead><tr><th>Tác động</th><th>Ưu tiên</th><th>Mục tiêu phản hồi đầu tiên</th><th>Mục tiêu xử lý xong</th><th>Quy tắc leo thang</th></tr></thead>
             <tbody>
-                <tr><td>Thấp</td><td>Thấp</td><td>LOW</td><td>Trong ngày làm việc</td><td>2-4 tuần</td><td>Leo thang quản lý nếu NEW &gt; 48h</td></tr>
-                <tr><td>Trung bình</td><td>Trung bình</td><td>MEDIUM/NORMAL</td><td>Trong ngày làm việc</td><td>1-2 tuần</td><td>Leo thang quản lý nếu NEW &gt; 48h</td></tr>
-                <tr><td>Cao</td><td>Trung bình</td><td>HIGH</td><td>Trong 3 giờ</td><td>2-5 ngày</td><td>Leo thang quản lý nếu NEW &gt; 24h</td></tr>
-                <tr><td>Cao</td><td>Cao</td><td>CRITICAL/URGENT</td><td>Trong 1 giờ</td><td>Trong 1 ngày</td><td>Báo quản lý ngay và thông báo trưởng nhóm hỗ trợ</td></tr>
+                <tr><td>Thấp</td><td>LOW</td><td>Trong ngày làm việc</td><td>2-4 tuần</td><td>Leo thang quản lý nếu NEW &gt; 48h</td></tr>
+                <tr><td>Trung bình</td><td>MEDIUM/NORMAL</td><td>Trong ngày làm việc</td><td>1-2 tuần</td><td>Leo thang quản lý nếu NEW &gt; 48h</td></tr>
+                <tr><td>Cao</td><td>HIGH</td><td>Trong 3 giờ</td><td>2-5 ngày</td><td>Leo thang quản lý nếu NEW &gt; 24h</td></tr>
+                <tr><td>Khẩn Cấp</td><td>CRITICAL/URGENT</td><td>Trong 1 giờ</td><td>Trong 1 ngày</td><td>Báo quản lý ngay và thông báo trưởng nhóm hỗ trợ</td></tr>
             </tbody>
         </table>
     </div>
