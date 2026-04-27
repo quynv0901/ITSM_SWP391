@@ -147,22 +147,23 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+
         // ===================== CẤU HÌNH =====================
         const limits = {
-            title: {max: 255, countId: 'titleCount', errorId: 'titleError', label: 'Tiêu đề'},
-            summary: {max: 500, countId: 'summaryCount', errorId: 'summaryError', label: 'Mô tả bài viết'},
-            content: {max: 3000, countId: 'contentCount', errorId: 'contentError', label: 'Nội dung'},
-            symptom: {max: 3000, countId: 'symptomCount', errorId: null, label: 'Triệu chứng'},
-            cause: {max: 3000, countId: 'causeCount', errorId: null, label: 'Nguyên nhân'},
-            solution: {max: 3000, countId: 'solutionCount', errorId: null, label: 'Giải pháp'},
+            title:    {max: 255,  countId: 'titleCount',   errorId: 'titleError',   label: 'Tiêu đề'},
+            summary:  {max: 500,  countId: 'summaryCount', errorId: 'summaryError', label: 'Mô tả bài viết'},
+            content:  {max: 3000, countId: 'contentCount', errorId: 'contentError', label: 'Nội dung'},
+            symptom:  {max: 3000, countId: 'symptomCount', errorId: null,           label: 'Triệu chứng'},
+            cause:    {max: 3000, countId: 'causeCount',   errorId: null,           label: 'Nguyên nhân'},
+            solution: {max: 3000, countId: 'solutionCount',errorId: null,           label: 'Giải pháp'},
         };
 
         const textFields = [
-            {id: 'title', label: 'Tiêu đề'},
-            {id: 'summary', label: 'Mô tả'},
-            {id: 'content', label: 'Nội dung'},
-            {id: 'symptom', label: 'Triệu chứng'},
-            {id: 'cause', label: 'Nguyên nhân'},
+            {id: 'title',    label: 'Tiêu đề'},
+            {id: 'summary',  label: 'Mô tả'},
+            {id: 'content',  label: 'Nội dung'},
+            {id: 'symptom',  label: 'Triệu chứng'},
+            {id: 'cause',    label: 'Nguyên nhân'},
             {id: 'solution', label: 'Giải pháp'},
         ];
 
@@ -177,12 +178,12 @@
             return BANNED_WORDS.filter(w => lower.includes(w.toLowerCase()));
         }
 
+        // ===================== COUNTER =====================
         function updateCounter(fieldId) {
             const cfg = limits[fieldId];
             const el = document.getElementById(fieldId);
             const countEl = document.getElementById(cfg.countId);
-            if (!el || !countEl)
-                return;
+            if (!el || !countEl) return;
 
             const len = el.value.length;
             countEl.textContent = len + '/' + cfg.max;
@@ -192,7 +193,7 @@
                 countEl.classList.add('text-danger', 'fw-bold');
                 if (cfg.errorId) {
                     document.getElementById(cfg.errorId).textContent =
-                            cfg.label + ' vượt quá ' + cfg.max + ' ký tự (' + len + '/' + cfg.max + ')';
+                        cfg.label + ' vượt quá ' + cfg.max + ' ký tự (' + len + '/' + cfg.max + ')';
                     document.getElementById(fieldId).classList.add('is-invalid');
                 }
             } else {
@@ -208,8 +209,7 @@
         // ===================== COUNTER REALTIME =====================
         Object.keys(limits).forEach(fieldId => {
             const el = document.getElementById(fieldId);
-            if (!el)
-                return;
+            if (!el) return;
             el.addEventListener('input', () => updateCounter(fieldId));
             updateCounter(fieldId);
         });
@@ -222,47 +222,41 @@
             const title = document.getElementById('title');
             const content = document.getElementById('content');
 
-            // Kiểm tra required
+            // 1. Kiểm tra required
             if (!title.value.trim()) {
                 errors.push('Tiêu đề không được để trống');
                 title.classList.add('is-invalid');
-                if (!firstErrorField)
-                    firstErrorField = title;
+                if (!firstErrorField) firstErrorField = title;
             }
             if (!content.value.trim()) {
                 errors.push('Nội dung không được để trống');
                 content.classList.add('is-invalid');
-                if (!firstErrorField)
-                    firstErrorField = content;
+                if (!firstErrorField) firstErrorField = content;
             }
 
-            // Kiểm tra giới hạn ký tự
+            // 2. Kiểm tra giới hạn ký tự
             Object.keys(limits).forEach(fieldId => {
                 const cfg = limits[fieldId];
                 const el = document.getElementById(fieldId);
-                if (!el)
-                    return;
+                if (!el) return;
                 const len = el.value.length;
                 if (len > cfg.max) {
                     errors.push(cfg.label + ' vượt quá ' + cfg.max + ' ký tự (' + len + '/' + cfg.max + ')');
                     el.classList.add('is-invalid');
-                    if (!firstErrorField)
-                        firstErrorField = el;
+                    if (!firstErrorField) firstErrorField = el;
                 }
             });
 
-            // Kiểm tra từ độc hại
+            // 3. Kiểm tra từ độc hại
             textFields.forEach(({ id, label }) => {
                 const el = document.getElementById(id);
-                if (!el || !el.value.trim())
-                    return;
+                if (!el || !el.value.trim()) return;
                 const found = containsBannedWords(el.value);
                 if (found.length > 0) {
                     errors.push(label + ' chứa từ không phù hợp: "' + found.join('", "') + '"');
                     el.classList.add('is-invalid');
-                    if (!firstErrorField)
-                        firstErrorField = el;
-            }
+                    if (!firstErrorField) firstErrorField = el;
+                }
             });
 
             if (errors.length > 0) {
@@ -272,22 +266,17 @@
                 list.innerHTML = errors.map(err => '<li>' + err + '</li>').join('');
                 alertEl.classList.remove('d-none');
                 alertEl.scrollIntoView({behavior: 'smooth', block: 'start'});
-                if (firstErrorField)
-                    firstErrorField.focus();
+                if (firstErrorField) firstErrorField.focus();
             }
         });
 
         // ===================== XÓA LỖI KHI SỬA =====================
-        ['title', 'content'].forEach(fieldId => {
-            const el = document.getElementById(fieldId);
-            if (el) {
-                el.addEventListener('input', function () {
-                    if (this.value.trim()) {
-                        this.classList.remove('is-invalid');
-                    }
-                });
-            }
+        document.querySelectorAll('textarea, input').forEach(el => {
+            el.addEventListener('input', function () {
+                if (this.value.trim()) this.classList.remove('is-invalid');
+            });
         });
+
     });
 </script>
 

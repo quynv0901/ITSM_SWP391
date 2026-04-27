@@ -148,6 +148,24 @@ public class KnowledgeBaseController extends HttpServlet {
             // ===================================
 
             if (kbDAO.addArticle(article)) {
+                // Broadcast system notification
+                try {
+                    com.itserviceflow.daos.UserDAO userDAO = new com.itserviceflow.daos.UserDAO();
+                    com.itserviceflow.daos.NotificationDAO notificationDAO = new com.itserviceflow.daos.NotificationDAO();
+                    List<User> allUsers = userDAO.listUsers(null, null, null, "user_id", "ASC", 0, 10000);
+                    for (User u : allUsers) {
+                        com.itserviceflow.models.Notification noti = new com.itserviceflow.models.Notification();
+                        noti.setUserId(u.getUserId());
+                        noti.setNotificationType("SYSTEM");
+                        noti.setTitle("Bài viết mới");
+                        noti.setMessage("Một bài viết Kiến thức mới vừa được Xuất bản: " + article.getTitle() + ". Hãy xem ngay!");
+                        noti.setSeen(false);
+                        notificationDAO.createNotification(noti);
+                    }
+                } catch(Exception e) {
+                    System.out.println("Failed to broadcast system notification: " + e.getMessage());
+                }
+
                 resp.sendRedirect(req.getContextPath() + "/admin/knowledge-base?message="
                         + java.net.URLEncoder.encode("Thêm bài viết thành công", "UTF-8"));
             } else {
@@ -156,10 +174,12 @@ public class KnowledgeBaseController extends HttpServlet {
                 req.getRequestDispatcher("/knowledge/knowledge-base-form.jsp").forward(req, resp);
             }
         } catch (Exception e) {
+
             e.printStackTrace();
             req.setAttribute("error", "Lỗi hệ thống: " + e.getMessage());
             req.setAttribute("article", buildArticleFromRequest(req));
             req.getRequestDispatcher("/knowledge/knowledge-base-form.jsp").forward(req, resp);
+
         }
     }
 

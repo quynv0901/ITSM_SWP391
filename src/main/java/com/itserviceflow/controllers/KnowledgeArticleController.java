@@ -152,6 +152,24 @@ public class KnowledgeArticleController extends HttpServlet {
             }
 
             if (kbDAO.addArticle(article)) {
+                // Broadcast system notification
+                try {
+                    com.itserviceflow.daos.UserDAO userDAO = new com.itserviceflow.daos.UserDAO();
+                    com.itserviceflow.daos.NotificationDAO notificationDAO = new com.itserviceflow.daos.NotificationDAO();
+                    List<User> allUsers = userDAO.listUsers(null, null, null, "user_id", "ASC", 0, 10000);
+                    for (User u : allUsers) {
+                        com.itserviceflow.models.Notification noti = new com.itserviceflow.models.Notification();
+                        noti.setUserId(u.getUserId());
+                        noti.setNotificationType("SYSTEM");
+                        noti.setTitle("Bài viết mới");
+                        noti.setMessage("Một bài viết Kiến thức mới vừa được tạo: " + article.getTitle() + ". Đang chờ duyệt.");
+                        noti.setSeen(false);
+                        notificationDAO.createNotification(noti);
+                    }
+                } catch(Exception e) {
+                    System.out.println("Failed to broadcast system notification: " + e.getMessage());
+                }
+
                 resp.sendRedirect(req.getContextPath() + "/support-agent/knowledge-article?message="
                         + encode("Thêm bài viết thành công. Vui lòng chờ admin phê duyệt."));
             } else {
