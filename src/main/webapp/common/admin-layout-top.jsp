@@ -115,6 +115,9 @@
                 padding: 0 20px;
                 color: #fff;
                 box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                position: sticky;
+                top: 0;
+                z-index: 1001;
             }
 
             .topbar-left {
@@ -360,7 +363,7 @@
                 <div class="topbar-right">
                     <!-- Notifications -->
                     <div class="dropdown me-3">
-                        <a class="badge-notification text-decoration-none text-white" id="notificationDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a class="badge-notification text-decoration-none text-white" id="notificationDropdown" href="#" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
                             <i class="bi bi-bell fs-5"></i>
                             <span class="badge bg-danger d-none" id="notificationCount">0</span>
                         </a>
@@ -372,10 +375,10 @@
                             <li class="bg-light px-2 pt-2 border-bottom">
                                 <ul class="nav nav-tabs nav-justified border-0" id="notificationTabs" role="tablist" style="font-size: 0.85rem;">
                                     <li class="nav-item">
-                                        <button class="nav-link active py-2 fw-semibold" id="nav-task-tab" data-bs-toggle="tab" data-bs-target="#nav-task" type="button" role="tab" style="border:none; border-bottom: 2px solid transparent;">Nhiệm vụ <span class="badge bg-danger ms-1" id="badge-task" style="display:none;">0</span></button>
+                                        <button class="nav-link active py-2 fw-semibold" id="nav-task-tab" data-bs-toggle="tab" data-bs-target="#nav-task" type="button" role="tab" style="border:none; border-bottom: 2px solid transparent;" onclick="event.stopPropagation();">Nhiệm vụ <span class="badge bg-danger ms-1" id="badge-task" style="display:none;">0</span></button>
                                     </li>
                                     <li class="nav-item">
-                                        <button class="nav-link py-2 fw-semibold" id="nav-system-tab" data-bs-toggle="tab" data-bs-target="#nav-system" type="button" role="tab" style="border:none; border-bottom: 2px solid transparent;">Hệ thống <span class="badge bg-danger ms-1" id="badge-system" style="display:none;">0</span></button>
+                                        <button class="nav-link py-2 fw-semibold" id="nav-system-tab" data-bs-toggle="tab" data-bs-target="#nav-system" type="button" role="tab" style="border:none; border-bottom: 2px solid transparent;" onclick="event.stopPropagation();">Hệ thống <span class="badge bg-danger ms-1" id="badge-system" style="display:none;">0</span></button>
                                     </li>
                                 </ul>
                             </li>
@@ -407,7 +410,6 @@
 
             <!-- Content Area -->
             <div class="content-area">
-                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
                 <script>
                     document.addEventListener("DOMContentLoaded", function () {
                         fetchNotifications();
@@ -452,9 +454,17 @@
                         data.notifications.forEach(noti => {
                             const li = document.createElement("li");
                             li.className = "notification-item unread";
-                            let link = noti.relatedTicketId ? '${pageContext.request.contextPath}/incident?action=detail&id=' + noti.relatedTicketId : '${pageContext.request.contextPath}/admin/knowledge-base';
+                            
+                            // Xác định link đúng dựa trên loại thông báo
+                            let link = "${pageContext.request.contextPath}/home";
+                            if (noti.relatedTicketId) {
+                                link = "${pageContext.request.contextPath}/incident?action=view&id=" + noti.relatedTicketId;
+                            } else if (noti.notificationType === 'SYSTEM') {
+                                link = "${pageContext.request.contextPath}/admin/knowledge-base?action=list";
+                            }
+                            
                             li.innerHTML = `
-                                <a href="${link}" class="notification-content unread-text d-block">
+                                <a href="\${link}" class="notification-content unread-text d-block">
                                     <div class="d-flex justify-content-between align-items-start mb-1">
                                         <div class="fw-bold small">\${noti.title}</div>
                                         <span class="badge bg-primary rounded-pill ms-1" style="font-size:0.65rem;">Mới</span>
