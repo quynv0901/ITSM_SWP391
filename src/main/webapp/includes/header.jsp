@@ -2,6 +2,8 @@
 <html lang="vi">
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <head>
     <meta charset="UTF-8">
@@ -126,30 +128,35 @@
 
         /* Notifications Dropdown */
         .notification-dropdown {
-            width: 320px;
-            max-height: 400px;
+            width: 350px;
+            max-height: 500px;
             overflow-y: auto;
         }
+
         .notification-item {
             border-bottom: 1px solid #eee;
-            padding: 10px 15px;
+            padding: 12px 15px;
             transition: background 0.2s;
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
             gap: 10px;
         }
+
         .notification-content {
             flex: 1;
             text-decoration: none;
             color: inherit;
         }
+
         .notification-content.unread-text {
             color: #000;
         }
+
         .notification-content:hover {
             color: var(--primary-blue);
         }
+
         .btn-mark-done {
             background: none;
             border: none;
@@ -160,31 +167,49 @@
             line-height: 1;
             transition: color 0.2s, transform 0.1s;
         }
+
         .btn-mark-done:hover {
             color: #198754;
             transform: scale(1.1);
         }
+
         .notification-item:hover {
             background-color: #f8f9fa;
         }
+
         .notification-item.unread {
             background-color: #eef2ff;
         }
+
         .badge-notification {
             position: relative;
             cursor: pointer;
         }
+
         .badge-notification .badge {
             position: absolute;
             top: -5px;
             right: -10px;
-            font-size: 0.6rem;
-            padding: 3px 5px;
+            font-size: 0.65rem;
+            padding: 3px 6px;
             border-radius: 50%;
+        }
+
+        .nav-tabs .nav-link {
+            color: #6c757d;
+            border: none;
+            border-bottom: 2px solid transparent;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--primary-blue);
+            background: none;
+            border-bottom: 2px solid var(--primary-blue);
         }
     </style>
 </head>
 
+<body>
 <div class="wrapper">
     <div class="sidebar">
         <div class="sidebar-header">
@@ -192,21 +217,21 @@
         </div>
         <ul class="sidebar-menu">
 
-            <%-- Bảng điều khiển — chỉ Admin (10) --%>
-            <c:if test="${sessionScope.user.roleId == 10}">
-                <a href="${pageContext.request.contextPath}/dashboard"
-                   class="menu-item ${pageContext.request.requestURI.contains('/dashboard') ? 'active' : ''}">
-                    <i class="bi bi-speedometer2"></i> Bảng điều khiển
-                </a>
-            </c:if>
-
-            <%-- Trang chủ — tất cả trừ Admin --%>
-            <c:if test="${sessionScope.user.roleId != 10}">
-                <a href="${pageContext.request.contextPath}/home"
-                   class="menu-item ${pageContext.request.requestURI.contains('/home/') ? 'active' : ''}">
-                    <i class="bi bi-house-door-fill"></i> Trang chủ
-                </a>
-            </c:if>
+            <%-- Bảng điều khiển (Admin) / Trang chủ (others) --%>
+            <c:choose>
+                <c:when test="${sessionScope.user.roleId == 10}">
+                    <a href="${pageContext.request.contextPath}/dashboard"
+                       class="menu-item ${pageContext.request.requestURI.contains('/dashboard') and !pageContext.request.requestURI.contains('/sla-dashboard') ? 'active' : ''}">
+                        <i class="bi bi-speedometer2"></i> Bảng điều khiển
+                    </a>
+                </c:when>
+                <c:otherwise>
+                    <a href="${pageContext.request.contextPath}/home"
+                       class="menu-item ${pageContext.request.requestURI.contains('/home') ? 'active' : ''}">
+                        <i class="bi bi-house-door-fill"></i> Trang chủ
+                    </a>
+                </c:otherwise>
+            </c:choose>
 
             <%-- Hệ thống — chỉ Admin (10) --%>
             <c:if test="${sessionScope.user.roleId == 10}">
@@ -225,10 +250,8 @@
                 </a>
                 <a href="${pageContext.request.contextPath}/admin/knowledge-article"
                    class="menu-item ${pageContext.request.requestURI.contains('/admin/knowledge-article') ? 'active' : ''}">
-                    <i class="bi bi-journal-text"></i> Quản lý cơ sở kiến thức
+                    <i class="bi bi-journal-bookmark"></i> Quản lý cơ sở kiến thức
                 </a>
-                <a href="#" class="menu-item"><i class="bi bi-shield-lock"></i> Danh sách quyền</a>
-                <a href="#" class="menu-item"><i class="bi bi-gear"></i> Cấu hình hệ thống</a>
                 <a href="${pageContext.request.contextPath}/workflows"
                    class="menu-item ${pageContext.request.requestURI.contains('/workflows') ? 'active' : ''}">
                     <i class="bi bi-diagram-3"></i> Cấu hình thông báo tự động
@@ -238,18 +261,16 @@
             <%-- Quản lý phiếu — tất cả mọi role --%>
             <li class="menu-header">Quản lý phiếu</li>
             <a href="${pageContext.request.contextPath}/incident?action=list"
-               class="menu-item ${pageContext.request.requestURI.contains('/incident/') ? 'active' : ''}">
+               class="menu-item ${pageContext.request.requestURI.contains('/incident') ? 'active' : ''}">
                 <i class="bi bi-exclamation-circle"></i> Quản lý Sự cố
             </a>
-
-            <%-- Problem, Known Error — chỉ role != End User (1) --%>
             <c:if test="${sessionScope.user.roleId != 1}">
                 <a href="${pageContext.request.contextPath}/problem?action=list"
-                   class="menu-item ${pageContext.request.requestURI.contains('/problem/') ? 'active' : ''}">
+                   class="menu-item ${pageContext.request.requestURI.contains('/problem') ? 'active' : ''}">
                     <i class="bi bi-exclamation-octagon"></i> Quản lý Vấn đề
                 </a>
                 <a href="${pageContext.request.contextPath}/known-error?action=list"
-                   class="menu-item ${pageContext.request.requestURI.contains('/known-error/') ? 'active' : ''}">
+                   class="menu-item ${pageContext.request.requestURI.contains('/known-error') ? 'active' : ''}">
                     <i class="bi bi-bug"></i> Lỗi đã biết
                 </a>
                 <a href="${pageContext.request.contextPath}/time-tracking"
@@ -257,8 +278,6 @@
                     <i class="bi bi-clock-history"></i> Theo dõi Thời gian
                 </a>
             </c:if>
-
-            <%-- Danh mục phiếu — chỉ Admin (10) --%>
             <c:if test="${sessionScope.user.roleId == 10}">
                 <a href="${pageContext.request.contextPath}/ticket-category"
                    class="menu-item ${pageContext.request.requestURI.contains('/ticket-category') ? 'active' : ''}">
@@ -287,6 +306,19 @@
                 </c:if>
             </c:if>
 
+            <%-- Báo cáo & Phân tích --%>
+            <li class="menu-header">Báo cáo &amp; Phân tích</li>
+            <a href="${pageContext.request.contextPath}/dashboard"
+               class="menu-item ${pageContext.request.requestURI.contains('/dashboard') and !pageContext.request.requestURI.contains('/sla-dashboard') ? 'active' : ''}">
+                <i class="bi bi-speedometer2"></i> Bảng điều khiển
+            </a>
+            <c:if test="${sessionScope.user.roleId != 1}">
+                <a href="${pageContext.request.contextPath}/sla-dashboard"
+                   class="menu-item ${pageContext.request.requestURI.contains('/sla-dashboard') ? 'active' : ''}">
+                    <i class="bi bi-graph-up-arrow"></i> SLA &amp; Năng suất
+                </a>
+            </c:if>
+
             <%-- Dịch vụ — tất cả --%>
             <li class="menu-header">Dịch vụ</li>
             <a href="${pageContext.request.contextPath}/service"
@@ -304,6 +336,7 @@
                 <i class="bi bi-list fs-4 cursor-pointer"></i>
                 <span class="fw-bold">
                     <c:choose>
+                        <c:when test="${pageContext.request.requestURI.contains('/sla-dashboard')}">SLA &amp; Năng suất</c:when>
                         <c:when test="${pageContext.request.requestURI.contains('/dashboard')}">Bảng điều khiển</c:when>
                         <c:when test="${pageContext.request.requestURI.contains('/admin/users')}">Quản lý người dùng</c:when>
                         <c:when test="${pageContext.request.requestURI.contains('/admin/departments')}">Quản lý phòng ban</c:when>
@@ -312,17 +345,25 @@
                         <c:when test="${pageContext.request.requestURI.contains('/ticket-category')}">Danh mục Ticket</c:when>
                         <c:when test="${pageContext.request.requestURI.contains('/workflows')}">Cấu hình thông báo tự động</c:when>
                         <c:when test="${pageContext.request.requestURI.contains('/time-tracking')}">Theo dõi Thời gian</c:when>
+                        <c:when test="${pageContext.request.requestURI.contains('/incident')}">Quản lý Sự cố</c:when>
+                        <c:when test="${pageContext.request.requestURI.contains('/problem')}">Quản lý Vấn đề</c:when>
+                        <c:when test="${pageContext.request.requestURI.contains('/known-error')}">Lỗi đã biết</c:when>
+                        <c:when test="${pageContext.request.requestURI.contains('/configuration-item')}">Mục cấu hình</c:when>
+                        <c:when test="${pageContext.request.requestURI.contains('/vendor')}">Nhà cung cấp</c:when>
+                        <c:when test="${pageContext.request.requestURI.contains('/maintenance-log')}">Nhật ký bảo trì</c:when>
+                        <c:when test="${pageContext.request.requestURI.contains('/service')}">Quản lý dịch vụ</c:when>
+                        <c:when test="${pageContext.request.requestURI.contains('/home')}">Trang chủ</c:when>
                         <c:otherwise>IT Service Management</c:otherwise>
                     </c:choose>
                 </span>
             </div>
             <div class="topbar-right">
                 <div class="dropdown me-3">
-                    <div class="badge-notification" id="notificationDropdown" role="button" data-bs-toggle="dropdown">
+                    <div class="badge-notification" id="notificationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-bell fs-5"></i>
                         <span class="badge bg-danger d-none" id="notificationCount">0</span>
                     </div>
-                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 notification-dropdown pt-0" aria-labelledby="notificationDropdown" style="width: 350px;">
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 notification-dropdown pt-0" aria-labelledby="notificationDropdown">
                         <li class="dropdown-header d-flex justify-content-between align-items-center bg-light border-bottom pt-2 pb-2">
                             <span class="fw-bold text-dark">Thông báo</span>
                             <a href="#" class="text-decoration-none small text-primary" onclick="markAllNotificationsAsRead(event)">Đánh dấu tất cả đã đọc</a>
@@ -330,28 +371,30 @@
                         <li class="bg-light px-2 pt-2 border-bottom">
                             <ul class="nav nav-tabs nav-justified border-0" id="notificationTabs" role="tablist" style="font-size: 0.85rem;">
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link active py-2 fw-semibold" id="nav-task-tab" data-bs-toggle="tab" data-bs-target="#nav-task" type="button" role="tab" style="border:none; border-bottom: 2px solid transparent;" onclick="event.stopPropagation();">Nhiệm vụ <span class="badge bg-danger ms-1" id="badge-task" style="display:none;">0</span></button>
+                                    <button class="nav-link active py-2 fw-semibold" id="nav-task-tab" data-bs-toggle="tab" data-bs-target="#nav-task" type="button" role="tab" onclick="event.stopPropagation();">Nhiệm vụ <span class="badge bg-danger ms-1" id="badge-task" style="display:none;">0</span></button>
                                 </li>
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link py-2 fw-semibold" id="nav-system-tab" data-bs-toggle="tab" data-bs-target="#nav-system" type="button" role="tab" style="border:none; border-bottom: 2px solid transparent;" onclick="event.stopPropagation();">Hệ thống <span class="badge bg-danger ms-1" id="badge-system" style="display:none;">0</span></button>
+                                    <button class="nav-link py-2 fw-semibold" id="nav-system-tab" data-bs-toggle="tab" data-bs-target="#nav-system" type="button" role="tab" onclick="event.stopPropagation();">Hệ thống <span class="badge bg-danger ms-1" id="badge-system" style="display:none;">0</span></button>
                                 </li>
                             </ul>
                         </li>
-                        
-                        <div class="tab-content" id="nav-tabContent">
-                            <div class="tab-pane fade show active" id="nav-task" role="tabpanel">
-                                <div id="notificationListTask" style="max-height: 300px; overflow-y: auto;">
-                                    <!-- Tasks will be loaded here via JS -->
+                        <li>
+                            <div class="tab-content" id="nav-tabContent">
+                                <div class="tab-pane fade show active" id="nav-task" role="tabpanel">
+                                    <div id="notificationListTask" style="max-height: 300px; overflow-y: auto;">
+                                        <!-- Tasks loaded via JS -->
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="nav-system" role="tabpanel">
+                                    <div id="notificationListSystem" style="max-height: 300px; overflow-y: auto;">
+                                        <!-- System notifications loaded via JS -->
+                                    </div>
                                 </div>
                             </div>
-                            <div class="tab-pane fade" id="nav-system" role="tabpanel">
-                                <div id="notificationListSystem" style="max-height: 300px; overflow-y: auto;">
-                                    <!-- System Notifications will be loaded here via JS -->
-                                </div>
-                            </div>
-                        </div>
+                        </li>
                     </ul>
                 </div>
+
                 <div class="user-info dropdown">
                     <a class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
                        href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
@@ -360,26 +403,22 @@
                         <span class="ms-2 d-none d-md-inline">${sessionScope.user.fullName}</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end shadow border-0">
-                        <li><a class="dropdown-item" href="${pageContext.request.contextPath}/profile">
-                                <i class="bi bi-person me-2"></i> Hồ sơ</a></li>
-                        <li><a class="dropdown-item" href="${pageContext.request.contextPath}/profile#change-pass">
-                                <i class="bi bi-shield-lock me-2"></i> Đổi mật khẩu</a></li>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                        <li><a class="dropdown-item text-danger" href="${pageContext.request.contextPath}/auth?action=logout">
-                                <i class="bi bi-box-arrow-right me-2"></i> Đăng xuất</a></li>
+                        <li><a class="dropdown-item" href="${pageContext.request.contextPath}/profile"><i class="bi bi-person me-2"></i> Hồ sơ</a></li>
+                        <li><a class="dropdown-item" href="${pageContext.request.contextPath}/profile#change-pass"><i class="bi bi-shield-lock me-2"></i> Đổi mật khẩu</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="${pageContext.request.contextPath}/auth?action=logout"><i class="bi bi-box-arrow-right me-2"></i> Đăng xuất</a></li>
                     </ul>
                 </div>
             </div>
         </div>
 
         <div class="content-area">
+            <!-- Page content starts here -->
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         fetchNotifications();
-        // Poll every 30 seconds
         setInterval(fetchNotifications, 30000);
     });
 
@@ -388,7 +427,10 @@
             fetch('${pageContext.request.contextPath}/notifications?action=api-get-unread&limit=5&type=TICKET').then(r => r.json()),
             fetch('${pageContext.request.contextPath}/notifications?action=api-get-unread&limit=5&type=SYSTEM').then(r => r.json())
         ]).then(([taskData, systemData]) => {
-            const totalCount = taskData.count + systemData.count;
+            const taskCount = taskData.count || 0;
+            const systemCount = systemData.count || 0;
+            const totalCount = taskCount + systemCount;
+            
             const countBadge = document.getElementById("notificationCount");
             if (totalCount > 0) {
                 countBadge.innerText = totalCount > 99 ? '99+' : totalCount;
@@ -398,11 +440,11 @@
             }
 
             // Update Tab Badges
-            document.getElementById("badge-task").innerText = taskData.count;
-            document.getElementById("badge-task").style.display = taskData.count > 0 ? "inline-block" : "none";
+            document.getElementById("badge-task").innerText = taskCount;
+            document.getElementById("badge-task").style.display = taskCount > 0 ? "inline-block" : "none";
             
-            document.getElementById("badge-system").innerText = systemData.count;
-            document.getElementById("badge-system").style.display = systemData.count > 0 ? "inline-block" : "none";
+            document.getElementById("badge-system").innerText = systemCount;
+            document.getElementById("badge-system").style.display = systemCount > 0 ? "inline-block" : "none";
 
             // Render lists
             renderNotificationList(taskData, "notificationListTask");
@@ -416,34 +458,32 @@
         notifList.innerHTML = "";
         
         if (!data.notifications || data.notifications.length === 0) {
-            notifList.innerHTML = '<li class="text-center p-3 text-muted small">Không có thông báo mới</li>';
+            notifList.innerHTML = '<div class="text-center p-3 text-muted small">Không có thông báo mới</div>';
             return;
         }
 
         data.notifications.forEach(noti => {
-            const li = document.createElement("li");
-            li.className = "notification-item unread";
+            const div = document.createElement("div");
+            div.className = "notification-item unread";
             
             let link = "#";
             if (noti.relatedTicketId) {
-                link = '${pageContext.request.contextPath}/incident?action=view&id=' + noti.relatedTicketId;
-            } else if (noti.notificationType === 'SYSTEM') {
-                link = '${pageContext.request.contextPath}/admin/knowledge-base?action=list'; 
+                link = '${pageContext.request.contextPath}/incident?action=detail&id=' + noti.relatedTicketId;
             }
             
-            li.innerHTML = `
-                <a href="\${link}" class="notification-content unread-text d-block">
+            div.innerHTML = `
+                <a href="${link}" class="notification-content unread-text d-block">
                     <div class="d-flex justify-content-between align-items-start mb-1">
-                        <div class="fw-bold small">\${noti.title}</div>
+                        <div class="fw-bold small">${noti.title}</div>
                         <span class="badge bg-primary rounded-pill ms-1" style="font-size:0.65rem; padding: 0.25rem 0.4rem;">Mới</span>
                     </div>
-                    <div class="small text-muted">\${noti.message}</div>
+                    <div class="small text-muted">${noti.message}</div>
                 </a>
-                <button class="btn-mark-done mt-1" onclick="markNotificationAsDone(\${noti.notificationId}, event)" title="Đánh dấu đã xong (Xóa)">
+                <button class="btn-mark-done mt-1" onclick="markNotificationAsDone(${noti.notificationId}, event)" title="Đánh dấu đã xong">
                     <i class="bi bi-check-circle"></i>
                 </button>
             `;
-            notifList.appendChild(li);
+            notifList.appendChild(div);
         });
     }
 
@@ -452,34 +492,18 @@
             event.stopPropagation();
             event.preventDefault();
         }
-        // Thêm hiệu ứng chớp tắt nhỏ trước khi xóa
-        if(event && event.target) {
-            const btn = event.target.closest('button');
-            if(btn) btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="width:1rem;height:1rem;border-width:0.15em"></span>';
-        }
-
+        
         fetch('${pageContext.request.contextPath}/notifications?action=api-mark-seen', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: 'id=' + id
-        })
-        .then(() => {
-            fetchNotifications();
-        });
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'notificationId=' + id
+        }).then(() => fetchNotifications());
     }
 
-    function markAllNotificationsAsRead(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        fetch('${pageContext.request.contextPath}/notifications?action=api-mark-seen', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: 'id=all'
-        })
-        .then(() => fetchNotifications());
+    function markAllNotificationsAsRead(event) {
+        if(event) event.preventDefault();
+        fetch('${pageContext.request.contextPath}/notifications?action=api-mark-all-read', {
+            method: 'POST'
+        }).then(() => fetchNotifications());
     }
 </script>

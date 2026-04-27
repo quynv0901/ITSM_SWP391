@@ -325,7 +325,7 @@
     </c:if>
 
     <c:if test="${sessionScope.user.roleId == 1}">
-        <a href="${pageContext.request.contextPath}/service-catalog" class="action-card">
+        <a href="${pageContext.request.contextPath}/service-request" class="action-card">
             <div class="card-icon green"><i class="bi bi-clipboard2-plus-fill"></i></div>
             <h3>Tạo Service Request</h3>
             <p>Yêu cầu dịch vụ IT mới như cấp tài khoản, cài phần mềm, hỗ trợ thiết bị.</p>
@@ -355,12 +355,15 @@
             <i class="bi bi-arrow-right card-arrow"></i>
         </a>
     </c:if>
-    <a href="${pageContext.request.contextPath}/change-request-list/list" class="action-card">
-        <div class="card-icon orange"><i class="bi bi-arrow-repeat me-2"></i></div>
-        <h3>Task Assignment</h3>
-        <p>Hiển thị danh sách yêu cầu thay đổi dưới dạng lịch cho các thay đổi đã lên lịch.</p>
-        <i class="bi bi-arrow-right card-arrow"></i>
-    </a>
+    <c:if test="${roleId == 3 || roleId == 7}">
+        <a href="${pageContext.request.contextPath}/change-request-list/list" class="action-card">
+            <div class="card-icon orange"><i class="bi bi-arrow-repeat me-2"></i></div>
+            <h3>Task Assignment</h3>
+            <p>Hiển thị danh sách yêu cầu thay đổi dưới dạng lịch cho các thay đổi đã lên lịch.</p>
+            <i class="bi bi-arrow-right card-arrow"></i>
+        </a>
+    </c:if>
+
     <a href="${pageContext.request.contextPath}/profile" class="action-card">
         <div class="card-icon teal"><i class="bi bi-person-fill-gear"></i></div>
         <h3>Hồ sơ cá nhân</h3>
