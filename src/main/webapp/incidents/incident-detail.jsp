@@ -381,7 +381,7 @@
             }
 
             .fg-time {
-                width: 140px;
+                width: 170px;
             }
 
             .fg-desc {
@@ -876,14 +876,16 @@
                                 <input type="hidden" name="id" value="${incident.ticketId}">
                                 <div class="form-row">
                                     <div class="form-group fg-time">
-                                        <label for="timeSpent">Số giờ thực hiện</label>
+                                        <label for="timeSpent">Số giờ <small style="color:#718096;font-weight:normal;">(Tối đa 48h)</small></label>
                                         <input type="number" id="timeSpent" name="timeSpent" step="any"
-                                               min="0.25" max="24" placeholder="1.5" required>
+                                               min="0.25" max="48" placeholder="1.5" required>
                                     </div>
                                     <div class="form-group fg-desc">
-                                        <label for="logDescription">Mô tả</label>
+                                        <label for="logDescription">Mô tả <small style="color:#718096;font-weight:normal;">(Tối đa 200 ký tự, tùy chọn)</small></label>
                                         <input type="text" id="logDescription" name="logDescription"
-                                               placeholder="Bạn đã thực hiện công việc gì?" required>
+                                               maxlength="300"
+                                               placeholder="Bạn đã thực hiện công việc gì? (Có thể để trống)">
+                                        <div id="logDescRealtimeError" style="color:#e53e3e; font-size:12px; margin-top:4px; display:none;"></div>
                                     </div>
                                     <div class="form-group">
                                         <label>&nbsp;</label>
@@ -1252,6 +1254,24 @@
                 }
             });
 
+            // Real-time validation for Time Log Description
+            const logDescInput = document.getElementById('logDescription');
+            const logDescErr = document.getElementById('logDescRealtimeError');
+            if (logDescInput && logDescErr) {
+                logDescInput.addEventListener('input', function() {
+                    const val = this.value.trim();
+                    if (val.length > 200) {
+                        this.style.borderColor = '#e53e3e';
+                        this.style.backgroundColor = '#fff5f5';
+                        logDescErr.textContent = 'Mô tả không được vượt quá 200 ký tự (Hiện tại: ' + val.length + ')';
+                        logDescErr.style.display = 'block';
+                    } else {
+                        this.style.borderColor = '';
+                        this.style.backgroundColor = '';
+                        logDescErr.style.display = 'none';
+                    }
+                });
+            }
         </script>
 </div>
 
