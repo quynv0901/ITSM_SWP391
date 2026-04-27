@@ -231,7 +231,7 @@
                 <a href="#" class="menu-item"><i class="bi bi-gear"></i> Cấu hình hệ thống</a>
                 <a href="${pageContext.request.contextPath}/workflows"
                    class="menu-item ${pageContext.request.requestURI.contains('/workflows') ? 'active' : ''}">
-                    <i class="bi bi-diagram-3"></i> Tự động điều hướng Ticket
+                    <i class="bi bi-diagram-3"></i> Cấu hình thông báo tự động
                 </a>
             </c:if>
 
@@ -310,9 +310,9 @@
                         <c:when test="${pageContext.request.requestURI.contains('/admin/knowledge-base')}">Quản lý bài viết</c:when>
                         <c:when test="${pageContext.request.requestURI.contains('/admin/knowledge-article')}">Quản lý cơ sở kiến thức</c:when>
                         <c:when test="${pageContext.request.requestURI.contains('/ticket-category')}">Danh mục Ticket</c:when>
-                        <c:when test="${pageContext.request.requestURI.contains('/workflows')}">Tự động điều hướng Ticket</c:when>
-                        <c:when test="${pageContext.request.requestURI.contains('/time-tracking')}">Theo dõi thời gian</c:when>
-                        <c:otherwise>Dịch vụ quản lý IT</c:otherwise>
+                        <c:when test="${pageContext.request.requestURI.contains('/workflows')}">Cấu hình thông báo tự động</c:when>
+                        <c:when test="${pageContext.request.requestURI.contains('/time-tracking')}">Theo dõi Thời gian</c:when>
+                        <c:otherwise>IT Service Management</c:otherwise>
                     </c:choose>
                 </span>
             </div>
@@ -322,13 +322,33 @@
                         <i class="bi bi-bell fs-5"></i>
                         <span class="badge bg-danger d-none" id="notificationCount">0</span>
                     </div>
-                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 notification-dropdown pt-0" aria-labelledby="notificationDropdown">
-                        <li class="dropdown-header d-flex justify-content-between align-items-center bg-light border-bottom">
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 notification-dropdown pt-0" aria-labelledby="notificationDropdown" style="width: 350px;">
+                        <li class="dropdown-header d-flex justify-content-between align-items-center bg-light border-bottom pt-2 pb-2">
                             <span class="fw-bold text-dark">Thông báo</span>
                             <a href="#" class="text-decoration-none small text-primary" onclick="markAllNotificationsAsRead(event)">Đánh dấu tất cả đã đọc</a>
                         </li>
-                        <div id="notificationList">
-                            <!-- Notifications will be loaded here via JS -->
+                        <li class="bg-light px-2 pt-2 border-bottom">
+                            <ul class="nav nav-tabs nav-justified border-0" id="notificationTabs" role="tablist" style="font-size: 0.85rem;">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active py-2 fw-semibold" id="nav-task-tab" data-bs-toggle="tab" data-bs-target="#nav-task" type="button" role="tab" style="border:none; border-bottom: 2px solid transparent;" onclick="event.stopPropagation();">Nhiệm vụ <span class="badge bg-danger ms-1" id="badge-task" style="display:none;">0</span></button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link py-2 fw-semibold" id="nav-system-tab" data-bs-toggle="tab" data-bs-target="#nav-system" type="button" role="tab" style="border:none; border-bottom: 2px solid transparent;" onclick="event.stopPropagation();">Hệ thống <span class="badge bg-danger ms-1" id="badge-system" style="display:none;">0</span></button>
+                                </li>
+                            </ul>
+                        </li>
+                        
+                        <div class="tab-content" id="nav-tabContent">
+                            <div class="tab-pane fade show active" id="nav-task" role="tabpanel">
+                                <div id="notificationListTask" style="max-height: 300px; overflow-y: auto;">
+                                    <!-- Tasks will be loaded here via JS -->
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="nav-system" role="tabpanel">
+                                <div id="notificationListSystem" style="max-height: 300px; overflow-y: auto;">
+                                    <!-- System Notifications will be loaded here via JS -->
+                                </div>
+                            </div>
                         </div>
                     </ul>
                 </div>
@@ -364,50 +384,67 @@
     });
 
     function fetchNotifications() {
-        fetch('${pageContext.request.contextPath}/notifications?action=api-get-unread&limit=5')
-            .then(res => res.json())
-            .then(data => {
-                const countBadge = document.getElementById("notificationCount");
-                if (data.count > 0) {
-                    countBadge.innerText = data.count > 99 ? '99+' : data.count;
-                    countBadge.classList.remove("d-none");
-                } else {
-                    countBadge.classList.add("d-none");
-                }
+        Promise.all([
+            fetch('${pageContext.request.contextPath}/notifications?action=api-get-unread&limit=5&type=TICKET').then(r => r.json()),
+            fetch('${pageContext.request.contextPath}/notifications?action=api-get-unread&limit=5&type=SYSTEM').then(r => r.json())
+        ]).then(([taskData, systemData]) => {
+            const totalCount = taskData.count + systemData.count;
+            const countBadge = document.getElementById("notificationCount");
+            if (totalCount > 0) {
+                countBadge.innerText = totalCount > 99 ? '99+' : totalCount;
+                countBadge.classList.remove("d-none");
+            } else {
+                countBadge.classList.add("d-none");
+            }
 
-                const notifList = document.getElementById("notificationList");
-                notifList.innerHTML = "";
-                
-                if (!data.notifications || data.notifications.length === 0) {
-                    notifList.innerHTML = '<li class="text-center p-3 text-muted small">Không có thông báo mới</li>';
-                    return;
-                }
+            // Update Tab Badges
+            document.getElementById("badge-task").innerText = taskData.count;
+            document.getElementById("badge-task").style.display = taskData.count > 0 ? "inline-block" : "none";
+            
+            document.getElementById("badge-system").innerText = systemData.count;
+            document.getElementById("badge-system").style.display = systemData.count > 0 ? "inline-block" : "none";
 
-                data.notifications.forEach(noti => {
-                    const li = document.createElement("li");
-                    li.className = "notification-item unread";
-                    
-                    let link = "#";
-                    if (noti.relatedTicketId) {
-                        link = '${pageContext.request.contextPath}/incident?action=view&id=' + noti.relatedTicketId;
-                    }
-                    
-                    li.innerHTML = `
-                        <a href="\${link}" class="notification-content unread-text d-block">
-                            <div class="d-flex justify-content-between align-items-start mb-1">
-                                <div class="fw-bold small">\${noti.title}</div>
-                                <span class="badge bg-primary rounded-pill ms-1" style="font-size:0.65rem; padding: 0.25rem 0.4rem;">Mới</span>
-                            </div>
-                            <div class="small text-muted">\${noti.message}</div>
-                        </a>
-                        <button class="btn-mark-done mt-1" onclick="markNotificationAsDone(\${noti.notificationId}, event)" title="Đánh dấu đã xong (Xóa)">
-                            <i class="bi bi-check-circle"></i>
-                        </button>
-                    `;
-                    notifList.appendChild(li);
-                });
-            })
-            .catch(err => console.error("Error fetching notifications:", err));
+            // Render lists
+            renderNotificationList(taskData, "notificationListTask");
+            renderNotificationList(systemData, "notificationListSystem");
+            
+        }).catch(err => console.error("Error fetching notifications:", err));
+    }
+
+    function renderNotificationList(data, containerId) {
+        const notifList = document.getElementById(containerId);
+        notifList.innerHTML = "";
+        
+        if (!data.notifications || data.notifications.length === 0) {
+            notifList.innerHTML = '<li class="text-center p-3 text-muted small">Không có thông báo mới</li>';
+            return;
+        }
+
+        data.notifications.forEach(noti => {
+            const li = document.createElement("li");
+            li.className = "notification-item unread";
+            
+            let link = "#";
+            if (noti.relatedTicketId) {
+                link = '${pageContext.request.contextPath}/incident?action=view&id=' + noti.relatedTicketId;
+            } else if (noti.notificationType === 'SYSTEM') {
+                link = '${pageContext.request.contextPath}/admin/knowledge-base?action=list'; 
+            }
+            
+            li.innerHTML = `
+                <a href="\${link}" class="notification-content unread-text d-block">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                        <div class="fw-bold small">\${noti.title}</div>
+                        <span class="badge bg-primary rounded-pill ms-1" style="font-size:0.65rem; padding: 0.25rem 0.4rem;">Mới</span>
+                    </div>
+                    <div class="small text-muted">\${noti.message}</div>
+                </a>
+                <button class="btn-mark-done mt-1" onclick="markNotificationAsDone(\${noti.notificationId}, event)" title="Đánh dấu đã xong (Xóa)">
+                    <i class="bi bi-check-circle"></i>
+                </button>
+            `;
+            notifList.appendChild(li);
+        });
     }
 
     function markNotificationAsDone(id, event) {

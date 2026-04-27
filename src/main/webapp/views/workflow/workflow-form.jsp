@@ -288,7 +288,7 @@
                     <div class="breadcrumb-custom">
                         <i class="bi bi-house-door me-1"></i> Trang chủ &gt;
                         <a href="${pageContext.request.contextPath}/workflows"
-                            class="text-decoration-none text-secondary">Tự động điều hướng Ticket</a>
+                            class="text-decoration-none text-secondary">Cấu hình thông báo tự động</a>
                         <i class="fa fa-chevron-right text-muted mx-2" style="font-size:0.8rem;"></i>
                         <c:choose>
                             <c:when test="${formAction == 'create'}">Tạo mới</c:when>
@@ -343,7 +343,7 @@
                         <div class="workflow-card mb-4">
                             <div class="card-header-bar d-flex align-items-center gap-2 px-4 py-3">
                                 <i class="fa fa-circle-info text-primary"></i>
-                                <span class="fw-bold">Basic Information</span>
+                                <span class="fw-bold">Thông tin cơ bản</span>
                             </div>
                             <div class="p-4">
                                 <div class="row g-4">
@@ -365,16 +365,16 @@
                                         <div class="field-error" id="descError" style="display:none;"><i class="fa fa-circle-exclamation"></i><span></span></div>
                                     </div>
                                     <div class="col-sm-6">
-                                        <label class="form-label" for="status">Status <span
+                                        <label class="form-label" for="status">Trạng thái <span
                                                 class="text-danger">*</span></label>
                                         <select id="status" name="status" class="form-select" required>
                                             <option value="DRAFT" <c:if
                                                 test="${workflow.status == 'DRAFT' || empty workflow.status}">selected
-                                                </c:if>>Draft</option>
+                                                </c:if>>Bản nháp</option>
                                             <option value="ACTIVE" <c:if test="${workflow.status == 'ACTIVE'}">selected
-                                                </c:if>>Active</option>
+                                                </c:if>>Hoạt động</option>
                                             <option value="INACTIVE" <c:if test="${workflow.status == 'INACTIVE'}">
-                                                selected</c:if>>Inactive</option>
+                                                selected</c:if>>Ngừng hoạt động</option>
                                         </select>
                                         <div id="statusHint" class="mt-2"></div>
                                     </div>
@@ -385,7 +385,7 @@
                         <div class="workflow-card mb-4">
                             <div class="card-header-bar d-flex align-items-center gap-2 px-4 py-3">
                                 <i class="fa fa-bolt text-warning"></i>
-                                <span class="fw-bold">Trigger</span>
+                                <span class="fw-bold">Sự kiện kích hoạt</span>
                             </div>
                             <div class="p-4">
                                 <div class="row g-3" id="triggerOptions">
@@ -393,7 +393,7 @@
                                         <div class="trigger-option" data-trigger="TICKET_CREATED"
                                             onclick="selectTrigger(this)">
                                             <div class="trigger-icon"><i class="fa fa-ticket"></i></div>
-                                            <div class="fw-semibold text-dark" style="font-size:13px;">Ticket Created
+                                            <div class="fw-semibold text-dark" style="font-size:13px;">Tạo mới Ticket
                                             </div>
                                         </div>
                                     </div>
@@ -420,17 +420,17 @@
                             <div class="card-header-bar d-flex align-items-center justify-content-between px-4 py-3">
                                 <div class="d-flex align-items-center gap-2">
                                     <i class="fa fa-filter text-info"></i>
-                                    <span class="fw-bold">Trigger Conditions</span>
+                                    <span class="fw-bold">Điều kiện kích hoạt</span>
                                     <span class="badge bg-info ms-1" id="conditionCountBadge"
-                                        style="font-size:10px;">All tickets</span>
+                                        style="font-size:10px;">Tất cả Ticket</span>
                                 </div>
                                 <button type="button" class="btn btn-sm btn-outline-info" onclick="addCondition()"><i
-                                        class="bi bi-plus-circle me-1"></i>Add Condition</button>
+                                        class="bi bi-plus-circle me-1"></i>Thêm điều kiện</button>
                             </div>
                             <div class="p-4">
                                 <div id="conditionsContainer">
                                     <div class="text-center py-2 text-muted" id="noConditionsMsg">
-                                        <small><i class="fa fa-info-circle me-1"></i> No conditions set.</small>
+                                        <small><i class="fa fa-info-circle me-1"></i> Chưa có điều kiện nào được thiết lập.</small>
                                     </div>
                                 </div>
                             </div>
@@ -440,23 +440,23 @@
                             <div class="card-header-bar d-flex align-items-center justify-content-between px-4 py-3">
                                 <div class="d-flex align-items-center gap-2">
                                     <i class="fa fa-list-ol text-success"></i>
-                                    <span class="fw-bold">Approval Steps</span>
+                                    <span class="fw-bold">Danh sách nhiệm vụ (Steps)</span>
                                     <span class="badge bg-success ms-1" id="stepCountBadge" style="font-size:10px;">0
-                                        steps</span>
+                                        bước</span>
                                 </div>
                                 <button type="button" class="btn btn-sm btn-primary" onclick="addStep()"><i
-                                        class="fa fa-plus me-1"></i>Thêm Step</button>
+                                        class="fa fa-plus me-1"></i>Thêm bước</button>
                             </div>
                             <div class="p-4">
                                 <div class="field-error mb-2" id="stepsGlobalError" style="display:none;"><i class="fa fa-circle-exclamation"></i><span></span></div>
                                 <div id="stepsContainer">
                                     <div class="empty-steps-placeholder" id="emptyStepsPlaceholder">
-                                        <div class="fw-semibold">Chưa có step nào được thêm</div>
+                                        <div class="fw-semibold">Chưa có bước nào được thêm</div>
                                     </div>
                                 </div>
                                 <button type="button" class="btn btn-add-step w-100 mt-3 py-2 d-none" id="addStepBtn"
                                     onclick="addStep()">
-                                    <i class="fa fa-plus-circle me-2"></i>Thêm Step khác
+                                    <i class="fa fa-plus-circle me-2"></i>Thêm bước khác
                                 </button>
                             </div>
                         </div>
@@ -480,11 +480,11 @@
 
                         <div class="d-flex align-items-center justify-content-end gap-3">
                             <a href="${pageContext.request.contextPath}/workflows" class="btn btn-secondary px-4"><i
-                                    class="fa fa-xmark me-1"></i>Cancel</a>
+                                    class="fa fa-xmark me-1"></i>Hủy bỏ</a>
                             <button type="button" class="btn btn-outline-secondary px-4" onclick="saveDraft()"><i
-                                    class="fa fa-floppy-disk me-1"></i>Save as Draft</button>
+                                    class="fa fa-floppy-disk me-1"></i>Lưu nháp</button>
                             <button type="submit" class="btn btn-primary px-4" id="submitBtn"><i
-                                    class="fa fa-check-circle me-1"></i>Save</button>
+                                    class="fa fa-check-circle me-1"></i>Lưu</button>
                         </div>
                     </form>
 
@@ -531,8 +531,8 @@ out.print(gson.toJson(_pr));
                             const ROLES = ['Manager', 'Finance', 'IT Support', 'HR', 'Director', 'Security Team', 'Legal'];
                             const ACTIONS = [
 //                                { value: 'APPROVE_REJECT', label: 'Approve / Reject', badgeClass: 'badge-approve' },
-                                { value: 'REVIEW', label: 'Review Only', badgeClass: 'badge-review' },
-                                { value: 'EXECUTE', label: 'Execute Task', badgeClass: 'badge-execute' },
+                                { value: 'REVIEW', label: 'Kiểm tra', badgeClass: 'badge-review' },
+                                { value: 'EXECUTE', label: 'Làm nhiệm vụ', badgeClass: 'badge-execute' },
 //                                { value: 'NOTIFY', label: 'Notify Only', badgeClass: 'badge-notify' },
                             ];
 
@@ -640,20 +640,20 @@ out.print(gson.toJson(_pr));
                                 const badge = document.getElementById('conditionCountBadge');
                                 if (!container) return;
                                 if (conditions.length === 0) {
-                                    container.innerHTML = '<div class="text-center py-4 text-secondary opacity-50"><small>No conditions set.</small></div>';
-                                    badge.textContent = 'All tickets';
+                                    container.innerHTML = '<div class="text-center py-4 text-secondary opacity-50"><small>Chưa có điều kiện nào.</small></div>';
+                                    badge.textContent = 'Tất cả Ticket';
                                     return;
                                 }
-                                badge.textContent = conditions.length + (conditions.length === 1 ? ' condition' : ' conditions');
+                                badge.textContent = conditions.length + ' điều kiện';
                                 let html = '';
                                 if (conditions.length > 1) {
                                     html += '<div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom border-secondary-subtle">'
-                                        + '<span class="text-secondary small">Match</span>'
+                                        + '<span class="text-secondary small">Thỏa mãn</span>'
                                         + '<select class="form-select form-select-sm fw-bold border-secondary-subtle" style="width: auto;" onchange="conditionLogic = this.value; updateJsonPreview();">'
-                                        + '<option value="AND" ' + (conditionLogic === 'AND' ? 'selected' : '') + '>ALL (AND)</option>'
-                                        + '<option value="OR" ' + (conditionLogic === 'OR' ? 'selected' : '') + '>ANY (OR)</option>'
+                                        + '<option value="AND" ' + (conditionLogic === 'AND' ? 'selected' : '') + '>Tất cả (AND)</option>'
+                                        + '<option value="OR" ' + (conditionLogic === 'OR' ? 'selected' : '') + '>Bất kỳ (OR)</option>'
                                         + '</select>'
-                                        + '<span class="text-secondary small">of the following conditions:</span>'
+                                        + '<span class="text-secondary small">trong số tự động các điều kiện dưới đây:</span>'
                                         + '</div>';
                                 }
                                 html += '<div class="conditions-list">';
@@ -682,7 +682,7 @@ out.print(gson.toJson(_pr));
                                 var valueInput = '';
                                 if (c.field === 'ticket_type') {
                                     valueInput = '<select class="form-select form-select-sm" onchange="updateCondition(' + c.id + ', \'value\', this.value)">'
-                                        + '<option value="">-- Type --</option>'
+                                        + '<option value="">-- Loại --</option>'
                                         + (TICKET_TYPES.map(function (t) { return '<option value="' + t + '"' + (c.value === t ? ' selected' : '') + '>' + t + '</option>'; }).join(''))
                                         + '</select>';
                                 } else if (c.field === 'priority') {
@@ -693,7 +693,7 @@ out.print(gson.toJson(_pr));
                                         + '</select>';
                                 } else if (c.field === 'category_id') {
                                     valueInput = '<select class="form-select form-select-sm" onchange="updateCondition(' + c.id + ', \'value\', this.value)">'
-                                        + '<option value="">-- Category --</option>'
+                                        + '<option value="">-- Danh mục --</option>'
                                         + (CATEGORIES.map(function (cat) { return '<option value="' + cat.categoryId + '"' + (c.value == cat.categoryId ? ' selected' : '') + '>' + cat.categoryName + '</option>'; }).join(''))
                                         + '</select>';
                                 }
@@ -703,10 +703,10 @@ out.print(gson.toJson(_pr));
                                 html += '<div class="col-md-3">';
                                 html += '<select class="form-select form-select-sm" onchange="updateCondition(' + c.id + ', \'field\', this.value)">' + fieldOptions + '</select>';
                                 html += '</div>';
-                                html += '<div class="col-md-2">';
+                                html += '<div class="col-md-2 d-none">'; // Hiding the operator
                                 html += '<select class="form-select form-select-sm" onchange="updateCondition(' + c.id + ', \'operator\', this.value)">' + operatorOptions + '</select>';
                                 html += '</div>';
-                                html += '<div class="col-md-6">' + valueInput + '</div>';
+                                html += '<div class="col-md-8">' + valueInput + '</div>'; // Expanded to fit hidden operator space
                                 html += '<div class="col-md-1 text-end">';
                                 html += '<button type="button" class="btn btn-sm text-danger" onclick="removeCondition(' + c.id + ')"><i class="bi bi-trash"></i></button>';
                                 html += '</div>';
@@ -724,9 +724,9 @@ out.print(gson.toJson(_pr));
                             function renderSteps() {
                                 var container = document.getElementById('stepsContainer');
                                 var badge = document.getElementById('stepCountBadge');
-                                badge.textContent = steps.length + ' step' + (steps.length !== 1 ? 's' : '');
+                                badge.textContent = steps.length + ' bước';
                                 if (steps.length === 0) {
-                                    container.innerHTML = '<div class="empty-steps-placeholder"><div class="fw-semibold">No steps added yet</div></div>';
+                                    container.innerHTML = '<div class="empty-steps-placeholder"><div class="fw-semibold">Chưa có bước nào được thêm</div></div>';
                                     _addStepBtn.classList.add('d-none');
                                     return;
                                 }
@@ -763,17 +763,14 @@ out.print(gson.toJson(_pr));
                                         + '<div class="flex-grow-1">'
                                         + '<div class="row g-3 mb-2">'
                                         // Adjusted column widths: name (5), users (4), action (3). SLA removed from UI
-                                        + '<div class="col-md-5"><input type="text" class="form-control form-control-sm" placeholder="Step Name" value="' + escHtml(s.name) + '" oninput="updateStepField(' + s.id + ', \'name\', this.value)" /></div>'
+                                        + '<div class="col-md-5"><input type="text" class="form-control form-control-sm" placeholder="Tên bước" value="' + escHtml(s.name) + '" oninput="updateStepField(' + s.id + ', \'name\', this.value)" /></div>'
                                         + '<div class="col-md-4">'
                                         + '<div class="form-control form-control-sm btn-user-add d-flex flex-wrap align-items-center gap-1" style="min-height:31px; height:auto; cursor:text; padding:3px 6px;" onclick="openUserPicker(event, ' + s.id + ')">'
                                         + usersHtml
-                                        + '<input type="text" onclick="openUserPicker(event, ' + s.id + ')" onfocus="openUserPicker(event, ' + s.id + ')" oninput="fetchUsersForPicker(this.value)" style="border:none; outline:none; box-shadow:none; flex-grow:1; min-width:60px; background:transparent; font-size:13px;" placeholder="' + (selectedUsers.length > 0 ? '' : 'Search users...') + '" />'
+                                        + '<input type="text" onclick="openUserPicker(event, ' + s.id + ')" onfocus="openUserPicker(event, ' + s.id + ')" oninput="fetchUsersForPicker(this.value)" style="border:none; outline:none; box-shadow:none; flex-grow:1; min-width:60px; background:transparent; font-size:13px;" placeholder="' + (selectedUsers.length > 0 ? '' : 'Tìm người dùng...') + '" />'
                                         + '</div>'
                                         + '</div>'
                                         + '<div class="col-md-3"><select class="form-select form-select-sm" onchange="updateStepField(' + s.id + ', \'action\', this.value)">' + actionOptions + '</select></div>'
-                                        + '</div>'
-                                        + '<div class="row g-3">'
-                                        + '<div class="col-12"><input type="text" class="form-control form-control-sm" placeholder="Step Description (Optional)" value="' + escHtml(s.description || '') + '" oninput="updateStepField(' + s.id + ', \'description\', this.value)" /></div>'
                                         + '</div>'
                                         + '</div>'
                                         + '<button type="button" class="btn btn-sm text-danger" onclick="removeStep(' + s.id + ')"><i class="fa fa-trash"></i></button>'
@@ -1057,7 +1054,7 @@ out.print(gson.toJson(_pr));
 
                             var statusSelect = document.getElementById('status');
                             function updateStatusHint() {
-                                const h = { DRAFT: 'Draft: Not yet active.', ACTIVE: 'Active: Live.', INACTIVE: 'Inactive: Paused.' }[statusSelect.value];
+                                const h = { DRAFT: 'Bản nháp: Chưa có tác dụng.', ACTIVE: 'Hoạt động: Đang chạy.', INACTIVE: 'Ngừng hoạt động: Đã tạm dừng.' }[statusSelect.value];
                                 document.getElementById('statusHint').innerHTML = h ? '<div class="alert alert-info p-2 small">' + escHtml(h) + '</div>' : '';
                             }
                             statusSelect.addEventListener('change', updateStatusHint);

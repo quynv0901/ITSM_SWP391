@@ -161,30 +161,36 @@ public class KnowledgeBaseDAO {
 
     public boolean addArticle(Article a) {
         String sql
-                = "INSERT INTO article (title, summary, content, article_type, tag, status, "
+                = "INSERT INTO article (article_number, title, summary, content, article_type, tag, status, "
                 + "author_id, error_code, symptom, cause, solution) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement st = conn.prepareStatement(sql)) {
-            st.setString(1, a.getTitle());
-            st.setString(2, a.getSummary());
-            st.setString(3, a.getContent());
-            st.setString(4, "KNOWLEDGE_BASE");
-            st.setString(5, "NULL");
-            st.setString(6, a.getStatus());
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try (Connection freshConn = DBConnection.getConnection();
+             PreparedStatement st = freshConn.prepareStatement(sql)) {
+            
+            // Generate a unique article number
+            String articleNum = "KB-" + System.currentTimeMillis();
+            
+            st.setString(1, articleNum);
+            st.setString(2, a.getTitle());
+            st.setString(3, a.getSummary());
+            st.setString(4, a.getContent());
+            st.setString(5, "KNOWLEDGE_BASE");
+            st.setString(6, "NULL");
+            st.setString(7, a.getStatus());
             if (a.getAuthorId() != null) {
-                st.setInt(7, a.getAuthorId());
+                st.setInt(8, a.getAuthorId());
             } else {
-                st.setNull(7, Types.INTEGER);
+                st.setNull(8, Types.INTEGER);
             }
-            st.setString(8, "No Error");
-            st.setString(9, a.getSymptom());
-            st.setString(10, a.getCause());
-            st.setString(11, a.getSolution());
+            st.setString(9, "No Error");
+            st.setString(10, a.getSymptom());
+            st.setString(11, a.getCause());
+            st.setString(12, a.getSolution());
             return st.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
+            throw new RuntimeException("SQL FAILED: " + e.getMessage(), e);
         }
-        return false;
     }
 
     public boolean updateArticle(Article a) {
