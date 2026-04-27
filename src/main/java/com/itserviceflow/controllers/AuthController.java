@@ -147,6 +147,13 @@ public class AuthController extends HttpServlet {
             String username = request.getParameter("username");
             String password = request.getParameter("password");
 
+            if (username != null) {
+                username = username.trim();
+            }
+            if (password != null) {
+                password = password.trim();
+            }
+
             if (username == null || password == null || username.isEmpty() || password.isEmpty()) {
                 request.setAttribute("error", "Vui lòng nhập đầy đủ thông tin!");
                 request.getRequestDispatcher("/auth/login.jsp").forward(request, response);
@@ -260,6 +267,12 @@ public class AuthController extends HttpServlet {
             User sessionUser = (User) request.getSession().getAttribute("user");
             String fullName = request.getParameter("fullName");
             String phone = request.getParameter("phone");
+            if (fullName != null) {
+                fullName = fullName.trim();
+            }
+            if (phone != null) {
+                phone = phone.trim();
+            }
 
             User u = new User();
             u.setUserId(sessionUser.getUserId());
@@ -285,6 +298,19 @@ public class AuthController extends HttpServlet {
             String currentPass = request.getParameter("currentPassword");
             String newPass = request.getParameter("newPassword");
             String confirmPass = request.getParameter("confirmPassword");
+            if (currentPass != null) {
+                currentPass = currentPass.trim();
+            }
+            if (newPass != null && newPass.contains(" ")) {
+                request.setAttribute("error", "Mật khẩu mới không được chứa khoảng trắng!");
+                profileView(request, response);
+                return;
+            }
+            if (confirmPass != null && confirmPass.contains(" ")) {
+                request.setAttribute("error", "Mật khẩu xác nhận không được chứa khoảng trắng!");
+                profileView(request, response);
+                return;
+            }
 
             if (newPass == null || !newPass.equals(confirmPass)) {
                 request.setAttribute("error", "Mật khẩu xác nhận không khớp!");
@@ -293,6 +319,16 @@ public class AuthController extends HttpServlet {
             }
 
             User userFromDb = userDAO.findById(sessionUser.getUserId());
+            if (newPass == null || newPass.length() < 8 || newPass.length() > 50) {
+                request.setAttribute("error", "Mật khẩu mới phải từ 8 đến 50 ký tự!");
+                profileView(request, response);
+                return;
+            }
+            if (!newPass.equals(confirmPass)) {
+                request.setAttribute("error", "Mật khẩu xác nhận không khớp!");
+                profileView(request, response);
+                return;
+            }
             if (BCrypt.checkpw(currentPass, userFromDb.getPasswordHash())) {
                 userDAO.updatePassword(sessionUser.getUserId(), newPass);
                 request.setAttribute("message", "Đổi mật khẩu thành công!");

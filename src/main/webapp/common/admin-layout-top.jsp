@@ -311,8 +311,8 @@
                         <c:when test="${pageContext.request.requestURI.contains('/admin/knowledge-article')}">Quản lý cơ sở kiến thức</c:when>
                         <c:when test="${pageContext.request.requestURI.contains('/ticket-category')}">Danh mục Ticket</c:when>
                         <c:when test="${pageContext.request.requestURI.contains('/workflows')}">Tự động điều hướng Ticket</c:when>
-                        <c:when test="${pageContext.request.requestURI.contains('/time-tracking')}">Theo dõi Thời gian</c:when>
-                        <c:otherwise>IT Service Management</c:otherwise>
+                        <c:when test="${pageContext.request.requestURI.contains('/time-tracking')}">Theo dõi thời gian</c:when>
+                        <c:otherwise>Dịch vụ quản lý IT</c:otherwise>
                     </c:choose>
                 </span>
             </div>

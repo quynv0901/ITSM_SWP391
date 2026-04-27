@@ -5,6 +5,7 @@ import com.itserviceflow.daos.DepartmentDAO;
 import com.itserviceflow.daos.RoleDAO;
 import com.itserviceflow.daos.UserDAO;
 import com.itserviceflow.models.User;
+import com.itserviceflow.utils.EmailService;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -40,6 +41,9 @@ public class UserManagementController extends HttpServlet {
             case "delete":
                 deleteUser(req, resp);
                 break;
+            case "checkDuplicate":
+                checkDuplicate(req, resp);
+                break;
             default:
                 resp.sendRedirect(req.getContextPath() + "/admin/users");
         }
@@ -74,6 +78,9 @@ public class UserManagementController extends HttpServlet {
                 break;
             case "update":
                 updateUser(req, resp);
+                break;
+            case "verifyAdmin":
+                verifyAdminPassword(req, resp);
                 break;
             default:
                 resp.sendRedirect(req.getContextPath() + "/admin/users");
@@ -169,6 +176,18 @@ public class UserManagementController extends HttpServlet {
 
     private void addUser(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
+
+        // Xác thực mật khẩu admin
+        String adminPassword = req.getParameter("adminPassword");
+        HttpSession session = req.getSession(false);
+        User currentAdmin = (User) session.getAttribute("user");
+
+        if (userDAO.login(currentAdmin.getUsername(), adminPassword) == null) {
+            req.setAttribute("error", "Mật khẩu xác nhận không đúng!");
+            listUsers(req, resp);
+            return;
+        }
+
         String fullName = req.getParameter("fullName");
         String email = req.getParameter("email");
         String username = req.getParameter("username");
@@ -180,12 +199,15 @@ public class UserManagementController extends HttpServlet {
         u.setFullName(fullName);
         u.setEmail(email);
         u.setUsername(username);
-        u.setPasswordHash(password); // TODO: hash password
+        u.setPasswordHash(password);
         u.setRoleId(Integer.parseInt(roleIdStr));
         u.setDepartmentId(parseIntOrNull(deptIdStr));
         u.setIsActive(true);
 
         if (userDAO.addUser(u)) {
+            new Thread(()
+                    -> new EmailService().sendNewAccountEmail(email, fullName, username, password)
+            ).start();
             resp.sendRedirect(req.getContextPath() + "/admin/users?message=User added successfully");
         } else {
             req.setAttribute("error", "Could not add user");
@@ -195,34 +217,89 @@ public class UserManagementController extends HttpServlet {
 
     private void updateUser(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        String userIdStr = req.getParameter("userId");
-        String fullName = req.getParameter("fullName");
-        String email = req.getParameter("email");
-        String roleIdStr = req.getParameter("roleId");
-        String deptIdStr = req.getParameter("deptId");
 
+        // Xác thực mật khẩu admin
+        String adminPassword = req.getParameter("adminPassword");
+        HttpSession session = req.getSession(false);
+        User currentAdmin = (User) session.getAttribute("user");
+
+        if (userDAO.login(currentAdmin.getUsername(), adminPassword) == null) {
+            req.setAttribute("error", "Mật khẩu xác nhận không đúng!");
+            listUsers(req, resp);
+            return;
+        }
+
+        String userIdStr = req.getParameter("userId");
         if (userIdStr == null || userIdStr.isEmpty()) {
             resp.sendRedirect(req.getContextPath() + "/admin/users");
             return;
         }
 
-        User u = userDAO.findById(Integer.parseInt(userIdStr));
-        if (u != null) {
-            u.setFullName(fullName);
-            u.setEmail(email);
-            u.setRoleId(Integer.parseInt(roleIdStr));
-            u.setDepartmentId(parseIntOrNull(deptIdStr));
-
-            if (userDAO.updateUserByAdmin(u)) {
-                resp.sendRedirect(req.getContextPath() + "/admin/users?message=User updated successfully");
-            } else {
-                req.setAttribute("error", "Update failed");
-                listUsers(req, resp);
-            }
-        } else {
+        User oldUser = userDAO.findById(Integer.parseInt(userIdStr));
+        if (oldUser == null) {
             req.setAttribute("error", "User not found");
             listUsers(req, resp);
+            return;
         }
+
+        // Lưu thông tin cũ
+        String oldFullName = oldUser.getFullName();
+        String oldEmail = oldUser.getEmail();
+        String oldRole = oldUser.getRoleName();
+        String oldDept = oldUser.getDepartmentName();
+
+        // Cập nhật thông tin mới
+        oldUser.setFullName(req.getParameter("fullName"));
+        oldUser.setEmail(req.getParameter("email"));
+        oldUser.setRoleId(Integer.parseInt(req.getParameter("roleId")));
+        oldUser.setDepartmentId(parseIntOrNull(req.getParameter("deptId")));
+
+        if (userDAO.updateUserByAdmin(oldUser)) {
+            User updated = userDAO.findById(oldUser.getUserId());
+            String newRole = updated != null ? updated.getRoleName() : null;
+            String newDept = updated != null ? updated.getDepartmentName() : null;
+
+            new Thread(()
+                    -> new EmailService().sendUpdateAccountEmail(
+                            oldUser.getEmail(), oldUser.getFullName(),
+                            oldFullName, oldEmail,
+                            oldUser.getFullName(), oldUser.getEmail(),
+                            oldRole, newRole,
+                            oldDept, newDept
+                    )
+            ).start();
+            resp.sendRedirect(req.getContextPath() + "/admin/users?message=User updated successfully");
+        } else {
+            req.setAttribute("error", "Update failed");
+            listUsers(req, resp);
+        }
+    }
+
+    private void verifyAdminPassword(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException {
+        HttpSession session = req.getSession(false);
+        User currentAdmin = (User) session.getAttribute("user");
+        String adminPassword = req.getParameter("adminPassword");
+
+        boolean valid = userDAO.login(currentAdmin.getEmail(), adminPassword) != null
+                || userDAO.login(currentAdmin.getUsername(), adminPassword) != null;
+
+        resp.setContentType("application/json");
+        resp.getWriter().write("{\"valid\":" + valid + "}");
+    }
+
+    private void checkDuplicate(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException {
+        String username = req.getParameter("username");
+        String email = req.getParameter("email");
+        String userIdStr = req.getParameter("userId"); // khi edit thì bỏ qua chính nó
+        Integer userId = parseIntOrNull(userIdStr);
+
+        boolean usernameTaken = username != null && userDAO.isUsernameTaken(username, userId);
+        boolean emailTaken = email != null && userDAO.isEmailTaken(email, userId);
+
+        resp.setContentType("application/json");
+        resp.getWriter().write("{\"usernameTaken\":" + usernameTaken + ",\"emailTaken\":" + emailTaken + "}");
     }
 
     // ===================== HELPER =====================
