@@ -227,7 +227,8 @@
                    class="menu-item ${pageContext.request.requestURI.contains('/admin/knowledge-article') ? 'active' : ''}">
                     <i class="bi bi-journal-text"></i> Quản lý cơ sở kiến thức
                 </a>
-
+                <a href="#" class="menu-item"><i class="bi bi-shield-lock"></i> Danh sách quyền</a>
+                <a href="#" class="menu-item"><i class="bi bi-gear"></i> Cấu hình hệ thống</a>
                 <a href="${pageContext.request.contextPath}/workflows"
                    class="menu-item ${pageContext.request.requestURI.contains('/workflows') ? 'active' : ''}">
                     <i class="bi bi-diagram-3"></i> Cấu hình thông báo tự động
@@ -317,10 +318,10 @@
             </div>
             <div class="topbar-right">
                 <div class="dropdown me-3">
-                    <div class="badge-notification" id="notificationDropdown" role="button" data-bs-toggle="dropdown">
+                    <a class="badge-notification text-decoration-none text-white" id="notificationDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-bell fs-5"></i>
                         <span class="badge bg-danger d-none" id="notificationCount">0</span>
-                    </div>
+                    </a>
                     <ul class="dropdown-menu dropdown-menu-end shadow border-0 notification-dropdown pt-0" aria-labelledby="notificationDropdown" style="width: 350px;">
                         <li class="dropdown-header d-flex justify-content-between align-items-center bg-light border-bottom pt-2 pb-2">
                             <span class="fw-bold text-dark">Thông báo</span>
@@ -353,7 +354,7 @@
                 </div>
                 <div class="user-info dropdown">
                     <a class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
-                       href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
+                       href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <img src="https://ui-avatars.com/api/?name=${sessionScope.user.fullName}&background=random"
                              alt="User">
                         <span class="ms-2 d-none d-md-inline">${sessionScope.user.fullName}</span>
