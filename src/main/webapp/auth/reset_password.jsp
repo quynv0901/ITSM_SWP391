@@ -182,6 +182,16 @@
                     alert("Mật khẩu phải có ít nhất 8 ký tự!");
                     return;
                 }
+                if (/\s/.test(pass)) {
+                    e.preventDefault();
+                    alert("Mật khẩu không được chứa khoảng trắng!");
+                    return;
+                }
+                if (/\s/.test(confirm)) {
+                    e.preventDefault();
+                    alert("Mật khẩu xác nhận không được chứa khoảng trắng!");
+                    return;
+                }
                 if (pass !== confirm) {
                     e.preventDefault();
                     alert("Mật khẩu xác nhận không khớp!");
