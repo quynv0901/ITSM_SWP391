@@ -192,42 +192,39 @@
             </div>
             <ul class="sidebar-menu">
 
-                <%-- Bảng điều khiển — chỉ Admin (10) --%>
+                <%-- Trang chủ (tất cả) + Bảng điều khiển (chỉ Admin) --%>
+                <a href="${pageContext.request.contextPath}/home"
+                   class="menu-item ${pageContext.request.requestURI.contains('/home') ? 'active' : ''}">
+                    <i class="bi bi-house-door-fill"></i> Trang chủ
+                </a>
                 <c:if test="${sessionScope.user.roleId == 10}">
                     <a href="${pageContext.request.contextPath}/dashboard"
-                       class="menu-item ${pageContext.request.requestURI.contains('/dashboard') ? 'active' : ''}">
+                       class="menu-item ${pageContext.request.requestURI.contains('/dashboard') and !pageContext.request.requestURI.contains('/sla-dashboard') ? 'active' : ''}">
                         <i class="bi bi-speedometer2"></i> Bảng điều khiển
                     </a>
                 </c:if>
 
-                <%-- Trang chủ — tất cả trừ Admin --%>
-                <c:if test="${sessionScope.user.roleId != 10}">
-                    <a href="${pageContext.request.contextPath}/home"
-                       class="menu-item ${pageContext.request.requestURI.contains('/home/') ? 'active' : ''}">
-                        <i class="bi bi-house-door-fill"></i> Trang chủ
-                    </a>
-                </c:if>
-
-                <%-- Hệ thống — chỉ Admin (10) --%>
-                <c:if test="${sessionScope.user.roleId == 10}">
+                <%-- Hệ thống — Admin(10): tất cả; Manager(3)/Technical(5): trừ users/departments --%>
+                <c:if test="${sessionScope.user.roleId == 10 || sessionScope.user.roleId == 3 || sessionScope.user.roleId == 5}">
                     <li class="menu-header">Hệ thống</li>
-                    <a href="${pageContext.request.contextPath}/admin/users"
-                       class="menu-item ${pageContext.request.requestURI.contains('/admin/users') ? 'active' : ''}">
-                        <i class="bi bi-person-gear"></i> Quản lý người dùng
-                    </a>
-                    <a href="${pageContext.request.contextPath}/admin/departments"
-                       class="menu-item ${pageContext.request.requestURI.contains('/admin/departments') ? 'active' : ''}">
-                        <i class="bi bi-diagram-3"></i> Quản lý phòng ban
-                    </a>
+                    <c:if test="${sessionScope.user.roleId == 10}">
+                        <a href="${pageContext.request.contextPath}/admin/users"
+                           class="menu-item ${pageContext.request.requestURI.contains('/admin/users') ? 'active' : ''}">
+                            <i class="bi bi-person-gear"></i> Quản lý người dùng
+                        </a>
+                        <a href="${pageContext.request.contextPath}/admin/departments"
+                           class="menu-item ${pageContext.request.requestURI.contains('/admin/departments') ? 'active' : ''}">
+                            <i class="bi bi-diagram-3"></i> Quản lý phòng ban
+                        </a>
+                    </c:if>
                     <a href="${pageContext.request.contextPath}/admin/knowledge-base"
                        class="menu-item ${pageContext.request.requestURI.contains('/admin/knowledge-base') ? 'active' : ''}">
                         <i class="bi bi-journal-text"></i> Quản lý bài viết
                     </a>
                     <a href="${pageContext.request.contextPath}/admin/knowledge-article"
                        class="menu-item ${pageContext.request.requestURI.contains('/admin/knowledge-article') ? 'active' : ''}">
-                        <i class="bi bi-journal-text"></i> Quản lý cơ sở kiến thức
+                        <i class="bi bi-journal-bookmark"></i> Quản lý cơ sở kiến thức
                     </a>
-
                     <a href="${pageContext.request.contextPath}/workflows"
                        class="menu-item ${pageContext.request.requestURI.contains('/workflows') ? 'active' : ''}">
                         <i class="bi bi-diagram-3"></i> Tự động điều hướng Ticket
@@ -272,13 +269,13 @@
                        class="menu-item ${pageContext.request.requestURI.contains('/configuration-item') ? 'active' : ''}">
                         <i class="bi bi-server"></i> Mục cấu hình
                     </a>
-                    <c:if test="${sessionScope.user.roleId == 8 || sessionScope.user.roleId == 10}">
+                    <c:if test="${sessionScope.user.roleId != 1 && sessionScope.user.roleId != 2}">
                         <a href="${pageContext.request.contextPath}/vendor"
                            class="menu-item ${pageContext.request.requestURI.contains('/vendor') ? 'active' : ''}">
                             <i class="bi bi-building"></i> Nhà cung cấp
                         </a>
                     </c:if>
-                    <c:if test="${sessionScope.user.roleId == 6 || sessionScope.user.roleId == 8 || sessionScope.user.roleId == 10}">
+                    <c:if test="${sessionScope.user.roleId != 1 && sessionScope.user.roleId != 2}">
                         <a href="${pageContext.request.contextPath}/maintenance-log"
                            class="menu-item ${pageContext.request.requestURI.contains('/maintenance-log') ? 'active' : ''}">
                             <i class="bi bi-tools"></i> Nhật ký bảo trì
@@ -302,6 +299,12 @@
                     <i class="bi bi-hdd-network"></i> Quản lý dịch vụ
                 </a>
 
+                <%-- Báo cáo & Phân tích --%>
+                <li class="menu-header">Báo cáo &amp; Phân tích</li>
+                <a href="${pageContext.request.contextPath}/sla-dashboard"
+                   class="menu-item ${pageContext.request.requestURI.contains('/sla-dashboard') ? 'active' : ''}">
+                    <i class="bi bi-graph-up-arrow"></i> SLA &amp; Năng suất
+                </a>
             </ul>
         </div>
 
