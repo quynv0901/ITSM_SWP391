@@ -315,6 +315,16 @@
         <i class="bi bi-arrow-right card-arrow"></i>
     </a>
 
+    <c:if test="${sessionScope.user.roleId == 6}">
+        <a href="${pageContext.request.contextPath}/change-request-list" class="action-card">
+            <div class="card-icon blue"><i class="bi bi-exclamation-triangle-fill"></i></div>
+            <h3>Tạo yêu cầu thay đổi</h3>
+            <p>Xem yêu cầu thay đổi, bao gồm kế hoạch thực hiện, kế hoạch hoàn tác và đánh giá rủi ro.</p>
+            <i class="bi bi-arrow-right card-arrow"></i>
+        </a>
+
+    </c:if>
+
     <c:if test="${sessionScope.user.roleId == 10}">
         <a href="${pageContext.request.contextPath}/admin-services" class="action-card">
             <div class="card-icon green"><i class="bi bi-clipboard2-plus-fill"></i></div>
