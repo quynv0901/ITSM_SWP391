@@ -5,61 +5,198 @@
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
-    body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; }
-    h4 { font-family: 'Outfit', sans-serif; }
-    .stat-row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 24px; }
-    .stat-card {
-        flex: 1; min-width: 180px; background: #fff; border: 1px solid #e2e8f0; border-radius: 16px;
-        padding: 20px 24px; display: flex; align-items: center; gap: 16px; text-decoration: none; color: inherit;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: all .2s ease;
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f4f7f6;
     }
-    .stat-card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.08); color: inherit; }
-    .stat-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
-    .stat-label { font-size: 12px; color: #718096; text-transform: uppercase; letter-spacing: .6px; font-weight: 700; }
-    .stat-value { font-size: 30px; font-weight: 800; color: #1a202c; font-family: 'Outfit', sans-serif; line-height: 1; }
+    h4 {
+        font-family: 'Outfit', sans-serif;
+    }
+    .stat-row {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+    }
+    .stat-card {
+        flex: 1;
+        min-width: 180px;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 20px 24px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        text-decoration: none;
+        color: inherit;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        transition: all .2s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+        color: inherit;
+    }
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+    }
+    .stat-label {
+        font-size: 12px;
+        color: #718096;
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        font-weight: 700;
+    }
+    .stat-value {
+        font-size: 30px;
+        font-weight: 800;
+        color: #1a202c;
+        font-family: 'Outfit', sans-serif;
+        line-height: 1;
+    }
 
     .filter-card, .table-card {
-        background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
     }
-    .filter-card { padding: 20px 24px; margin-bottom: 20px; }
-    .filter-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; }
-    .filter-group { display: flex; flex-direction: column; gap: 6px; min-width: 160px; }
-    .filter-group label { font-size: 12px; font-weight: 600; color: #4a5568; text-transform: uppercase; }
+    .filter-card {
+        padding: 20px 24px;
+        margin-bottom: 20px;
+    }
+    .filter-row {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+    }
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        min-width: 160px;
+    }
+    .filter-group label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #4a5568;
+        text-transform: uppercase;
+    }
     .filter-group input, .filter-group select {
-        padding: 10px 12px; border: 1px solid #cbd5e0; border-radius: 8px; background: #f8fafc; font-size: 14px;
+        padding: 10px 12px;
+        border: 1px solid #cbd5e0;
+        border-radius: 8px;
+        background: #f8fafc;
+        font-size: 14px;
     }
     .filter-group input:focus, .filter-group select:focus {
-        outline: none; border-color: #4299e1; box-shadow: 0 0 0 3px rgba(66,153,225,.2); background: #fff;
+        outline: none;
+        border-color: #4299e1;
+        box-shadow: 0 0 0 3px rgba(66,153,225,.2);
+        background: #fff;
     }
 
-    .dept-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; }
-    .dept-table th {
-        padding: 14px 16px; text-transform: uppercase; font-size: 12px; color: #4a5568; font-weight: 700;
-        background: #f8fafc; border-bottom: 2px solid #e2e8f0;
+    .dept-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 14px;
     }
-    .dept-table td { padding: 14px 16px; border-bottom: 1px solid #edf2f7; vertical-align: middle; }
-    .dept-table tbody tr:hover { background: #f0f7fa; box-shadow: inset 2px 0 0 #3c8dbc; }
-    .dept-name { color: #2563eb; font-weight: 700; text-decoration: none; }
-    .dept-name:hover { color: #1d4ed8; text-decoration: underline; }
+    .dept-table th {
+        padding: 14px 16px;
+        text-transform: uppercase;
+        font-size: 12px;
+        color: #4a5568;
+        font-weight: 700;
+        background: #f8fafc;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    .dept-table td {
+        padding: 14px 16px;
+        border-bottom: 1px solid #edf2f7;
+        vertical-align: middle;
+    }
+    .dept-table tbody tr:hover {
+        background: #f0f7fa;
+        box-shadow: inset 2px 0 0 #3c8dbc;
+    }
+    .dept-name {
+        color: #2563eb;
+        font-weight: 700;
+        text-decoration: none;
+    }
+    .dept-name:hover {
+        color: #1d4ed8;
+        text-decoration: underline;
+    }
 
     .status-on, .status-off {
-        display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 12px;
-        font-size: 12px; font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
     }
-    .status-on { background: rgba(16,185,129,.1); color: #059669; border: 1px solid rgba(16,185,129,.2); }
-    .status-off { background: rgba(239,68,68,.1); color: #dc2626; border: 1px solid rgba(239,68,68,.2); }
+    .status-on {
+        background: rgba(16,185,129,.1);
+        color: #059669;
+        border: 1px solid rgba(16,185,129,.2);
+    }
+    .status-off {
+        background: rgba(239,68,68,.1);
+        color: #dc2626;
+        border: 1px solid rgba(239,68,68,.2);
+    }
     .btn-icon {
-        width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center;
-        border: none; border-radius: 8px; color: #fff; transition: all .2s;
+        width: 34px;
+        height: 34px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        border-radius: 8px;
+        color: #fff;
+        transition: all .2s;
     }
-    .btn-icon:hover { transform: translateY(-2px); }
+    .btn-icon:hover {
+        transform: translateY(-2px);
+    }
     .pager-row {
-        display: flex; justify-content: space-between; align-items: center; padding: 16px 20px;
-        border-top: 1px solid #e2e8f0; background: #f8fafc; flex-wrap: wrap; gap: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        border-top: 1px solid #e2e8f0;
+        background: #f8fafc;
+        flex-wrap: wrap;
+        gap: 10px;
     }
-    .flash { padding: 14px 20px; border-radius: 12px; margin-bottom: 16px; font-weight: 500; }
-    .flash-success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
-    .flash-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    .flash {
+        padding: 14px 20px;
+        border-radius: 12px;
+        margin-bottom: 16px;
+        font-weight: 500;
+    }
+    .flash-success {
+        background: #ecfdf5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+    }
+    .flash-error {
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+    }
 </style>
 
 <%@include file="../common/admin-layout-top.jsp" %>
@@ -146,7 +283,7 @@
         <table class="dept-table">
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th>STT</th>
                     <th>Tên phòng ban</th>
                     <th>Mã</th>
                     <th>Trưởng phòng</th>
@@ -156,9 +293,9 @@
                 </tr>
             </thead>
             <tbody>
-                <c:forEach var="d" items="${departments}">
+                <c:forEach var="d" items="${departments}" varStatus="loop">
                     <tr>
-                        <td>#${d.departmentId}</td>
+                        <td class="text-muted">${(currentPage - 1) * 5 + loop.count}</td>
                         <td>
                             <a class="dept-name" href="${pageContext.request.contextPath}/admin/departments?action=detail&id=${d.departmentId}">${d.departmentName}</a>
                         </td>
