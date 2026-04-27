@@ -20,303 +20,245 @@ public class AdminServiceServlet extends HttpServlet {
     private ServiceDAO serviceDAO;
 
     @Override
-    public void init() throws ServletException {
+    public void init() {
         serviceDAO = new ServiceDAO();
     }
 
+    // ================= GET =================
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
         User loginUser = getLoggedInUser(request);
+
         if (loginUser == null) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
+
         if (loginUser.getRoleId() != ROLE_ADMIN) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied.");
+            response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
 
         String action = request.getParameter("action");
-        if (action == null || action.trim().isEmpty()) {
+        if (action == null) {
             action = "list";
         }
 
-        switch (action) {
-            case "detail":
-                viewServiceDetail(request, response, loginUser);
-                break;
-            case "edit":
-                showEditPopup(request, response, loginUser);
-                break;
-            case "create":
-                showCreatePopup(request, response, loginUser);
-                break;
-            default:
-                listServices(request, response, loginUser);
-                break;
+        // 👉 LOAD LIST TRƯỚC
+        loadListData(request);
+
+        // 👉 XỬ LÝ POPUP
+        if ("detail".equals(action) || "edit".equals(action)) {
+
+            int id = Integer.parseInt(request.getParameter("id"));
+            Service svc = serviceDAO.getServiceById(id);
+
+            request.setAttribute("selectedService", svc);
+            request.setAttribute("openModal", action);
+
+        } else if ("create".equals(action)) {
+            request.setAttribute("openModal", "create");
         }
+
+        // 👉 LUÔN forward về JSP DUY NHẤT
+        request.getRequestDispatcher("/admin/service-management.jsp").forward(request, response);
     }
 
+    // ================= POST =================
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
         User loginUser = getLoggedInUser(request);
+
         if (loginUser == null) {
             response.sendRedirect(request.getContextPath() + "/login");
-            return;
-        }
-        if (loginUser.getRoleId() != ROLE_ADMIN && loginUser.getRoleId() != ROLE_END_USER) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied.");
             return;
         }
 
         request.setCharacterEncoding("UTF-8");
+
         String action = request.getParameter("action");
-        if (action == null || action.trim().isEmpty()) {
+        if (action == null) {
             action = "list";
         }
 
         switch (action) {
 
             case "create":
-                // cho phép cả 1 và 10
                 createService(request, response, loginUser);
                 break;
 
             case "update":
-            case "delete":
-            case "toggleStatus":
-            case "bulkStatus":
-                // chỉ admin
-                if (loginUser.getRoleId() != ROLE_ADMIN) {
-                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied.");
-                    return;
-                }
+                checkAdmin(loginUser, response);
+                updateService(request, response);
                 break;
+
+            case "delete":
+                checkAdmin(loginUser, response);
+                deleteService(request, response);
+                break;
+
+            case "toggleStatus":
+                checkAdmin(loginUser, response);
+                toggleStatus(request, response);
+                break;
+
+            case "bulkStatus":
+                checkAdmin(loginUser, response);
+                bulkUpdateStatus(request, response);
+                break;
+
+            default:
+                response.sendRedirect(request.getContextPath() + "/admin-services");
         }
     }
 
-    private void listServices(HttpServletRequest request, HttpServletResponse response, User loginUser) throws ServletException, IOException {
-        loadListData(request);
-        request.setAttribute("roleId", loginUser.getRoleId());
-        request.getRequestDispatcher("/admin/service-management.jsp").forward(request, response);
-    }
-
-    private void viewServiceDetail(HttpServletRequest request, HttpServletResponse response, User loginUser) throws ServletException, IOException {
-        loadListData(request);
-        request.setAttribute("roleId", loginUser.getRoleId());
-        String idRaw = request.getParameter("id");
-        try {
-            int serviceId = Integer.parseInt(idRaw);
-            Service service = serviceDAO.getServiceById(serviceId);
-            if (service == null) {
-                request.setAttribute("errorMessage", "Không tìm thấy dịch vụ.");
-            } else {
-                request.setAttribute("selectedService", service);
-                request.setAttribute("openModal", "detail");
-            }
-        } catch (Exception e) {
-            request.setAttribute("errorMessage", "Mã dịch vụ không hợp lệ.");
-        }
-        request.getRequestDispatcher("/admin/service-management.jsp").forward(request, response);
-    }
-
-    private void showCreatePopup(HttpServletRequest request, HttpServletResponse response, User loginUser) throws ServletException, IOException {
-        loadListData(request);
-        request.setAttribute("roleId", loginUser.getRoleId());
-        request.setAttribute("openModal", "create");
-        request.getRequestDispatcher("/admin/service-management.jsp").forward(request, response);
-    }
-
-    private void showEditPopup(HttpServletRequest request, HttpServletResponse response, User loginUser) throws ServletException, IOException {
-        loadListData(request);
-        request.setAttribute("roleId", loginUser.getRoleId());
-        try {
-            int serviceId = Integer.parseInt(request.getParameter("id"));
-            Service service = serviceDAO.getServiceById(serviceId);
-            if (service == null) {
-                request.setAttribute("errorMessage", "Không tìm thấy dịch vụ.");
-            } else {
-                request.setAttribute("selectedService", service);
-                request.setAttribute("openModal", "edit");
-            }
-        } catch (Exception e) {
-            request.setAttribute("errorMessage", "Mã dịch vụ không hợp lệ.");
-        }
-        request.getRequestDispatcher("/admin/service-management.jsp").forward(request, response);
-    }
-
-    private void createService(HttpServletRequest request, HttpServletResponse response, User loginUser)
+    // ================= BUSINESS =================
+    private void listServices(HttpServletRequest request, HttpServletResponse response, User user)
             throws ServletException, IOException {
+        loadListData(request);
+        request.setAttribute("roleId", user.getRoleId());
+        request.getRequestDispatcher("/admin/service-management.jsp").forward(request, response);
+    }
+
+    private void createService(HttpServletRequest request, HttpServletResponse response, User user)
+            throws IOException, ServletException {
 
         Service service = readServiceFromRequest(request, false);
-
         boolean created = serviceDAO.createService(service);
 
         if (created) {
-
-            String redirectUrl;
-
-            if (loginUser.getRoleId() == ROLE_END_USER) {
-                redirectUrl = "/service-catalog";
-            } else {
-                redirectUrl = "/admin-services";
-            }
-
-            response.sendRedirect(request.getContextPath() + redirectUrl + "?msg=created");
-
+            response.sendRedirect(request.getContextPath() + "/admin-services?msg=created");
         } else {
-
             loadListData(request);
-            request.setAttribute("roleId", loginUser.getRoleId());
             request.setAttribute("errorMessage", "Mã dịch vụ đã tồn tại!");
             request.setAttribute("selectedService", service);
             request.setAttribute("openModal", "create");
-
             request.getRequestDispatcher("/admin/service-management.jsp").forward(request, response);
         }
     }
 
-    private void updateService(HttpServletRequest request, HttpServletResponse response, User loginUser) throws ServletException, IOException {
+    private void updateService(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
+
         Service service = readServiceFromRequest(request, true);
-        String error = validateServiceInput(service.getServiceName(), service.getServiceCode(), String.valueOf(service.getEstimatedDeliveryDay()), request.getParameter("estimatedDeliveryDay"));
-        if (error != null) {
-            loadListData(request);
-            request.setAttribute("roleId", loginUser.getRoleId());
-            request.setAttribute("errorMessage", error);
-            request.setAttribute("selectedService", service);
-            request.setAttribute("openModal", "edit");
-            request.getRequestDispatcher("/admin/service-management.jsp").forward(request, response);
-            return;
-        }
+
         boolean updated = serviceDAO.updateService(service);
-        if (updated) {
-            response.sendRedirect(request.getContextPath() + "/admin-services?msg=updated");
-        } else {
-            loadListData(request);
-            request.setAttribute("roleId", loginUser.getRoleId());
-            request.setAttribute("errorMessage", "Cập nhật thất bại. Mã dịch vụ có thể đã tồn tại.");
-            request.setAttribute("selectedService", service);
-            request.setAttribute("openModal", "edit");
-            request.getRequestDispatcher("/admin/service-management.jsp").forward(request, response);
+
+        String redirect = buildRedirectUrl(request, "updated");
+
+        response.sendRedirect(redirect);
+    }
+
+    private void deleteService(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+
+        int id = Integer.parseInt(request.getParameter("serviceId"));
+        serviceDAO.deleteService(id);
+
+        response.sendRedirect(buildRedirectUrl(request, "deleted"));
+    }
+
+    private void toggleStatus(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+
+        int id = Integer.parseInt(request.getParameter("serviceId"));
+        serviceDAO.toggleServiceStatus(id);
+
+        response.sendRedirect(buildRedirectUrl(request, "status_updated"));
+    }
+
+    private void bulkUpdateStatus(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+
+        String[] ids = request.getParameterValues("serviceIds");
+        String newStatus = request.getParameter("newStatus");
+
+        serviceDAO.bulkUpdateStatus(ids, newStatus);
+
+        response.sendRedirect(buildRedirectUrl(request, "bulk_updated"));
+    }
+
+    // ================= HELPER =================
+    private String buildRedirectUrl(HttpServletRequest request, String msg) {
+        String page = request.getParameter("page");
+        String q = request.getParameter("q");
+        String status = request.getParameter("status");
+
+        return request.getContextPath()
+                + "/admin-services?page=" + (page == null ? "1" : page)
+                + "&q=" + (q == null ? "" : q)
+                + "&status=" + (status == null ? "" : status)
+                + "&msg=" + msg;
+    }
+
+    private void checkAdmin(User user, HttpServletResponse response) throws IOException {
+        if (user.getRoleId() != ROLE_ADMIN) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN);
         }
     }
 
     private Service readServiceFromRequest(HttpServletRequest request, boolean includeId) {
-        Service service = new Service();
+        Service s = new Service();
+
         if (includeId) {
-            try {
-                service.setServiceId(Integer.parseInt(request.getParameter("serviceId")));
-            } catch (Exception ignored) {
-            }
+            s.setServiceId(Integer.parseInt(request.getParameter("serviceId")));
         }
-        service.setServiceName(request.getParameter("serviceName") == null ? "" : request.getParameter("serviceName").trim());
-        service.setServiceCode(request.getParameter("serviceCode") == null ? "" : request.getParameter("serviceCode").trim());
-        service.setDescription(request.getParameter("description") == null ? "" : request.getParameter("description").trim());
-        service.setStatus(request.getParameter("status") == null || request.getParameter("status").trim().isEmpty() ? "ACTIVE" : request.getParameter("status").trim());
-        try {
-            service.setEstimatedDeliveryDay(Integer.parseInt(request.getParameter("estimatedDeliveryDay")));
-        } catch (Exception e) {
-            service.setEstimatedDeliveryDay(-1);
-        }
-        return service;
-    }
 
-    private void deleteService(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        try {
-            int serviceId = Integer.parseInt(request.getParameter("serviceId"));
-            String result = serviceDAO.deleteService(serviceId);
-            switch (result) {
-                case "success":
-                    response.sendRedirect(request.getContextPath() + "/admin-services?msg=deleted");
-                    break;
-                case "cannot_delete":
-                    response.sendRedirect(request.getContextPath() + "/admin-services?msg=cannot_delete");
-                    break;
-                case "not_found":
-                    response.sendRedirect(request.getContextPath() + "/admin-services?msg=not_found");
-                    break;
-                default:
-                    response.sendRedirect(request.getContextPath() + "/admin-services?msg=error");
-                    break;
-            }
-        } catch (Exception e) {
-            response.sendRedirect(request.getContextPath() + "/admin-services?msg=error");
-        }
-    }
+        s.setServiceName(request.getParameter("serviceName"));
+        s.setServiceCode(request.getParameter("serviceCode"));
+        s.setDescription(request.getParameter("description"));
+        s.setStatus(request.getParameter("status"));
 
-    private void toggleStatus(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
-            int serviceId = Integer.parseInt(request.getParameter("serviceId"));
-            boolean updated = serviceDAO.toggleServiceStatus(serviceId);
-            response.sendRedirect(request.getContextPath() + "/admin-services?msg=" + (updated ? "status_updated" : "error"));
+            s.setEstimatedDeliveryDay(Integer.parseInt(request.getParameter("estimatedDeliveryDay")));
         } catch (Exception e) {
-            response.sendRedirect(request.getContextPath() + "/admin-services?msg=error");
+            s.setEstimatedDeliveryDay(0);
         }
-    }
 
-    private void bulkUpdateStatus(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String[] selectedIds = request.getParameterValues("serviceIds");
-        String newStatus = request.getParameter("newStatus");
-        int updatedCount = serviceDAO.bulkUpdateStatus(selectedIds, newStatus);
-        response.sendRedirect(request.getContextPath() + "/admin-services?msg=bulk_updated&count=" + updatedCount);
+        return s;
     }
 
     private void loadListData(HttpServletRequest request) {
-        String keyword = request.getParameter("q");
+        String q = request.getParameter("q");
         String status = request.getParameter("status");
-        if (keyword == null) {
-            keyword = "";
+
+        if (q == null) {
+            q = "";
         }
         if (status == null) {
             status = "";
         }
 
-        List<Service> fullServices = serviceDAO.getAllServices(keyword, status);
-        int currentPage = 1;
+        List<Service> full = serviceDAO.getAllServices(q, status);
+
+        int page = 1;
         try {
-            currentPage = Math.max(1, Integer.parseInt(request.getParameter("page")));
+            page = Integer.parseInt(request.getParameter("page"));
         } catch (Exception ignored) {
         }
-        int totalItems = fullServices.size();
-        int totalPages = Math.max(1, (int) Math.ceil((double) totalItems / PAGE_SIZE));
-        if (currentPage > totalPages) {
-            currentPage = totalPages;
-        }
-        int fromIndex = Math.max(0, (currentPage - 1) * PAGE_SIZE);
-        int toIndex = Math.min(fromIndex + PAGE_SIZE, totalItems);
-        List<Service> services = totalItems == 0 ? new ArrayList<>() : fullServices.subList(fromIndex, toIndex);
 
-        request.setAttribute("services", services);
-        request.setAttribute("keyword", keyword);
-        request.setAttribute("status", status);
-        request.setAttribute("currentPage", currentPage);
+        int total = full.size();
+        int totalPages = (int) Math.ceil((double) total / PAGE_SIZE);
+
+        int from = (page - 1) * PAGE_SIZE;
+        int to = Math.min(from + PAGE_SIZE, total);
+
+        List<Service> list = total == 0 ? new ArrayList<>() : full.subList(from, to);
+
+        request.setAttribute("services", list);
+        request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
-        request.setAttribute("totalItems", totalItems);
-    }
-
-    private String validateServiceInput(String serviceName, String serviceCode, String estimatedDayCalculated, String estimatedDayRaw) {
-        if (serviceName == null || serviceName.trim().isEmpty()) {
-            return "Tên dịch vụ không được để trống.";
-        }
-        if (serviceCode == null || serviceCode.trim().isEmpty()) {
-            return "Mã dịch vụ không được để trống.";
-        }
-        if (estimatedDayRaw == null || estimatedDayRaw.trim().isEmpty()) {
-            return "Số ngày dự kiến không được để trống.";
-        }
-        try {
-            int estimatedDay = Integer.parseInt(estimatedDayRaw);
-            if (estimatedDay < 0) {
-                return "Số ngày dự kiến phải lớn hơn hoặc bằng 0.";
-            }
-        } catch (NumberFormatException e) {
-            return "Số ngày dự kiến phải là số.";
-        }
-        return null;
+        request.setAttribute("totalItems", total);
+        request.setAttribute("keyword", q);
+        request.setAttribute("status", status);
     }
 
     private User getLoggedInUser(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        return session == null ? null : (User) session.getAttribute("user");
+        HttpSession s = request.getSession(false);
+        return s == null ? null : (User) s.getAttribute("user");
     }
 }
