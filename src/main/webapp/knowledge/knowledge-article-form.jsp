@@ -56,7 +56,7 @@
                                    value="${article.title}">
                             <div class="d-flex justify-content-between mt-1">
                                 <div class="invalid-feedback d-block" id="titleError"></div>
-                                <small id="titleCount" class="text-muted ms-auto">0/255</small>
+                                <small id="titleCount" class="text-muted">0/255</small>
                             </div>
                         </div>
 
@@ -67,7 +67,7 @@
                                       maxlength="500">${article.summary}</textarea>
                             <div class="d-flex justify-content-between mt-1">
                                 <div class="invalid-feedback d-block" id="summaryError"></div>
-                                <small id="summaryCount" class="text-muted ms-auto">0/500</small>
+                                <small id="summaryCount" class="text-muted">0/500</small>
                             </div>
                         </div>
 
@@ -80,7 +80,7 @@
                                       required>${article.content}</textarea>
                             <div class="d-flex justify-content-between mt-1">
                                 <div class="invalid-feedback d-block" id="contentError"></div>
-                                <small id="contentCount" class="text-muted ms-auto">0/65535</small>
+                                <small id="contentCount" class="text-muted ms-auto">0/3000</small>
                             </div>
                         </div>
                     </div>
@@ -109,21 +109,21 @@
                             <label class="form-label fw-bold">Triệu chứng</label>
                             <textarea id="symptom" name="symptom" class="form-control" rows="3"
                                       placeholder="Mô tả triệu chứng...">${article.symptom}</textarea>
-                            <small id="symptomCount" class="text-muted">0/65535</small>
+                            <small id="symptomCount" class="text-muted">0/3000</small>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Nguyên nhân</label>
                             <textarea id="cause" name="cause" class="form-control" rows="3"
                                       placeholder="Nguyên nhân gây ra lỗi này là gì...">${article.cause}</textarea>
-                            <small id="causeCount" class="text-muted">0/65535</small>
+                            <small id="causeCount" class="text-muted">0/3000</small>
                         </div>
 
                         <div class="mb-0">
                             <label class="form-label fw-bold">Giải pháp</label>
                             <textarea id="solution" name="solution" class="form-control" rows="4"
                                       placeholder="Các bước sửa lỗi...">${article.solution}</textarea>
-                            <small id="solutionCount" class="text-muted">0/65535</small>
+                            <small id="solutionCount" class="text-muted">0/3000</small>
                         </div>
 
                     </div>
@@ -175,10 +175,10 @@
     const limits = {
         title: {max: 255, countId: 'titleCount', errorId: 'titleError', label: 'Tiêu đề'},
         summary: {max: 500, countId: 'summaryCount', errorId: 'summaryError', label: 'Mô tả bài viết'},
-        content: {max: 65535, countId: 'contentCount', errorId: 'contentError', label: 'Nội dung'},
-        symptom: {max: 65535, countId: 'symptomCount', errorId: null, label: 'Triệu chứng'},
-        cause: {max: 65535, countId: 'causeCount', errorId: null, label: 'Nguyên nhân'},
-        solution: {max: 65535, countId: 'solutionCount', errorId: null, label: 'Giải pháp'},
+        content: {max: 3000, countId: 'contentCount', errorId: 'contentError', label: 'Nội dung'},
+        symptom: {max: 3000, countId: 'symptomCount', errorId: null, label: 'Triệu chứng'},
+        cause: {max: 3000, countId: 'causeCount', errorId: null, label: 'Nguyên nhân'},
+        solution: {max: 3000, countId: 'solutionCount', errorId: null, label: 'Giải pháp'},
     };
 
     const textFields = [

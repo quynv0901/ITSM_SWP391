@@ -154,7 +154,7 @@
                     <th style="width:40px;">
                         <input type="checkbox" id="selectAll" class="form-check-input" onclick="toggleAll(this)">
                     </th>
-                    <th>ID</th>
+                    <th>STT</th>
                     <th>Số bài viết</th>
                     <th>Tiêu đề</th>
                     <th>Trạng thái</th>
@@ -163,10 +163,10 @@
                 </tr>
             </thead>
             <tbody>
-                <c:forEach var="art" items="${articles}">
+                <c:forEach var="art" items="${articles}" varStatus="loop">
                     <tr>
                         <td><input type="checkbox" name="selectedIds" value="${art.articleId}" class="rowCheckbox form-check-input"></td>
-                        <td>${art.articleId}</td>
+                        <td class="text-muted">${(currentPage - 1) * 5 + loop.count}</td>
                         <td><code>${art.articleNumber}</code></td>
                         <td class="title-cell" title="${art.title}">${art.title}</td>
                         <td>
