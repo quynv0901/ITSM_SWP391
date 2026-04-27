@@ -309,6 +309,10 @@
                            class="menu-item ${pageContext.request.requestURI.contains('/time-tracking') ? 'active' : ''}">
                             <i class="bi bi-clock-history"></i> Theo dõi Thời gian
                         </a>
+                        <a href="${pageContext.request.contextPath}/support-agent/knowledge-article"
+                           class="menu-item ${pageContext.request.requestURI.contains('/incident') ? 'active' : ''}">
+                            <i class="bi bi-journal-bookmark"></i> Quản lý bài viết
+                        </a>
 
                         <li class="menu-header">Hạ tầng &amp; Tài sản</li>
                         <a href="${pageContext.request.contextPath}/configuration-item"
