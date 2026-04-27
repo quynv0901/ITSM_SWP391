@@ -96,13 +96,11 @@ public class UserManagementController extends HttpServlet {
         String sortBy = req.getParameter("sortBy");
         String order = req.getParameter("order");
         String pageStr = req.getParameter("page");
-
         Integer roleId = parseIntOrNull(roleIdStr);
         Integer deptId = parseIntOrNull(deptIdStr);
         int page = (pageStr != null && !pageStr.isEmpty()) ? Integer.parseInt(pageStr) : 1;
         int limit = 10;
         int offset = (page - 1) * limit;
-
         List<User> userList = userDAO.listUsers(search, roleId, deptId, sortBy, order, offset, limit);
         int totalUsers = userDAO.countUsers(search, roleId, deptId);
         int totalPages = (int) Math.ceil((double) totalUsers / limit);

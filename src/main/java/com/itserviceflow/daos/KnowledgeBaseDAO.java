@@ -214,12 +214,12 @@ public class KnowledgeBaseDAO {
     }
 
     public boolean deleteArticle(int id) {
-    System.out.println(">>> deleteArticle called with id = " + id); // ← thêm dòng này
+    System.out.println(">>> deleteArticle called with id = " + id); 
     String sql = "DELETE FROM article WHERE article_id = ?";
     try (PreparedStatement st = conn.prepareStatement(sql)) {
         st.setInt(1, id);
         int rows = st.executeUpdate();
-        System.out.println(">>> rows affected = " + rows); // ← thêm dòng này
+        System.out.println(">>> rows affected = " + rows); 
         return rows > 0;
     } catch (Exception e) {
         e.printStackTrace();

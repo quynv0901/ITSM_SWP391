@@ -117,7 +117,6 @@ public class UserDAO {
 
         sql.append(" ORDER BY ").append(validSort).append(" ").append(validOrder);
         sql.append(" LIMIT ? OFFSET ?");
-
         try (PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
             int paramIndex = 1;
             if (search != null && !search.isEmpty()) {
