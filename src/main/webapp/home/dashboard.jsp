@@ -325,6 +325,16 @@
 
     </c:if>
 
+    <c:if test="${sessionScope.user.roleId == 3}">
+        <a href="${pageContext.request.contextPath}/service-request" class="action-card">
+            <div class="card-icon blue"><i class="bi bi-exclamation-triangle-fill"></i></div>
+            <h3>Phân công công việc</h3>
+            <p>Giao việc cho các support agent sử lý vấn đề về dịch vụ.</p>
+            <i class="bi bi-arrow-right card-arrow"></i>
+        </a>
+
+    </c:if>
+
     <c:if test="${sessionScope.user.roleId == 10}">
         <a href="${pageContext.request.contextPath}/admin-services" class="action-card">
             <div class="card-icon green"><i class="bi bi-clipboard2-plus-fill"></i></div>

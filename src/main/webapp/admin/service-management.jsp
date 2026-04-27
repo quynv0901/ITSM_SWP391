@@ -84,14 +84,14 @@
                                 <div class="d-flex justify-content-center gap-1 flex-wrap">
 
                                     <!-- AI CŨNG ĐƯỢC XEM -->
-                                    <a href="${pageContext.request.contextPath}/admin-services?action=detail&id=${svc.serviceId}"
+                                    <a href="${pageContext.request.contextPath}/admin-services?action=detail&id=${svc.serviceId}&page=${currentPage}&q=${keyword}&status=${status}"
                                        class="btn btn-info btn-sm text-white">
                                         <i class="bi bi-eye"></i>
                                     </a>
 
                                     <!-- CHỈ ADMIN -->
                                     <c:if test="${isAdmin}">
-                                        <a href="${pageContext.request.contextPath}/admin-services?action=edit&id=${svc.serviceId}"
+                                        <a href="${pageContext.request.contextPath}/admin-services?action=edit&id=${svc.serviceId}&page=${currentPage}&q=${keyword}&status=${status}"
                                            class="btn btn-warning btn-sm text-white">
                                             <i class="bi bi-pencil"></i>
                                         </a>
@@ -204,6 +204,9 @@
                 <form method="post" action="${pageContext.request.contextPath}/admin-services" accept-charset="UTF-8" onsubmit="return validateEditServiceForm();" novalidate>
                     <input type="hidden" name="action" value="update">
                     <input type="hidden" name="serviceId" value="${selectedService.serviceId}">
+                    <input type="hidden" name="page" value="${currentPage}">
+                    <input type="hidden" name="q" value="${keyword}">
+                    <input type="hidden" name="status" value="${status}">
                     <div class="modal-header"><h5 class="modal-title">Cập nhật dịch vụ</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                     <div class="modal-body row g-3">
                         <div class="col-md-6">
@@ -318,7 +321,12 @@
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = '${pageContext.request.contextPath}/admin-services';
-            form.innerHTML = '<input type="hidden" name="action" value="toggleStatus"><input type="hidden" name="serviceId" value="' + id + '">';
+            form.innerHTML =
+                    '<input type="hidden" name="action" value="toggleStatus">' +
+                    '<input type="hidden" name="serviceId" value="' + id + '">' +
+                    '<input type="hidden" name="page" value="${currentPage}">' +
+                    '<input type="hidden" name="q" value="${keyword}">' +
+                    '<input type="hidden" name="status" value="${status}">';
             document.body.appendChild(form);
             form.submit();
         }
@@ -328,7 +336,12 @@
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = '${pageContext.request.contextPath}/admin-services';
-            form.innerHTML = '<input type="hidden" name="action" value="delete"><input type="hidden" name="serviceId" value="' + id + '">';
+            form.innerHTML =
+                    '<input type="hidden" name="action" value="delete">' +
+                    '<input type="hidden" name="serviceId" value="' + id + '">' +
+                    '<input type="hidden" name="page" value="${currentPage}">' +
+                    '<input type="hidden" name="q" value="${keyword}">' +
+                    '<input type="hidden" name="status" value="${status}">';
             document.body.appendChild(form);
             form.submit();
         }
