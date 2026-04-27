@@ -71,11 +71,29 @@
         </div>
     </form>
 
+    <%-- Hidden form for bulk POST submission --%>
     <form id="bulkForm" action="${pageContext.request.contextPath}/known-error" method="post" style="display:none;">
         <input type="hidden" name="action"   id="bulkActionType" value="">
         <input type="hidden" name="status"   id="bulkStatus"     value="">
         <input type="hidden" name="toggleTo" id="bulkToggleTo"   value="">
     </form>
+
+    <%-- Bootstrap confirmation modal (replaces native confirm() which gets blocked by browsers) --%>
+    <div class="modal fade" id="bulkConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>Xác nhận thao tác</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="bulkConfirmMsg">Bạn có chắc muốn thực hiện thao tác này?</div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-danger" id="bulkConfirmOk">Xác nhận</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="table-responsive">
         <table class="table table-hover table-bordered align-middle mt-3">
@@ -191,33 +209,63 @@
         }
     }
 
+    let pendingBulkAction = null;
+    let pendingExtraParam = null;
+
     function submitBulkAction(actionType, extraParam) {
         const checkboxes = document.querySelectorAll('.rowCheckbox:checked');
         if (checkboxes.length === 0) {
             alert('Vui lòng chọn ít nhất một mục.');
             return;
         }
-        let msg = 'Bạn có chắc muốn thực hiện thao tác này?';
-        if (actionType === 'bulkDelete') msg = 'Bạn có chắc muốn xóa các mục đã chọn?';
-        else if (actionType === 'bulkReview' && extraParam === 'APPROVED') msg = 'Bạn có chắc muốn duyệt các mục đã chọn?';
-        else if (actionType === 'bulkToggleStatus') msg = 'Bạn có chắc muốn thay đổi trạng thái thành ' + extraParam + '?';
 
-        if (confirm(msg + '\nLưu ý: Đảm bảo các mục đã chọn ở trạng thái hợp lệ.')) {
-            const bulkForm = document.getElementById('bulkForm');
-            bulkForm.querySelectorAll('input[name="selectedIds"]').forEach(el => el.remove());
-            checkboxes.forEach(cb => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'selectedIds';
-                input.value = cb.value;
-                bulkForm.appendChild(input);
-            });
-            document.getElementById('bulkActionType').value = actionType;
-            if (actionType === 'bulkReview') document.getElementById('bulkStatus').value = extraParam;
-            else if (actionType === 'bulkToggleStatus') document.getElementById('bulkToggleTo').value = extraParam;
-            bulkForm.submit();
-        }
+        pendingBulkAction = actionType;
+        pendingExtraParam = extraParam;
+
+        let msg = 'Bạn có chắc muốn thực hiện thao tác này với <strong>' + checkboxes.length + '</strong> mục đã chọn?';
+        if (actionType === 'bulkDelete')
+            msg = 'Bạn có chắc muốn <strong>xóa vĩnh viễn</strong> ' + checkboxes.length + ' mục đã chọn?<br><small class="text-muted">Chỉ xóa được bài PENDING hoặc REJECTED.</small>';
+        else if (actionType === 'bulkReview' && extraParam === 'APPROVED')
+            msg = 'Bạn có chắc muốn <strong>duyệt hàng loạt</strong> ' + checkboxes.length + ' mục đã chọn?<br><small class="text-muted">Chỉ duyệt được bài PENDING.</small>';
+        else if (actionType === 'bulkToggleStatus' && extraParam === 'INACTIVE')
+            msg = 'Bạn có chắc muốn <strong>vô hiệu hóa</strong> ' + checkboxes.length + ' mục đã chọn?<br><small class="text-muted">Chỉ áp dụng cho bài APPROVED.</small>';
+        else if (actionType === 'bulkToggleStatus' && extraParam === 'APPROVED')
+            msg = 'Bạn có chắc muốn <strong>kích hoạt lại</strong> ' + checkboxes.length + ' mục đã chọn?<br><small class="text-muted">Chỉ áp dụng cho bài INACTIVE.</small>';
+
+        document.getElementById('bulkConfirmMsg').innerHTML = msg;
+        const modal = new bootstrap.Modal(document.getElementById('bulkConfirmModal'));
+        modal.show();
     }
+
+    document.getElementById('bulkConfirmOk').addEventListener('click', function () {
+        const checkboxes = document.querySelectorAll('.rowCheckbox:checked');
+        const bulkForm   = document.getElementById('bulkForm');
+
+        // Remove previously appended selectedIds
+        bulkForm.querySelectorAll('input[name="selectedIds"]').forEach(el => el.remove());
+
+        // Append currently selected IDs
+        checkboxes.forEach(cb => {
+            const input = document.createElement('input');
+            input.type  = 'hidden';
+            input.name  = 'selectedIds';
+            input.value = cb.value;
+            bulkForm.appendChild(input);
+        });
+
+        document.getElementById('bulkActionType').value = pendingBulkAction;
+        document.getElementById('bulkStatus').value     = '';
+        document.getElementById('bulkToggleTo').value   = '';
+
+        if (pendingBulkAction === 'bulkReview') {
+            document.getElementById('bulkStatus').value   = pendingExtraParam;
+        } else if (pendingBulkAction === 'bulkToggleStatus') {
+            document.getElementById('bulkToggleTo').value = pendingExtraParam;
+        }
+
+        bootstrap.Modal.getInstance(document.getElementById('bulkConfirmModal')).hide();
+        bulkForm.submit();
+    });
 </script>
 
 <jsp:include page="/includes/footer.jsp" />
