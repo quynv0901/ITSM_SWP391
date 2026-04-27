@@ -175,10 +175,10 @@
     const limits = {
         title: {max: 255, countId: 'titleCount', errorId: 'titleError', label: 'Tiêu đề'},
         summary: {max: 500, countId: 'summaryCount', errorId: 'summaryError', label: 'Mô tả bài viết'},
-        content: {max: 65535, countId: 'contentCount', errorId: 'contentError', label: 'Nội dung'},
-        symptom: {max: 65535, countId: 'symptomCount', errorId: null, label: 'Triệu chứng'},
-        cause: {max: 65535, countId: 'causeCount', errorId: null, label: 'Nguyên nhân'},
-        solution: {max: 65535, countId: 'solutionCount', errorId: null, label: 'Giải pháp'},
+        content: {max: 3000, countId: 'contentCount', errorId: 'contentError', label: 'Nội dung'},
+        symptom: {max: 3000, countId: 'symptomCount', errorId: null, label: 'Triệu chứng'},
+        cause: {max: 3000, countId: 'causeCount', errorId: null, label: 'Nguyên nhân'},
+        solution: {max: 3000, countId: 'solutionCount', errorId: null, label: 'Giải pháp'},
     };
 
     const textFields = [
