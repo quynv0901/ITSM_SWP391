@@ -322,7 +322,7 @@
 
                     <%-- Dịch vụ — tất cả --%>
                     <li class="menu-header">Dịch vụ</li>
-                    <a href="${pageContext.request.contextPath}/service"
+                    <a href="${pageContext.request.contextPath}/service-catalog"
                        class="menu-item ${pageContext.request.requestURI.contains('/service') ? 'active' : ''}">
                         <i class="bi bi-hdd-network"></i> Quản lý dịch vụ
                     </a>
