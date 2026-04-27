@@ -20,7 +20,11 @@
                             margin-bottom: 20px;
                             animation: slideInDown 0.25s ease;
                         }
-                        .validation-summary.show { display: block; }
+
+                        .validation-summary.show {
+                            display: block;
+                        }
+
                         .validation-summary .vs-title {
                             font-weight: 700;
                             color: #b91c1c;
@@ -30,24 +34,36 @@
                             align-items: center;
                             gap: 8px;
                         }
+
                         .validation-summary ul {
                             margin: 0;
                             padding-left: 20px;
                         }
+
                         .validation-summary ul li {
                             color: #7f1d1d;
                             font-size: 0.88rem;
                             line-height: 1.7;
                         }
+
                         @keyframes slideInDown {
-                            from { opacity:0; transform:translateY(-10px); }
-                            to   { opacity:1; transform:translateY(0); }
+                            from {
+                                opacity: 0;
+                                transform: translateY(-10px);
+                            }
+
+                            to {
+                                opacity: 1;
+                                transform: translateY(0);
+                            }
                         }
+
                         /* highlight invalid step cards */
                         .step-card.step-invalid {
                             border-color: #f87171 !important;
                             background: #fff8f8 !important;
                         }
+
                         /* inline error text */
                         .field-error {
                             color: #dc2626;
@@ -57,6 +73,7 @@
                             align-items: center;
                             gap: 5px;
                         }
+
                         /* step users error */
                         .users-error-hint {
                             color: #dc2626;
@@ -92,7 +109,7 @@
                             width: 2px;
                             background: #dee2e6;
                             min-height: 16px;
-                             margin-left: 27px;
+                            margin-left: 27px;
                         }
 
                         .trigger-option {
@@ -355,14 +372,19 @@
                                             value="<c:out value='${workflow.workflowName}'/>" maxlength="255"
                                             required />
                                         <div class="invalid-feedback">Tên Workflow không được để trống.</div>
-                                        <div class="field-error" id="nameError" style="display:none;"><i class="fa fa-circle-exclamation"></i><span></span></div>
+                                        <div class="field-error" id="nameError" style="display:none;"><i
+                                                class="fa fa-circle-exclamation"></i><span></span></div>
                                     </div>
                                     <div class="col-12">
-                                        <label class="form-label" for="description">Mô tả <span class="text-danger">*</span></label>
+                                        <label class="form-label" for="description">Mô tả <span
+                                                class="text-danger">*</span></label>
                                         <textarea id="description" name="description" class="form-control" rows="3"
-                                            placeholder="Mô tả mục đích của workflow này..." maxlength="1000"><c:out value="${workflow.description}"/></textarea>
-                                        <div class="form-text text-secondary mt-1"><span id="descCharCount">0</span>/500 ký tự</div>
-                                        <div class="field-error" id="descError" style="display:none;"><i class="fa fa-circle-exclamation"></i><span></span></div>
+                                            placeholder="Mô tả mục đích của workflow này..."
+                                            maxlength="1000"><c:out value="${workflow.description}"/></textarea>
+                                        <div class="form-text text-secondary mt-1"><span id="descCharCount">0</span>/500
+                                            ký tự</div>
+                                        <div class="field-error" id="descError" style="display:none;"><i
+                                                class="fa fa-circle-exclamation"></i><span></span></div>
                                     </div>
                                     <div class="col-sm-6">
                                         <label class="form-label" for="status">Trạng thái <span
@@ -398,7 +420,9 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="field-error" id="triggerError" style="display:none; margin-top:15px;"><i class="fa fa-circle-exclamation"></i><span>Vui lòng chọn sự kiện kích hoạt.</span></div>
+                                <div class="field-error" id="triggerError" style="display:none; margin-top:15px;"><i
+                                        class="fa fa-circle-exclamation"></i><span>Vui lòng chọn sự kiện kích
+                                        hoạt.</span></div>
                             </div>
                         </div>
 
@@ -416,10 +440,15 @@
                             <div class="p-4">
                                 <div id="conditionsContainer">
                                     <div class="text-center py-2 text-muted" id="noConditionsMsg">
-                                        <small><i class="fa fa-info-circle me-1"></i> Chưa có điều kiện nào được thiết lập.</small>
+                                        <small><i class="fa fa-info-circle me-1"></i> Chưa có điều kiện nào được thiết
+                                            lập.</small>
                                     </div>
                                 </div>
-                                <div class="field-error" id="conditionsError" style="display:none; border-top: 1px solid #eee; padding-top:10px; margin-top:10px;"><i class="fa fa-circle-exclamation"></i><span>Vui lòng thêm ít nhất một điều kiện kích hoạt.</span></div>
+                                <div class="field-error" id="conditionsError"
+                                    style="display:none; border-top: 1px solid #eee; padding-top:10px; margin-top:10px;">
+                                    <i class="fa fa-circle-exclamation"></i><span>Vui lòng thêm ít nhất một điều kiện
+                                        kích hoạt.</span>
+                                </div>
                             </div>
                         </div>
 
@@ -435,7 +464,8 @@
                                         class="fa fa-plus me-1"></i>Thêm bước</button>
                             </div>
                             <div class="p-4">
-                                <div class="field-error mb-2" id="stepsGlobalError" style="display:none;"><i class="fa fa-circle-exclamation"></i><span></span></div>
+                                <div class="field-error mb-2" id="stepsGlobalError" style="display:none;"><i
+                                        class="fa fa-circle-exclamation"></i><span></span></div>
                                 <div id="stepsContainer">
                                     <div class="empty-steps-placeholder" id="emptyStepsPlaceholder">
                                         <div class="fw-semibold">Chưa có bước nào được thêm</div>
@@ -652,7 +682,7 @@ out.print(gson.toJson(_pr));
                                         + (TICKET_TYPES.map(function (t) { return '<option value="' + t + '"' + (c.value === t ? ' selected' : '') + '>' + t + '</option>'; }).join(''))
                                         + '</select>';
                                 } else if (c.field === 'priority') {
-                                    var priorityMap = {'LOW':'Thấp', 'MEDIUM':'Trung bình', 'HIGH':'Cao', 'CRITICAL':'Nghiêm trọng'};
+                                    var priorityMap = { 'LOW': 'Thấp', 'MEDIUM': 'Trung bình', 'HIGH': 'Cao', 'CRITICAL': 'Nghiêm trọng' };
                                     valueInput = '<select class="form-select form-select-sm" onchange="updateCondition(' + c.id + ', \'value\', this.value)">'
                                         + '<option value="">-- Mức độ ưu tiên --</option>'
                                         + (PRIORITIES.map(function (p) { var lbl = priorityMap[p] || p; return '<option value="' + p + '"' + (c.value === p ? ' selected' : '') + '>' + lbl + '</option>'; }).join(''))
@@ -723,7 +753,7 @@ out.print(gson.toJson(_pr));
                                         + '</div>'
                                         + '<div class="flex-grow-1">'
                                         + '<div class="row g-3 mb-2">'
-                                        + '<div class="col-md-5"><input type="text" class="form-control form-control-sm" placeholder="Tên bước" value="' + escHtml(s.name) + '" oninput="updateStepField(' + s.id + ', \'name\', this.value)" /></div>'
+                                        + '<div class="col-md-5"><input type="text" class="form-control form-control-sm" placeholder="Tên bước" maxlength="50" value="' + escHtml(s.name) + '" oninput="updateStepField(' + s.id + ', \'name\', this.value)" /></div>'
                                         + '<div class="col-md-4">'
                                         + '<div class="form-control form-control-sm btn-user-add d-flex flex-wrap align-items-center gap-1" style="min-height:31px; height:auto; cursor:text; padding:3px 6px;" onclick="openUserPicker(event, ' + s.id + ')">'
                                         + usersHtml
@@ -1007,22 +1037,22 @@ out.print(gson.toJson(_pr));
                                 charCount.textContent = len;
                                 charCount.style.color = len > 480 ? '#ef4444' : '';
                             }
-                             descArea.addEventListener('input', function() {
-                                 updateCharCount();
-                                 var val = this.value.trim();
-                                 var er = document.getElementById('descError');
-                                 if (!val) {
-                                     this.classList.add('is-invalid');
-                                     if (er) { er.style.display = 'flex'; er.querySelector('span').textContent = 'Mô tả không được để trống.'; }
-                                 } else if (val.length > 500) {
-                                     this.classList.add('is-invalid');
-                                     if (er) { er.style.display = 'flex'; er.querySelector('span').textContent = 'Mô tả không được vượt quá 500 ký tự (hiện tại: ' + val.length + ').'; }
-                                 } else {
-                                     this.classList.remove('is-invalid');
-                                     if (er) er.style.display = 'none';
-                                 }
-                             });
-                             updateCharCount();
+                            descArea.addEventListener('input', function () {
+                                updateCharCount();
+                                var val = this.value.trim();
+                                var er = document.getElementById('descError');
+                                if (!val) {
+                                    this.classList.add('is-invalid');
+                                    if (er) { er.style.display = 'flex'; er.querySelector('span').textContent = 'Mô tả không được để trống.'; }
+                                } else if (val.length > 500) {
+                                    this.classList.add('is-invalid');
+                                    if (er) { er.style.display = 'flex'; er.querySelector('span').textContent = 'Mô tả không được vượt quá 500 ký tự (hiện tại: ' + val.length + ').'; }
+                                } else {
+                                    this.classList.remove('is-invalid');
+                                    if (er) er.style.display = 'none';
+                                }
+                            });
+                            updateCharCount();
 
                             // ===== VALIDATION ENGINE =====
                             function validateWorkflowForm(isDraft) {
@@ -1049,7 +1079,7 @@ out.print(gson.toJson(_pr));
                                 var descEl = document.getElementById('description');
                                 var descVal = descEl ? descEl.value.trim() : '';
                                 var descErrorEl = document.getElementById('descError');
-                                
+
                                 if (!isDraft && !descVal) {
                                     errors.push('Mô tả workflow không được để trống.');
                                     if (descEl) descEl.classList.add('is-invalid');
@@ -1072,14 +1102,39 @@ out.print(gson.toJson(_pr));
                                     if (triggerErrorEl) triggerErrorEl.style.display = 'none';
                                 }
 
-                                // 4. Additional Conditions: Mandatory
+                                // 4. Additional Conditions: Mandatory + each must have a value selected
                                 var condsErrorEl = document.getElementById('conditionsError');
                                 var condRows = document.querySelectorAll('#conditionsContainer .condition-row');
                                 if (condRows.length === 0) {
                                     errors.push('Vui lòng thêm ít nhất một Điều kiện kích hoạt cho workflow.');
-                                    if (condsErrorEl) condsErrorEl.style.display = 'flex';
+                                    if (condsErrorEl) { condsErrorEl.style.display = 'flex'; condsErrorEl.querySelector('span').textContent = 'Vui lòng thêm ít nhất một điều kiện kích hoạt.'; }
                                 } else {
-                                    if (condsErrorEl) condsErrorEl.style.display = 'none';
+                                    // Check that every condition has a value selected
+                                    var emptyCondIdx = [];
+                                    conditions.forEach(function (c, idx) {
+                                        if (!c.value || String(c.value).trim() === '') {
+                                            emptyCondIdx.push(idx + 1);
+                                        }
+                                    });
+                                    if (emptyCondIdx.length > 0) {
+                                        errors.push('Điều kiện ' + emptyCondIdx.join(', ') + ': Vui lòng chọn giá trị (không được để trống).');
+                                        if (condsErrorEl) { condsErrorEl.style.display = 'flex'; condsErrorEl.querySelector('span').textContent = 'Vui lòng chọn giá trị cho tất cả điều kiện.'; }
+                                        // Highlight empty selects in condition rows
+                                        condRows.forEach(function (row, idx) {
+                                            var valueSelect = row.querySelectorAll('select')[1];
+                                            if (valueSelect && (!conditions[idx].value || String(conditions[idx].value).trim() === '')) {
+                                                valueSelect.classList.add('is-invalid');
+                                            } else if (valueSelect) {
+                                                valueSelect.classList.remove('is-invalid');
+                                            }
+                                        });
+                                    } else {
+                                        if (condsErrorEl) condsErrorEl.style.display = 'none';
+                                        condRows.forEach(function (row) {
+                                            var selects = row.querySelectorAll('select');
+                                            selects.forEach(function (s) { s.classList.remove('is-invalid'); });
+                                        });
+                                    }
                                 }
 
                                 if (!isDraft) {
@@ -1093,13 +1148,13 @@ out.print(gson.toJson(_pr));
                                         if (stepsGlobalErr) stepsGlobalErr.style.display = 'none';
 
                                         // 5. Each step must have a name and at least 1 user
-                                        steps.forEach(function(s, idx) {
+                                        steps.forEach(function (s, idx) {
                                             var stepNum = idx + 1;
                                             var sName = s.name ? s.name.trim() : '';
                                             if (!sName) {
-                                                errors.push('Step ' + stepNum + ': Tên step không được để trống.');
-                                            } else if (sName.length > 100) {
-                                                errors.push('Step ' + stepNum + ': Tên step không được vượt quá 100 ký tự.');
+                                                errors.push('Step ' + stepNum + ': Tên bước không được để trống.');
+                                            } else if (sName.length > 50) {
+                                                errors.push('Step ' + stepNum + ': Tên bước không được vượt quá 50 ký tự (hiện tại: ' + sName.length + ').');
                                             }
                                             if (!s.users || s.users.length === 0) {
                                                 errors.push('Step ' + stepNum + ' ("' + (s.name.trim() || 'Không tên') + '"): Phải chọn ít nhất 1 người phụ trách.');
@@ -1107,9 +1162,9 @@ out.print(gson.toJson(_pr));
                                         });
 
                                         // Highlight invalid step cards in the DOM
-                                        document.querySelectorAll('.step-card').forEach(function(card, idx) {
+                                        document.querySelectorAll('.step-card').forEach(function (card, idx) {
                                             var s = steps[idx];
-                                            var isNameValid = s.name && s.name.trim() && s.name.trim().length <= 100;
+                                            var isNameValid = s.name && s.name.trim() && s.name.trim().length <= 50;
                                             var isUsersValid = s.users && s.users.length > 0;
                                             if (!isNameValid || !isUsersValid) {
                                                 card.classList.add('step-invalid');
@@ -1125,13 +1180,13 @@ out.print(gson.toJson(_pr));
 
                             function showValidationSummary(errors) {
                                 var panel = document.getElementById('validationSummary');
-                                var list  = document.getElementById('validationErrors');
+                                var list = document.getElementById('validationErrors');
                                 if (!panel || !list) return;
                                 if (errors.length === 0) {
                                     panel.classList.remove('show');
                                     return;
                                 }
-                                list.innerHTML = errors.map(function(e) { return '<li>' + escHtml(e) + '</li>'; }).join('');
+                                list.innerHTML = errors.map(function (e) { return '<li>' + escHtml(e) + '</li>'; }).join('');
                                 panel.classList.add('show');
                                 panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
                             }
@@ -1157,20 +1212,20 @@ out.print(gson.toJson(_pr));
                             });
 
                             // Live-clear name error on input
-                             document.getElementById('workflowName').addEventListener('input', function() {
-                                 var val = this.value.trim();
-                                 var er = document.getElementById('nameError');
-                                 if (!val) {
-                                     this.classList.add('is-invalid');
-                                     if (er) { er.style.display = 'flex'; er.querySelector('span').textContent = 'Tên Workflow không được để trống.'; }
-                                 } else if (val.length > 100) {
-                                     this.classList.add('is-invalid');
-                                     if (er) { er.style.display = 'flex'; er.querySelector('span').textContent = 'Tên Workflow không được vượt quá 100 ký tự (hiện tại: ' + val.length + ').'; }
-                                 } else {
-                                     this.classList.remove('is-invalid');
-                                     if (er) er.style.display = 'none';
-                                 }
-                             });
+                            document.getElementById('workflowName').addEventListener('input', function () {
+                                var val = this.value.trim();
+                                var er = document.getElementById('nameError');
+                                if (!val) {
+                                    this.classList.add('is-invalid');
+                                    if (er) { er.style.display = 'flex'; er.querySelector('span').textContent = 'Tên Workflow không được để trống.'; }
+                                } else if (val.length > 100) {
+                                    this.classList.add('is-invalid');
+                                    if (er) { er.style.display = 'flex'; er.querySelector('span').textContent = 'Tên Workflow không được vượt quá 100 ký tự (hiện tại: ' + val.length + ').'; }
+                                } else {
+                                    this.classList.remove('is-invalid');
+                                    if (er) er.style.display = 'none';
+                                }
+                            });
 
                             function saveDraft() {
                                 updateJsonPreview();

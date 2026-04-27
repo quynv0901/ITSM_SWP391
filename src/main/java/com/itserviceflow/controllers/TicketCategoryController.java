@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@WebServlet(name = "TicketCategoryController", urlPatterns = {"/ticket-category", "/ticket-category/"})
+@WebServlet(name = "TicketCategoryController", urlPatterns = { "/ticket-category", "/ticket-category/" })
 public class TicketCategoryController extends HttpServlet {
 
     private final TicketCategoryDAO dao = new TicketCategoryDAO();
@@ -196,7 +196,8 @@ public class TicketCategoryController extends HttpServlet {
             req.setAttribute("cat", cat);
             req.setAttribute("isEdit", false);
             req.setAttribute("allCats", dao.getAllCategories());
-            req.setAttribute("error", "Category Code '" + cat.getCategoryCode() + "' đã được sử dụng. Vui lòng chọn mã khác.");
+            req.setAttribute("error",
+                    "Category Code '" + cat.getCategoryCode() + "' đã được sử dụng. Vui lòng chọn mã khác.");
             try {
                 req.getRequestDispatcher("/ticket-category/category-form.jsp").forward(req, resp);
             } catch (ServletException e) {
@@ -227,7 +228,8 @@ public class TicketCategoryController extends HttpServlet {
             try {
                 req.getRequestDispatcher("/ticket-category/category-form.jsp").forward(req, resp);
             } catch (ServletException e) {
-                resp.sendRedirect(req.getContextPath() + "/ticket-category?action=form&id=" + cat.getCategoryId() + "&error=validation_failed");
+                resp.sendRedirect(req.getContextPath() + "/ticket-category?action=form&id=" + cat.getCategoryId()
+                        + "&error=validation_failed");
             }
             return;
         }
@@ -238,11 +240,13 @@ public class TicketCategoryController extends HttpServlet {
             req.setAttribute("cat", cat);
             req.setAttribute("isEdit", true);
             req.setAttribute("allCats", dao.getAllCategories());
-            req.setAttribute("error", "Category Code '" + cat.getCategoryCode() + "' đã được sử dụng. Vui lòng chọn mã khác.");
+            req.setAttribute("error",
+                    "Category Code '" + cat.getCategoryCode() + "' đã được sử dụng. Vui lòng chọn mã khác.");
             try {
                 req.getRequestDispatcher("/ticket-category/category-form.jsp").forward(req, resp);
             } catch (ServletException e) {
-                resp.sendRedirect(req.getContextPath() + "/ticket-category?action=form&id=" + cat.getCategoryId() + "&error=update_failed");
+                resp.sendRedirect(req.getContextPath() + "/ticket-category?action=form&id=" + cat.getCategoryId()
+                        + "&error=update_failed");
             }
             return;
         }
@@ -250,7 +254,8 @@ public class TicketCategoryController extends HttpServlet {
         if (dao.update(cat)) {
             resp.sendRedirect(req.getContextPath() + "/ticket-category?updateSuccess=1");
         } else {
-            resp.sendRedirect(req.getContextPath() + "/ticket-category?action=form&id=" + cat.getCategoryId() + "&error=update_failed");
+            resp.sendRedirect(req.getContextPath() + "/ticket-category?action=form&id=" + cat.getCategoryId()
+                    + "&error=update_failed");
         }
     }
 
@@ -373,16 +378,16 @@ public class TicketCategoryController extends HttpServlet {
      * GET /ticket-category?action=api
      * Returns all categories (active + inactive) as JSON for frontend consumption.
      * Format: [{"id":1,"name":"Network","type":"INCIDENT","status":"active"},
-     *          {"id":2,"name":"Access","type":"SERVICE_REQUEST","status":"inactive"}]
+     * {"id":2,"name":"Access","type":"SERVICE_REQUEST","status":"inactive"}]
      */
     private void sendCategoriesApi(HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
         resp.setContentType("application/json;charset=UTF-8");
         resp.setHeader("Cache-Control", "max-age=300"); // cache 5 min
-        
+
         // Get all categories (both active and inactive)
         List<TicketCategory> allCategories = dao.getAllCategories();
-        
+
         // Build simple JSON array manually to avoid dependency on Gson
         StringBuilder json = new StringBuilder("[");
         for (int i = 0; i < allCategories.size(); i++) {
@@ -398,12 +403,13 @@ public class TicketCategoryController extends HttpServlet {
             }
         }
         json.append("]");
-        
+
         resp.getWriter().print(json.toString());
     }
 
     private String escapeJson(String s) {
-        if (s == null) return "";
+        if (s == null)
+            return "";
         return s.replace("\\", "\\\\")
                 .replace("\"", "\\\"")
                 .replace("\n", "\\n")
