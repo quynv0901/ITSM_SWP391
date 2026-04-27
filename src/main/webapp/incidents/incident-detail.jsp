@@ -883,7 +883,7 @@
                                     <div class="form-group fg-desc">
                                         <label for="logDescription">Mô tả <small style="color:#718096;font-weight:normal;">(Tối đa 200 ký tự, tùy chọn)</small></label>
                                         <input type="text" id="logDescription" name="logDescription"
-                                               maxlength="300"
+                                               maxlength="200"
                                                placeholder="Bạn đã thực hiện công việc gì? (Có thể để trống)">
                                         <div id="logDescRealtimeError" style="color:#e53e3e; font-size:12px; margin-top:4px; display:none;"></div>
                                     </div>
