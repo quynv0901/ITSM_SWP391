@@ -156,7 +156,10 @@ public class KnowledgeBaseController extends HttpServlet {
                 req.getRequestDispatcher("/knowledge/knowledge-base-form.jsp").forward(req, resp);
             }
         } catch (Exception e) {
-            System.out.println("addArticle error: " + e);
+            e.printStackTrace();
+            req.setAttribute("error", "Lỗi hệ thống: " + e.getMessage());
+            req.setAttribute("article", buildArticleFromRequest(req));
+            req.getRequestDispatcher("/knowledge/knowledge-base-form.jsp").forward(req, resp);
         }
     }
 
@@ -190,7 +193,10 @@ public class KnowledgeBaseController extends HttpServlet {
                 req.getRequestDispatcher("/knowledge/knowledge-base-form.jsp").forward(req, resp);
             }
         } catch (Exception e) {
-            System.out.println("updateArticle error: " + e);
+            e.printStackTrace();
+            req.setAttribute("error", "Lỗi hệ thống: " + e.getMessage());
+            req.setAttribute("article", buildArticleFromRequest(req));
+            req.getRequestDispatcher("/knowledge/knowledge-base-form.jsp").forward(req, resp);
         }
     }
 
