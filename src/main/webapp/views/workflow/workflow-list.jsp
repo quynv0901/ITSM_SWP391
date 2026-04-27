@@ -248,7 +248,7 @@
 <%@ include file="/common/admin-layout-top.jsp" %>
 
 <div class="breadcrumb-custom">
-    <i class="bi bi-house-door me-1"></i> Trang chủ &gt; Tự động điều hướng Ticket
+    <i class="bi bi-house-door me-1"></i> Trang chủ &gt; Cấu hình thông báo tự động
 </div>
 
 <%-- Flash messages --%>

@@ -175,12 +175,12 @@
     const limits = {
         title: {max: 255, countId: 'titleCount', errorId: 'titleError', label: 'Tiêu đề'},
         summary: {max: 500, countId: 'summaryCount', errorId: 'summaryError', label: 'Mô tả bài viết'},
-        content: {max: 3000, countId: 'contentCount', errorId: 'contentError', label: 'Nội dung'},
-        symptom: {max: 3000, countId: 'symptomCount', errorId: null, label: 'Triệu chứng'},
-        cause: {max: 3000, countId: 'causeCount', errorId: null, label: 'Nguyên nhân'},
-        solution: {max: 3000, countId: 'solutionCount', errorId: null, label: 'Giải pháp'},
+        content: {max: 65535, countId: 'contentCount', errorId: 'contentError', label: 'Nội dung'},
+        symptom: {max: 65535, countId: 'symptomCount', errorId: null, label: 'Triệu chứng'},
+        cause: {max: 65535, countId: 'causeCount', errorId: null, label: 'Nguyên nhân'},
+        solution: {max: 65535, countId: 'solutionCount', errorId: null, label: 'Giải pháp'},
     };
-    // Kiểm tra từ độc hại trong tất cả các trường text
+
     const textFields = [
         {id: 'title', label: 'Tiêu đề'},
         {id: 'summary', label: 'Mô tả'},
@@ -189,19 +189,6 @@
         {id: 'cause', label: 'Nguyên nhân'},
         {id: 'solution', label: 'Giải pháp'},
     ];
-
-    textFields.forEach(({ id, label }) => {
-        const el = document.getElementById(id);
-        if (!el || !el.value.trim())
-            return;
-        const found = containsBannedWords(el.value);
-        if (found.length > 0) {
-            errors.push(`${label} chứa từ không phù hợp: "${found.join('", "')}"`);
-            el.classList.add('is-invalid');
-            if (!firstErrorField)
-                firstErrorField = el;
-    }
-    });
 
     function updateCounter(fieldId) {
         const cfg = limits[fieldId];
@@ -243,6 +230,19 @@
         const errors = [];
         let firstErrorField = null;
 
+        // 1. Kiểm tra từ độc hại
+        textFields.forEach(({ id, label }) => {
+            const el = document.getElementById(id);
+            if (!el || !el.value.trim()) return;
+            const found = containsBannedWords(el.value);
+            if (found.length > 0) {
+                errors.push(`${label} chứa từ không phù hợp: "${found.join('", "')}"`);
+                el.classList.add('is-invalid');
+                if (!firstErrorField) firstErrorField = el;
+            }
+        });
+
+        // 2. Kiểm tra required
         const title = document.getElementById('title');
         const content = document.getElementById('content');
 
@@ -260,6 +260,7 @@
                 firstErrorField = content;
         }
 
+        // 3. Kiểm tra giới hạn ký tự
         Object.keys(limits).forEach(fieldId => {
             const cfg = limits[fieldId];
             const el = document.getElementById(fieldId);

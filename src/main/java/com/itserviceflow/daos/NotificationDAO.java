@@ -61,11 +61,48 @@ public class NotificationDAO {
         return list;
     }
 
+    public List<Notification> getUnreadNotificationsByType(int userId, String type, int limit) throws SQLException {
+        List<Notification> list = new ArrayList<>();
+        String sql = """
+            SELECT notification_id, user_id, notification_type, title, message, related_ticket_id, related_article_id, is_seen, created_at
+            FROM notification
+            WHERE user_id = ? AND is_seen = 0 AND notification_type = ?
+            ORDER BY created_at DESC
+        """;
+        if (limit > 0) {
+            sql += " LIMIT " + limit;
+        }
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.setString(2, type);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapRow(rs));
+                }
+            }
+        }
+        return list;
+    }
+
     public int countUnreadNotifications(int userId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM notification WHERE user_id = ? AND is_seen = 0";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        }
+        return 0;
+    }
+
+    public int countUnreadNotificationsByType(int userId, String type) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM notification WHERE user_id = ? AND is_seen = 0 AND notification_type = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.setString(2, type);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return rs.getInt(1);
             }

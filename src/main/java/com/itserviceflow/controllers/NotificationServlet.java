@@ -48,8 +48,17 @@ public class NotificationServlet extends HttpServlet {
                     try { limit = Integer.parseInt(limitParam); } catch (NumberFormatException ignored) {}
                 }
                 
-                List<Notification> unreadList = notificationDAO.getUnreadNotifications(currentUser.getUserId(), limit);
-                int count = notificationDAO.countUnreadNotifications(currentUser.getUserId());
+                String type = request.getParameter("type");
+                List<Notification> unreadList;
+                int count;
+                
+                if (type != null && !type.trim().isEmpty()) {
+                    unreadList = notificationDAO.getUnreadNotificationsByType(currentUser.getUserId(), type, limit);
+                    count = notificationDAO.countUnreadNotificationsByType(currentUser.getUserId(), type);
+                } else {
+                    unreadList = notificationDAO.getUnreadNotifications(currentUser.getUserId(), limit);
+                    count = notificationDAO.countUnreadNotifications(currentUser.getUserId());
+                }
                 
                 Map<String, Object> result = new HashMap<>();
                 result.put("count", count);
