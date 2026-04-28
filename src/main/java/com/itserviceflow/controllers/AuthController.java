@@ -241,7 +241,19 @@ public class AuthController extends HttpServlet {
                 request.getRequestDispatcher("/auth/reset_password.jsp").forward(request, response);
                 return;
             }
-
+            // validate khoảng trắng
+            if (newPass.contains(" ")) {
+                request.setAttribute("error", "Mật khẩu không được chứa khoảng trắng!");
+                request.setAttribute("token", token);
+                request.getRequestDispatcher("/auth/reset_password.jsp").forward(request, response);
+                return;
+            }
+            if (confirmPass != null && confirmPass.contains(" ")) {
+                request.setAttribute("error", "Mật khẩu xác nhận không được chứa khoảng trắng!");
+                request.setAttribute("token", token);
+                request.getRequestDispatcher("/auth/reset_password.jsp").forward(request, response);
+                return;
+            }
             if (!newPass.equals(confirmPass)) {
                 request.setAttribute("error", "Mật khẩu không khớp!");
                 request.setAttribute("token", token);

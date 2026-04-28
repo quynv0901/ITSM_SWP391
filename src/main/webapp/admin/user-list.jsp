@@ -169,7 +169,7 @@
     <table class="table admin-table mb-0">
         <thead>
             <tr>
-                <th><a href="javascript:void(0)" onclick="setSort('user_id')" class="text-dark text-decoration-none">STT <i class="bi bi-sort-numeric-down"></i></a></th>
+                <th>STT</th>
                 <th><a href="javascript:void(0)" onclick="setSort('full_name')" class="text-dark text-decoration-none">Họ tên <i class="bi bi-sort-alpha-down"></i></a></th>
                 <th><a href="javascript:void(0)" onclick="setSort('email')" class="text-dark text-decoration-none">Email <i class="bi bi-sort-alpha-down"></i></a></th>
                 <th>SĐT</th>
